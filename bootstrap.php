@@ -18,6 +18,7 @@ use phpManufaktur\SyncData\Server\Control\Backup;
 use phpManufaktur\SyncData\Server\Control\Utils;
 use phpManufaktur\SyncData\Server\Control\Application;
 use phpManufaktur\SyncData\Server\Data\CMS\Settings;
+use phpManufaktur\SyncData\Server\Control\JSON\JSONFormat;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -90,7 +91,10 @@ try {
                     'TABLE_PREFIX' => TABLE_PREFIX
                 );
                 $app['monolog']->addInfo('Read the database configuration from the CMS config.php');
-                if (!file_put_contents(SYNC_DATA_PATH.'/config/doctrine.json', json_encode($doctrine))) {
+                // encode a formatted JSON file
+                $jsonFormat = new JSONFormat();
+                $json = $jsonFormat->format($doctrine);
+                if (!file_put_contents(SYNC_DATA_PATH.'/config/doctrine.json', $json)) {
                     throw new \Exception("Can't write the configuration file for Doctrine!");
                 }
             }
@@ -134,7 +138,10 @@ try {
             'SMTP_PASSWORD' => (isset($cms_settings['wbmailer_smtp_password'])) ? $cms_settings['wbmailer_smtp_password'] : '',
             'SMTP_SECURITY' => ''
         );
-        if (!file_put_contents(SYNC_DATA_PATH.'/config/swiftmailer.json', json_encode($swiftmailer))) {
+        // encode a formatted JSON file
+        $jsonFormat = new JSONFormat();
+        $json = $jsonFormat->format($swiftmailer);
+        if (!file_put_contents(SYNC_DATA_PATH.'/config/swiftmailer.json', $json)) {
             throw new \Exception("Can\'t write the configuration file for SwiftMailer!");
         }
         $app['monolog']->addInfo('Create /config/swiftmailer.json');
@@ -189,7 +196,10 @@ try {
                 )
             )
         );
-        if (!file_put_contents(SYNC_DATA_PATH.'/config/syncdata.json', json_encode($config))) {
+        // encode a formatted JSON file
+        $jsonFormat = new JSONFormat();
+        $json = $jsonFormat->format($config);
+        if (!file_put_contents(SYNC_DATA_PATH.'/config/syncdata.json', $json)) {
             throw new \Exception("Can\'t write the configuration file for SwiftMailer!");
         }
         $app['monolog']->addInfo('Create /config/syncdata.json');
