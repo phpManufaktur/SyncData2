@@ -55,4 +55,69 @@ class General {
             throw new \Exception($e->getMessage());
         }
     }
+
+    public function getTableContentChecksum($table)
+    {
+        try {
+            $result = $this->app['db']->fetchAll("SELECT * FROM `$table`");
+            $checksum = false;
+            $content = '';
+            if (is_array($result)) {
+                foreach ($result as $row) {
+                    $content .= md5(implode(',', $row));
+                }
+                $checksum = md5($content);
+            }
+            return $checksum;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function listTableIndexes($table)
+    {
+        try {
+            $shemaManager = $this->app['db']->getSchemaManager();
+            $result = $shemaManager->listTableIndexes($table);
+            return $result;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function getCreateTableSQL($table, $replaceTablePrefix=true, $useIfNotExists=true)
+    {
+        try {
+            $result = $this->app['db']->fetchAssoc("SHOW CREATE TABLE `$table`");
+            $SQL = false;
+            if (isset($result['Create Table']) && isset($result['Table'])) {
+                // get the table name
+                $table = $result['Table'];
+                $no_prefix = $result['Table'];
+                $not_exists = '';
+                if ($replaceTablePrefix && (CMS_TABLE_PREFIX !== '')) {
+                    $no_prefix = str_replace(CMS_TABLE_PREFIX, '{{ SyncData:TABLE_PREFIX }}', $table);
+                }
+                if ($useIfNotExists) {
+                    $not_exists = ' IF NOT EXISTS';
+                }
+                $SQL = str_replace(sprintf("CREATE TABLE `%s`", $table), sprintf("CREATE TABLE%s `%s`", $not_exists, $no_prefix), $result['Create Table']);
+            }
+            return $SQL;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function tableExists($table)
+    {
+        try {
+            $result = $this->app['db']->fetchAssoc("DESCRIBE `$table`");
+            return true;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            $this->app['monolog']->addInfo("The table $table does not exists!");
+            return false;
+        }
+    }
+
 }
