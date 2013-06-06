@@ -64,7 +64,7 @@ class General {
             $content = '';
             if (is_array($result)) {
                 foreach ($result as $row) {
-                    $content .= md5(implode(',', $row));
+                    $content .= md5(str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', implode(',', $row)));
                 }
                 $checksum = md5($content);
             }
@@ -138,10 +138,17 @@ class General {
         }
     }
 
-    public function insertRows($table, $rows)
+    public function insertRows($table, $rows, $replace_cms_url=true)
     {
         try {
             foreach ($rows as $row) {
+                if ($replace_cms_url) {
+                    $content = array();
+                    foreach ($row as $key => $value) {
+                        $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                    }
+                    $row = $content;
+                }
                 $this->app['db']->insert($table, $row);
             }
         } catch (\Doctrine\DBAL\DBALException $e) {
