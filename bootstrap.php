@@ -103,7 +103,7 @@ try {
                 // encode a formatted JSON file
                 $jsonFormat = new JSONFormat();
                 $json = $jsonFormat->format($doctrine);
-                if (!file_put_contents(SYNC_DATA_PATH.'/config/doctrine.json', $json)) {
+                if (!@file_put_contents(SYNC_DATA_PATH.'/config/doctrine.json', $json)) {
                     throw new \Exception("Can't write the configuration file for Doctrine!");
                 }
             }
@@ -114,7 +114,7 @@ try {
     }
 
     // get the doctrine configuration
-    if ((false === ($doctrine = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/doctrine.json'), true))) || !is_array($doctrine)) {
+    if ((false === ($doctrine = json_decode(@file_get_contents(SYNC_DATA_PATH.'/config/doctrine.json'), true))) || !is_array($doctrine)) {
         throw new \Exception("Can't read the Doctrine configuration file!");
     }
 
@@ -150,7 +150,7 @@ try {
         // encode a formatted JSON file
         $jsonFormat = new JSONFormat();
         $json = $jsonFormat->format($swiftmailer);
-        if (!file_put_contents(SYNC_DATA_PATH.'/config/swiftmailer.json', $json)) {
+        if (!@file_put_contents(SYNC_DATA_PATH.'/config/swiftmailer.json', $json)) {
             throw new \Exception("Can\'t write the configuration file for SwiftMailer!");
         }
         $app['monolog']->addInfo('Create /config/swiftmailer.json');
@@ -198,12 +198,50 @@ try {
                             'replace_cms_url' => true
                         ),
                         'files' => array(
-                            'ignore' => array('.buildpath','.project')
+                            'ignore' => array(
+                                '.buildpath',
+                                '.project'
+                            )
                         ),
                         'directories' => array(
                             'ignore' => array(
-                                'directory' => array('temp','SyncDataServer','SyncDataClient','kit2'),
-                                'subdirectory' => array('.git')
+                                'directory' => array(
+                                    'temp',
+                                    'SyncDataServer',
+                                    'SyncDataClient',
+                                    'kit2'
+                                ),
+                                'subdirectory' => array(
+                                    '.git'
+                                )
+                            )
+                        ),
+                        'tables' => array(
+                            'ignore' => array(
+                                'syncdata_backup_master'
+                            )
+                        )
+                    ),
+                    'restore' => array(
+                        'settings' => array(
+                            'replace_table_prefix' => true,
+                            'replace_cms_url' => true,
+                            'ignore_cms_config' => true
+                        ),
+                        'files' => array(
+                            'ignore' => array(
+                                '.buildpath',
+                                '.project'
+                            )
+                        ),
+                        'directories' => array(
+                            'ignore' => array(
+                                'directory' => array(
+                                    'temp'
+                                ),
+                                'subdirectory' => array(
+                                    '.git'
+                                )
                             )
                         ),
                         'tables' => array(
@@ -218,14 +256,14 @@ try {
         // encode a formatted JSON file
         $jsonFormat = new JSONFormat();
         $json = $jsonFormat->format($config);
-        if (!file_put_contents(SYNC_DATA_PATH.'/config/syncdata.json', $json)) {
+        if (!@file_put_contents(SYNC_DATA_PATH.'/config/syncdata.json', $json)) {
             throw new \Exception("Can\'t write the configuration file for SyncData!");
         }
         $app['monolog']->addInfo('Create /config/syncdata.json');
     }
 
     // get the SwiftMailer configuration
-    if ((false === ($swiftmailer = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/swiftmailer.json'), true))) || !is_array($swiftmailer)) {
+    if ((false === ($swiftmailer = json_decode(@file_get_contents(SYNC_DATA_PATH.'/config/swiftmailer.json'), true))) || !is_array($swiftmailer)) {
         throw new \Exception("Can't read the SwiftMailer configuration file!");
     }
 
@@ -247,7 +285,7 @@ try {
     $app['monolog']->addInfo('SwiftMailer initialized');
 
     // get the SyncData configuration
-    if ((false === ($config = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/syncdata.json'), true))) || !is_array($config)) {
+    if ((false === ($config = json_decode(@file_get_contents(SYNC_DATA_PATH.'/config/syncdata.json'), true))) || !is_array($config)) {
         throw new \Exception("Can't read the SyncData configuration file!");
     }
     $app['config'] = $app->share(function($app) use ($config) {
@@ -339,5 +377,5 @@ try {
 
 } catch (\Exception $e) {
     $app['monolog']->addError(strip_tags($e->getMessage()), array('file' => $e->getFile(), 'line' => $e->getLine()));
-    exit($e->getMessage());
+    exit($e->getMessage()."<br />Please check the logfile for further information!");
 }
