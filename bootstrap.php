@@ -19,6 +19,7 @@ use phpManufaktur\SyncData\Server\Control\Utils;
 use phpManufaktur\SyncData\Server\Control\Application;
 use phpManufaktur\SyncData\Server\Data\CMS\Settings;
 use phpManufaktur\SyncData\Server\Control\JSON\JSONFormat;
+use phpManufaktur\SyncData\Server\Control\Restore;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -34,10 +35,13 @@ try {
     $max_size = 2*1024*1024; // 2 MB
     $log_file = SYNC_DATA_PATH.'/logfile/SyncDataServer.log';
     if (file_exists($log_file) && (filesize($log_file) > $max_size)) {
+        // delete existing backup file
         @unlink(SYNC_DATA_PATH.'/logfile/SyncDataServer.bak');
+        // rename the logfile to *.bak
         @rename($log_file, SYNC_DATA_PATH.'/logfile/SyncDataServer.bak');
     }
 
+    // init the application
     $app = new Application();
 
     // initialize the logger
@@ -110,7 +114,7 @@ try {
     }
 
     // get the doctrine configuration
-    if (false === ($doctrine = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/doctrine.json'), true))) {
+    if ((false === ($doctrine = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/doctrine.json'), true))) || !is_array($doctrine)) {
         throw new \Exception("Can't read the Doctrine configuration file!");
     }
 
@@ -182,8 +186,8 @@ try {
                 )
             ),
             'general' => array(
-                'memory_limit' => '256M',
-                'max_execution_time' => '60'
+                'memory_limit' => '512M',
+                'max_execution_time' => '300'
             ),
             'syncdata' => array(
                 'server' => array(
@@ -221,7 +225,7 @@ try {
     }
 
     // get the SwiftMailer configuration
-    if (false === ($swiftmailer = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/swiftmailer.json'), true))) {
+    if ((false === ($swiftmailer = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/swiftmailer.json'), true))) || !is_array($swiftmailer)) {
         throw new \Exception("Can't read the SwiftMailer configuration file!");
     }
 
@@ -243,7 +247,7 @@ try {
     $app['monolog']->addInfo('SwiftMailer initialized');
 
     // get the SyncData configuration
-    if (false === ($config = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/syncdata.json'), true))) {
+    if ((false === ($config = json_decode(file_get_contents(SYNC_DATA_PATH.'/config/syncdata.json'), true))) || !is_array($config)) {
         throw new \Exception("Can't read the SyncData configuration file!");
     }
     $app['config'] = $app->share(function($app) use ($config) {
@@ -286,14 +290,44 @@ try {
         $app['monolog']->addInfo('Monolog handler for SwiftMailer initialized');
     }
 
+    // check if the /inbox and /outbox exists
+    if (!file_exists(SYNC_DATA_PATH.'/inbox')) {
+        if (!@mkdir(SYNC_DATA_PATH.'/inbox')) {
+            throw new \Exception("Can' create the directory ".SYNC_DATA_PATH.'/inbox');
+        }
+    }
+    if (!file_exists(SYNC_DATA_PATH.'/outbox')) {
+        if (!@mkdir(SYNC_DATA_PATH.'/outbox')) {
+            throw new \Exception("Can' create the directory ".SYNC_DATA_PATH.'/outbox');
+        }
+    }
+
     // configuration is finished
     $app['monolog']->addInfo('SyncDataServer READY');
 
-    $route = substr($_SERVER['REQUEST_URI'], strlen('/SyncDataServer'));
+    // get the SyncDataServer directory
+    $syncdata_directory = substr(SYNC_DATA_PATH, strrpos(SYNC_DATA_PATH, DIRECTORY_SEPARATOR)+1);
+    if (!in_array($syncdata_directory, $app['config']['syncdata']['server']['backup']['directories']['ignore']['directory'])) {
+        // we must grant that the SyncDataServer /temp directory is always ignored (recursion!!!)
+        $config = $app['config'];
+        $config['syncdata']['server']['backup']['directories']['ignore']['directory'][] = $syncdata_directory.'/temp';
+        $app['config'] = $app->share(function($app) use ($config) {
+            return $config;
+        });
+    }
+
+    // got the route dynamically from the real directory where the SyncDataServer reside.
+    // .htaccess RewriteBase must be equal to the SyncDataServer directory!
+    $route = substr($_SERVER['REQUEST_URI'], strlen($syncdata_directory)+1);
+
     switch ($route) {
         case '/backup':
             $backup = new Backup($app);
             $result = $backup->exec();
+            break;
+        case '/restore':
+            $restore = new Restore($app);
+            $result = $restore->exec();
             break;
         default:
             $result = 'SyncDataServer: Ready.';

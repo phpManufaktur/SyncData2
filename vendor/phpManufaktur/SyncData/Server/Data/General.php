@@ -120,4 +120,33 @@ class General {
         }
     }
 
+    public function dropTable($table)
+    {
+        try {
+            $this->app['db']->query("DROP TABLE IF EXISTS `$table`");
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function query($SQL)
+    {
+        try {
+            $this->app['db']->query($SQL);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function insertRows($table, $rows)
+    {
+        try {
+            foreach ($rows as $row) {
+                $this->app['db']->insert($table, $row);
+            }
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
 }

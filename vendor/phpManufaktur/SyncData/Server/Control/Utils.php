@@ -180,8 +180,7 @@ class Utils
             }
             $files = array_diff($scan_dir, array('.','..'));
         } catch (\Exception $e) {
-            $error = error_get_last();
-            $this->app['monolog']->addInfo($e->getMessage(), $error);
+            $this->app['monolog']->addInfo($e->getMessage(), error_get_last());
         }
         foreach ($files as $file) {
             (is_dir("$dir/$file")) ? $this->rrmdir("$dir/$file") : @unlink("$dir/$file");

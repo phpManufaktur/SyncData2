@@ -120,22 +120,34 @@ class Backup
 
             if (!is_null($backup_id)) {
                 // add a record to backup master
+                $sql = $general->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists);
+                $md5 = $general->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
                 $data = array(
                     'backup_id' => $backup_id,
                     'date' => date('Y-m-d H:i:s'),
-                    'sql_create_table' => $general->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists),
+                    'sql_create_table' => $sql,
                     'index_field' => (false === $indexField = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $indexField,
-                    'checksum' => $general->getTableContentChecksum(CMS_TABLE_PREFIX.$table),
+                    'checksum' => $md5,
                     'table_name' => $table
                 );
                 $id = -1;
                 $BackupMaster->insert($data, $id);
                 $this->app['monolog']->addInfo("Add table $table to backup master");
+                // save the SQL code for table creation
+                if (!file_put_contents(TEMP_PATH."/backup/tables/$table.sql", $sql)) {
+                    throw new \Exception(sprintf("Can't create the SQL file for %s", $table), error_get_last());
+                }
+                $this->app['monolog']->addInfo("Saved the SQL code for $table temporary");
+                // save the MD5 checksum
+                if (!file_put_contents(TEMP_PATH."/backup/tables/$table.md5", $md5)) {
+                    throw new \Exception(sprintf("Can't create the MD5 file for %s", $table), error_get_last());
+                }
+                $this->app['monolog']->addInfo("Saved the MD5 checksum for $table temporary");
             }
 
 
             if (!file_put_contents(TEMP_PATH."/backup/tables/$table.json", json_encode($content))) {
-                throw new \Exception(sprintf("Can't create the backup file for %s", $table));
+                throw new \Exception(sprintf("Can't create the backup file for %s", $table), error_get_last());
             }
             $this->app['monolog']->addInfo("Create backup of table $table and saved it temporary");
         } catch (\Exception $e) {
@@ -151,7 +163,9 @@ class Backup
     {
         $this->app['monolog']->addInfo('Start processing files');
         // create the temporary directory
-        mkdir(TEMP_PATH.'/backup/cms');
+        if (!file_exists(TEMP_PATH.'/backup/cms') && (false === @mkdir(TEMP_PATH.'/backup/cms'))) {
+            throw new \Exception("Can't create the directory ".TEMP_PATH."/backup/cms", error_get_last());
+        }
 
         $ignore_directories = array();
         foreach ($this->app['config']['syncdata']['server']['backup']['directories']['ignore']['directory'] as $directory) {
@@ -177,10 +191,12 @@ class Backup
 
         // delete an existing backup directory an all content
         if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
+            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'), error_get_last());
         }
         // create the backup directory
-        mkdir(TEMP_PATH.'/backup');
+        if (false === @mkdir(TEMP_PATH.'/backup')) {
+            throw new \Exception("Can't create the directory ".TEMP_PATH."/backup", error_get_last());
+        }
         $this->app['monolog']->addInfo('Prepared temporary directory for the backup');
 
         // backup the database with all tables
@@ -197,12 +213,12 @@ class Backup
         $jsonFormat = new JSONFormat();
         $json = $jsonFormat->format($data);
         if (!file_put_contents(TEMP_PATH.'/backup/syncdata.json', $json)) {
-            throw new \Exception("Can\'t write the syncdata.json file for the backup!");
+            throw new \Exception("Can\'t write the syncdata.json file for the backup!", error_get_last());
         }
 
         if (!file_exists(SYNC_DATA_PATH.'/data/backup')) {
             if (!@mkdir(SYNC_DATA_PATH.'/data/backup', 0755, true)) {
-                throw new \Exception("Can't create the directory ".SYNC_DATA_PATH.'/data/backup');
+                throw new \Exception("Can't create the directory ".SYNC_DATA_PATH.'/data/backup', error_get_last());
             }
         }
         if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
@@ -217,7 +233,7 @@ class Backup
 
         // delete an existing backup directory an all content
         if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
+            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'), error_get_last());
         }
 
         $this->app['monolog']->addInfo('Backup finished');
