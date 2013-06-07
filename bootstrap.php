@@ -14,12 +14,12 @@ include_once __DIR__.'/vendor/autoloader.php';
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SwiftMailerHandler;
-use phpManufaktur\SyncData\Server\Control\Backup;
-use phpManufaktur\SyncData\Server\Control\Utils;
-use phpManufaktur\SyncData\Server\Control\Application;
-use phpManufaktur\SyncData\Server\Data\CMS\Settings;
-use phpManufaktur\SyncData\Server\Control\JSON\JSONFormat;
-use phpManufaktur\SyncData\Server\Control\Restore;
+use phpManufaktur\SyncData\Control\Backup;
+use phpManufaktur\SyncData\Control\Utils;
+use phpManufaktur\SyncData\Control\Application;
+use phpManufaktur\SyncData\Data\CMS\Settings;
+use phpManufaktur\SyncData\Control\JSON\JSONFormat;
+use phpManufaktur\SyncData\Control\Restore;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
