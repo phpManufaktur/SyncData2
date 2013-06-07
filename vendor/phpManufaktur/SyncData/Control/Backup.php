@@ -15,12 +15,16 @@ use phpManufaktur\SyncData\Data\General;
 use phpManufaktur\SyncData\Control\Zip\Zip;
 use phpManufaktur\SyncData\Data\BackupMaster;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
+use phpManufaktur\SyncData\Data\BackupTables;
 
 class Backup
 {
     protected $app = null;
     protected $tables = null;
     protected static $backup_id = null;
+    protected $General = null;
+    protected $BackupMaster = null;
+    protected $BackupTables = null;
 
     /**
      * Constructor
@@ -30,6 +34,15 @@ class Backup
     public function __construct(Application $app)
     {
         $this->app = $app;
+        $this->General = new General($this->app);
+        $this->BackupMaster = new BackupMaster($this->app);
+        if (!$this->General->tableExists(CMS_TABLE_PREFIX.'syncdata_backup_master')) {
+            $this->BackupMaster->createTable();
+        }
+        $this->BackupTables = new BackupTables($this->app);
+        if (!$this->General->tableExists(CMS_TABLE_PREFIX.'syncdata_backup_tables')) {
+            $this->BackupTables->createTable();
+        }
     }
 
     public function createBackupID()
@@ -46,8 +59,7 @@ class Backup
      */
     protected function getPrimaryIndexField($table)
     {
-        $general = new General($this->app);
-        $indexes = $general->listTableIndexes($table);
+        $indexes = $this->General->listTableIndexes($table);
         $indexField = false;
         foreach ($indexes as $index) {
             if ($index->isPrimary()) {
@@ -71,8 +83,7 @@ class Backup
             }
         }
 
-        $general = new General($this->app);
-        $this->tables = $general->getTables();
+        $this->tables = $this->General->getTables();
         $this->app['monolog']->addInfo('Got all table names of the database');
 
         // get the tables to ignore
@@ -98,6 +109,7 @@ class Backup
      * @param string $backup_id the ID of the backup set
      * @throws \Exception
      */
+/*
     protected function backupTable($table, $backup_id=null)
     {
         try {
@@ -153,6 +165,78 @@ class Backup
                 );
                 $id = -1;
                 $BackupMaster->insert($data, $id);
+                $this->app['monolog']->addInfo("Add table $table to backup master");
+            }
+
+            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.json", json_encode($content))) {
+                throw new \Exception("Can't create the backup file for $table");
+            }
+            $this->app['monolog']->addInfo("Create backup of table $table and saved it temporary");
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+*/
+    protected function backupTable($table, $backup_id=null)
+    {
+        try {
+            $indexField = (false === $idx = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $idx;
+            $rows = $this->General->getTableContent(CMS_TABLE_PREFIX.$table);
+            $content = array();
+            // loop through the records
+            foreach ($rows as $row) {
+                $new_row = array();
+                foreach ($row as $key => $value) {
+                    if ($this->app['config']['syncdata']['server']['backup']['settings']['replace_cms_url']) {
+                        // replace all real URLs of the CMS  with a placeholder
+                        $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value) : $value;
+                    }
+                    else {
+                        $new_row[$key] = $value;
+                    }
+                }
+                $content[] = $new_row;
+
+                if (!is_null($backup_id) && ($indexField != 'NO_INDEX_FIELD')) {
+                    $data = array(
+                        'backup_id' => $backup_id,
+                        'table_name' => $table,
+                        'index_id' => $row[$indexField],
+                        'checksum' => md5(implode(',', $row))
+                    );
+                    $this->BackupTables->insert($data);
+                }
+            }
+
+            $replace_table_prefix = $this->app['config']['syncdata']['server']['backup']['settings']['replace_table_prefix'];
+            $add_if_not_exists = $this->app['config']['syncdata']['server']['backup']['settings']['add_if_not_exists'];
+
+            $sql = $this->General->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists);
+            $md5 = $this->General->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
+
+            // save the SQL code for table creation
+            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.sql", $sql)) {
+                throw new \Exception("Can't create the SQL file for $table");
+            }
+            $this->app['monolog']->addInfo("Saved the SQL code for $table temporary");
+            // save the MD5 checksum
+            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.md5", $md5)) {
+                throw new \Exception("Can't create the MD5 file for $table");
+            }
+            $this->app['monolog']->addInfo("Saved the MD5 checksum for $table temporary");
+
+            if (!is_null($backup_id)) {
+                // add a record to backup master
+                $data = array(
+                    'backup_id' => $backup_id,
+                    'date' => date('Y-m-d H:i:s'),
+                    'sql_create_table' => $sql,
+                    'index_field' => $indexField,
+                    'checksum' => $md5,
+                    'table_name' => $table
+                );
+                $id = -1;
+                $this->BackupMaster->insert($data, $id);
                 $this->app['monolog']->addInfo("Add table $table to backup master");
             }
 

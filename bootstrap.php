@@ -20,12 +20,15 @@ use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Data\CMS\Settings;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Control\Restore;
+use phpManufaktur\SyncData\Control\Check;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
 // set the error handling
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+$script_start = microtime(true);
 
 try {
     define('LOGGER_LEVEL', Logger::INFO);
@@ -306,13 +309,13 @@ try {
     define('TEMP_PATH', SYNC_DATA_PATH.'/temp');
 
     if (false === ini_set('memory_limit', $app['config']['general']['memory_limit'])) {
-        $app['monolog']->addInfo(sprintf("Can't set the memory limit to %s", $app['config']['general']['memory_limit']));
+        throw new \Exception(sprintf("Can't set the memory limit to %s", $app['config']['general']['memory_limit']));
     }
     else {
         $app['monolog']->addInfo(sprintf("Set the memory limit to %s", $app['config']['general']['memory_limit']));
     }
     if (false === ini_set('max_execution_time', $app['config']['general']['max_execution_time'])) {
-        $app['monolog']->addInfo(sprintf("Can't set the max_execution_time to %s seconds", $app['config']['general']['max_execution_time']));
+        throw new \Exception(sprintf("Can't set the max_execution_time to %s seconds", $app['config']['general']['max_execution_time']));
     }
     else {
         $app['monolog']->addInfo(sprintf("Set the max_execution_time to %s seconds", $app['config']['general']['max_execution_time']));
@@ -367,11 +370,19 @@ try {
             $restore = new Restore($app);
             $result = $restore->exec();
             break;
+        case '/check':
+            $check = new Check($app);
+            $result = $check->exec();
+            break;
         default:
             $result = 'SyncDataServer: Ready.';
             break;
     }
 
+    $script_stop = microtime(true);
+    $script_time = (number_format($script_stop - $script_start, 2));
+    echo "Execution time: $script_time seconds (max: ".$app['config']['general']['max_execution_time'].").</br>";
+    echo "Memory usage: ".(memory_get_usage(true)/(1024*1024))." MB (Limit: ".$app['config']['general']['memory_limit'].")</br>";
     // exit with result
     exit($result);
 

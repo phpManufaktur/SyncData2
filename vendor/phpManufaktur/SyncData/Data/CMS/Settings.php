@@ -11,7 +11,7 @@
 
 namespace phpManufaktur\SyncData\Data\CMS;
 
-use phpManufaktur\SyncData\Server\Control\Application;
+use phpManufaktur\SyncData\Control\Application;
 
 class Settings {
 
