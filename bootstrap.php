@@ -21,6 +21,7 @@ use phpManufaktur\SyncData\Control\Check;
 use phpManufaktur\SyncData\Data\Configuration\Configuration;
 use phpManufaktur\SyncData\Data\Configuration\Doctrine;
 use phpManufaktur\SyncData\Data\Configuration\SwiftMailer;
+use phpManufaktur\SyncData\Data\Setup\Setup;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -112,6 +113,13 @@ try {
     define('SYNC_DATA_URL', $app['config']['CMS']['CMS_URL'].DIRECTORY_SEPARATOR.$route);
 
     switch ($route) {
+        case '/setup':
+            $setup = new Setup($app);
+            $result = $setup->exec();
+            break;
+        case '/update':
+            $result = 'Update is not implemented';
+            break;
         case '/backup':
             $backup = new Backup($app);
             $result = $backup->exec();
