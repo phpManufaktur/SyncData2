@@ -18,12 +18,22 @@ class BackupTables
     protected $app = null;
     protected static $table_name = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
         self::$table_name = CMS_TABLE_PREFIX.'syncdata_backup_tables';
     }
 
+    /**
+     * Create the table
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function createTable ()
     {
         $table = self::$table_name;
@@ -47,17 +57,27 @@ EOD;
             $this->app['db']->query($SQL);
             $this->app['monolog']->addInfo("Created table '".self::$table_name."' for the class BackupTables");
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage(), 0, $e);
+            throw $e;
         }
     } // createTable()
 
+    /**
+     * Insert a new record into the table
+     *
+     * @param array $data
+     * @param string reference $id return the new ID
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function insert($data, &$id=null)
     {
         try {
-            $this->app['db']->insert(self::$table_name, $data);
+            $insert = array();
+            foreach ($data as $key => $value)
+                $insert[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
+            $this->app['db']->insert(self::$table_name, $insert);
             $id = $this->app['db']->lastInsertId();
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
