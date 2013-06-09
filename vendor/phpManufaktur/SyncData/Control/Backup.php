@@ -110,74 +110,6 @@ class Backup
      * @param string $backup_id the ID of the backup set
      * @throws \Exception
      */
-/*
-    protected function backupTable($table, $backup_id=null)
-    {
-        try {
-            $general = new General($this->app);
-            $BackupMaster = new BackupMaster($this->app);
-            if (!$general->tableExists(CMS_TABLE_PREFIX.'syncdata_backup_master')) {
-                $BackupMaster->createTable();
-            }
-
-            $rows = $general->getTableContent(CMS_TABLE_PREFIX.$table);
-            $content = array();
-            // loop through the records
-            foreach ($rows as $row) {
-                $new_row = array();
-                foreach ($row as $key => $value) {
-                    if ($this->app['config']['backup']['settings']['replace_cms_url']) {
-                        // replace all real URLs of the CMS  with a placeholder
-                        $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value) : $value;
-                    }
-                    else {
-                        $new_row[$key] = $value;
-                    }
-                }
-                $content[] = $new_row;
-            }
-
-            $replace_table_prefix = $this->app['config']['backup']['settings']['replace_table_prefix'];
-            $add_if_not_exists = $this->app['config']['backup']['settings']['add_if_not_exists'];
-
-            $sql = $general->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists);
-            $md5 = $general->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
-
-            // save the SQL code for table creation
-            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.sql", $sql)) {
-                throw new \Exception("Can't create the SQL file for $table");
-            }
-            $this->app['monolog']->addInfo("Saved the SQL code for $table temporary");
-            // save the MD5 checksum
-            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.md5", $md5)) {
-                throw new \Exception("Can't create the MD5 file for $table");
-            }
-            $this->app['monolog']->addInfo("Saved the MD5 checksum for $table temporary");
-
-            if (!is_null($backup_id)) {
-                // add a record to backup master
-                $data = array(
-                    'backup_id' => $backup_id,
-                    'date' => date('Y-m-d H:i:s'),
-                    'sql_create_table' => $sql,
-                    'index_field' => (false === $indexField = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $indexField,
-                    'checksum' => $md5,
-                    'table_name' => $table
-                );
-                $id = -1;
-                $BackupMaster->insert($data, $id);
-                $this->app['monolog']->addInfo("Add table $table to backup master");
-            }
-
-            if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.json", json_encode($content))) {
-                throw new \Exception("Can't create the backup file for $table");
-            }
-            $this->app['monolog']->addInfo("Create backup of table $table and saved it temporary");
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-        }
-    }
-*/
     protected function backupTable($table, $backup_id=null)
     {
         try {
@@ -238,7 +170,8 @@ class Backup
                     'date' => date('Y-m-d H:i:s'),
                     'sql_create_table' => $sql,
                     'index_field' => $indexField,
-                    'checksum' => $md5,
+                    'origin_checksum' => $md5,
+                    'last_checksum' => $md5,
                     'table_name' => $table
                 );
                 $id = -1;
