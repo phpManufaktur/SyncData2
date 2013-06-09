@@ -15,6 +15,7 @@ use phpManufaktur\SyncData\Control\Application;
 
 class BackupMaster
 {
+    const NO_INDEX_FIELD = 'NO_INDEX_FIELD';
     protected $app = null;
     protected static $table_name = null;
 
@@ -58,12 +59,15 @@ EOD;
      * Insert a table to the backup master
      *
      * @param array $data
-     * @param string $id
+     * @param string reference $id return the new ID
      * @throws \Exception
      */
     public function insert($data, &$id=null)
     {
         try {
+            $insert = array();
+            foreach ($data as $key => $value)
+                $insert[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
             $this->app['db']->insert(self::$table_name, $data);
             $id = $this->app['db']->lastInsertId();
         } catch (\Doctrine\DBAL\DBALException $e) {
@@ -77,7 +81,7 @@ EOD;
      * @throws \Exception
      * @return Ambigous <boolean, unknown>
      */
-    public function getLastBackupID()
+    public function selectLastBackupID()
     {
         try {
             $SQL = "SELECT DISTINCT `backup_id` FROM `".self::$table_name."` ORDER BY `backup_id` DESC LIMIT 1";
@@ -94,6 +98,18 @@ EOD;
             $SQL = "SELECT * FROM `".self::$table_name."` WHERE `backup_id`='$backup_id' ORDER BY `table_name` ASC";
             $result = $this->app['db']->fetchAll($SQL);
             return (is_array($result)) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    public function update($master_id, $data)
+    {
+        try {
+            $update = array();
+            foreach ($data as $key => $value)
+                $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
+            $this->app['db']->update(self::$table_name, $update, array('id' => $master_id));
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;
         }
