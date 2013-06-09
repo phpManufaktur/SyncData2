@@ -317,4 +317,50 @@ class Utils
         }
         $this->app['monolog']->addInfo("Created .htaccess protection for the directory $path");
     }
+
+    /**
+     * Sanitize variables and prepare them for saving in a MySQL record
+     *
+     * @param mixed $item
+     * @return mixed
+     */
+    public static function sanitizeVariable ($item)
+    {
+        if (!is_array($item)) {
+            // undoing 'magic_quotes_gpc = On' directive
+            if (get_magic_quotes_gpc())
+                $item = stripcslashes($item);
+            $item = self::sanitizeText($item);
+        }
+        return $item;
+    }
+
+    /**
+     * Sanitize a text variable and prepare it for saving in a MySQL record
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function sanitizeText ($text)
+    {
+        $search = array("<",">","\"","'","\\","\x00","\n","\r","'",'"',"\x1a");
+        $replace = array("&lt;","&gt;","&quot;","&#039;","\\\\","\\0","\\n","\\r","\'",'\"',"\\Z");
+        return str_replace($search, $replace, $text);
+    }
+
+    /**
+     * Unsanitize a text variable and prepare it for output
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function unsanitizeText($text)
+    {
+        $text = stripcslashes($text);
+        $text = str_replace(
+            array("&lt;","&gt;","&quot;","&#039;"),
+            array("<",">","\"","'"), $text);
+        return $text;
+    }
+
 }
