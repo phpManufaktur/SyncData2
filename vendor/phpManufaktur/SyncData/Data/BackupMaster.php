@@ -34,7 +34,8 @@ class BackupMaster
       `date` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
       `sql_create_table` TEXT NOT NULL,
       `index_field` VARCHAR(64) NOT NULL DEFAULT 'NO_INDEX_FIELD',
-      `checksum` VARCHAR(32) NOT NULL DEFAULT '',
+      `origin_checksum` VARCHAR(32) NOT NULL DEFAULT '',
+      `last_checksum` VARCHAR(32) NOT NULL DEFAULT '',
       `table_name` VARCHAR(128) NOT NULL DEFAULT '',
       `timestamp` TIMESTAMP,
       PRIMARY KEY (`id`)
@@ -49,18 +50,52 @@ EOD;
             $this->app['db']->query($SQL);
             $this->app['monolog']->addInfo("Created table '".self::$table_name."' for the class BackupMaster");
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage(), 0, $e);
+            throw $e;
         }
     } // createTable()
 
+    /**
+     * Insert a table to the backup master
+     *
+     * @param array $data
+     * @param string $id
+     * @throws \Exception
+     */
     public function insert($data, &$id=null)
     {
         try {
             $this->app['db']->insert(self::$table_name, $data);
             $id = $this->app['db']->lastInsertId();
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
+    /**
+     * Get the last backup ID from the backup master
+     *
+     * @throws \Exception
+     * @return Ambigous <boolean, unknown>
+     */
+    public function getLastBackupID()
+    {
+        try {
+            $SQL = "SELECT DISTINCT `backup_id` FROM `".self::$table_name."` ORDER BY `backup_id` DESC LIMIT 1";
+            $result = $this->app['db']->fetchAssoc($SQL);
+            return (isset($result['backup_id'])) ? $result['backup_id'] : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    public function selectTablesByBackupID($backup_id)
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `backup_id`='$backup_id' ORDER BY `table_name` ASC";
+            $result = $this->app['db']->fetchAll($SQL);
+            return (is_array($result)) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
 }
