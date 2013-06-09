@@ -36,13 +36,6 @@ class Backup
         $this->app = $app;
         $this->General = new General($this->app);
         $this->BackupMaster = new BackupMaster($this->app);
-        if (!$this->General->tableExists(CMS_TABLE_PREFIX.'syncdata_backup_master')) {
-            $this->BackupMaster->createTable();
-        }
-        $this->BackupTables = new BackupTables($this->app);
-        if (!$this->General->tableExists(CMS_TABLE_PREFIX.'syncdata_backup_tables')) {
-            $this->BackupTables->createTable();
-        }
     }
 
     public function createBackupID()
