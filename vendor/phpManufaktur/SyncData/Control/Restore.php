@@ -1,7 +1,7 @@
 <?php
 
 /**
- * SyncDataServer
+ * SyncData
  *
  * @author Team phpManufaktur <team@phpmanufaktur.de>
  * @link https://addons.phpmanufaktur.de/SyncData
@@ -64,7 +64,7 @@ class Restore
         $general = new General($this->app);
 
         // got the tables to ignore
-        $ignore_tables = $this->app['config']['syncdata']['server']['restore']['tables']['ignore'];
+        $ignore_tables = $this->app['config']['restore']['tables']['ignore'];
 
         try {
             // restore the tables
@@ -86,7 +86,7 @@ class Restore
                     if (false === ($SQL = @file_get_contents("$source_path/$table.sql"))) {
                         throw new \Exception("Can't read the SQL for table $table");
                     }
-                    if ($this->app['config']['syncdata']['server']['restore']['settings']['replace_table_prefix']) {
+                    if ($this->app['config']['restore']['settings']['replace_table_prefix']) {
                         // replace the placeholder with the real table prefix
                         $SQL = str_replace('{{ SyncData:TABLE_PREFIX }}', CMS_TABLE_PREFIX, $SQL);
                     }
@@ -106,7 +106,7 @@ class Restore
                         throw new \Exception("Can't read the data rows for table $table");
                     }
                     // insert the table rows
-                    $replace_cms_url = $this->app['config']['syncdata']['server']['restore']['settings']['replace_cms_url'];
+                    $replace_cms_url = $this->app['config']['restore']['settings']['replace_cms_url'];
                     $general->insertRows(CMS_TABLE_PREFIX.$table, $rows, $replace_cms_url);
                     $this->app['monolog']->addInfo(sprintf("Inserted %d rows into table %s", count($rows), $table));
 
@@ -159,15 +159,15 @@ class Restore
 
         try {
             $ignore_directories = array();
-            foreach ($this->app['config']['syncdata']['server']['restore']['directories']['ignore']['directory'] as $directory) {
+            foreach ($this->app['config']['restore']['directories']['ignore']['directory'] as $directory) {
                 // take the real path for the directory
                 $ignore_directories[] = CMS_PATH.DIRECTORY_SEPARATOR.$directory;
             }
-            $ignore_subdirectories = $this->app['config']['syncdata']['server']['restore']['directories']['ignore']['subdirectory'];
-            $ignore_files = $this->app['config']['syncdata']['server']['restore']['files']['ignore'];
+            $ignore_subdirectories = $this->app['config']['restore']['directories']['ignore']['subdirectory'];
+            $ignore_files = $this->app['config']['restore']['files']['ignore'];
 
             // in general the CMS config.php should not restored!
-            if ($this->app['config']['syncdata']['server']['restore']['settings']['ignore_cms_config'] &&
+            if ($this->app['config']['restore']['settings']['ignore_cms_config'] &&
                 file_exists($source_path.'/config.php') && !@unlink($source_path.'/config.php')) {
                 throw new \Exception("Can't delete the config.php from the restore path!");
             }

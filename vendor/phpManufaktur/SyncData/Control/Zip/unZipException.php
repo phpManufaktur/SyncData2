@@ -1,7 +1,7 @@
 <?php
 
 /**
- * SyncDataServer
+ * SyncData
  *
  * @author Team phpManufaktur <team@phpmanufaktur.de>
  * @link https://addons.phpmanufaktur.de/kitBase

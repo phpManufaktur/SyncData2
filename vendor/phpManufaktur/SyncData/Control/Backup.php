@@ -1,7 +1,7 @@
 <?php
 
 /**
- * SyncDataServer
+ * SyncData
  *
  * @author Team phpManufaktur <team@phpmanufaktur.de>
  * @link https://addons.phpmanufaktur.de/SyncData
@@ -87,13 +87,14 @@ class Backup
         $this->app['monolog']->addInfo('Got all table names of the database');
 
         // get the tables to ignore
-        $ignore_tables = $this->app['config']['syncdata']['server']['backup']['tables']['ignore'];
+        $ignore_tables = $this->app['config']['backup']['tables']['ignore'];
 
         $this->app['utils']->setCountTables();
         foreach ($this->tables as $table) {
             // $table contains also the table prefix!
             $table = substr($table, strlen(CMS_TABLE_PREFIX));
             if (!is_null($ignore_tables) && in_array($table, $ignore_tables)) continue;
+            $this->app['monolog']->addInfo("Start backup table $table");
             $this->backupTable($table, $backup_id);
             $this->app['utils']->increaseCountTables();
         }
@@ -125,7 +126,7 @@ class Backup
             foreach ($rows as $row) {
                 $new_row = array();
                 foreach ($row as $key => $value) {
-                    if ($this->app['config']['syncdata']['server']['backup']['settings']['replace_cms_url']) {
+                    if ($this->app['config']['backup']['settings']['replace_cms_url']) {
                         // replace all real URLs of the CMS  with a placeholder
                         $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value) : $value;
                     }
@@ -136,8 +137,8 @@ class Backup
                 $content[] = $new_row;
             }
 
-            $replace_table_prefix = $this->app['config']['syncdata']['server']['backup']['settings']['replace_table_prefix'];
-            $add_if_not_exists = $this->app['config']['syncdata']['server']['backup']['settings']['add_if_not_exists'];
+            $replace_table_prefix = $this->app['config']['backup']['settings']['replace_table_prefix'];
+            $add_if_not_exists = $this->app['config']['backup']['settings']['add_if_not_exists'];
 
             $sql = $general->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists);
             $md5 = $general->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
@@ -187,9 +188,13 @@ class Backup
             foreach ($rows as $row) {
                 $new_row = array();
                 foreach ($row as $key => $value) {
-                    if ($this->app['config']['syncdata']['server']['backup']['settings']['replace_cms_url']) {
+                    if ($this->app['config']['backup']['settings']['replace_cms_url']) {
                         // replace all real URLs of the CMS  with a placeholder
-                        $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value) : $value;
+                        $count = 0;
+                        $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value, $count) : $value;
+                        if ($count > 0) {
+                            $this->app['monolog']->addInfo(sprintf("Replaced the CMS URL %d time(s) in row %s of table %s", $count, $key, $table));
+                        }
                     }
                     else {
                         $new_row[$key] = $value;
@@ -205,11 +210,12 @@ class Backup
                         'checksum' => md5(implode(',', $row))
                     );
                     $this->BackupTables->insert($data);
+                    $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table));
                 }
             }
 
-            $replace_table_prefix = $this->app['config']['syncdata']['server']['backup']['settings']['replace_table_prefix'];
-            $add_if_not_exists = $this->app['config']['syncdata']['server']['backup']['settings']['add_if_not_exists'];
+            $replace_table_prefix = $this->app['config']['backup']['settings']['replace_table_prefix'];
+            $add_if_not_exists = $this->app['config']['backup']['settings']['add_if_not_exists'];
 
             $sql = $this->General->getCreateTableSQL(CMS_TABLE_PREFIX.$table, $replace_table_prefix, $add_if_not_exists);
             $md5 = $this->General->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
@@ -262,12 +268,12 @@ class Backup
         }
 
         $ignore_directories = array();
-        foreach ($this->app['config']['syncdata']['server']['backup']['directories']['ignore']['directory'] as $directory) {
+        foreach ($this->app['config']['backup']['directories']['ignore']['directory'] as $directory) {
             // take the real path for the directory
             $ignore_directories[] = CMS_PATH.DIRECTORY_SEPARATOR.$directory;
         }
-        $ignore_subdirectories = $this->app['config']['syncdata']['server']['backup']['directories']['ignore']['subdirectory'];
-        $ignore_files = $this->app['config']['syncdata']['server']['backup']['files']['ignore'];
+        $ignore_subdirectories = $this->app['config']['backup']['directories']['ignore']['subdirectory'];
+        $ignore_files = $this->app['config']['backup']['files']['ignore'];
 
         $this->app['utils']->setCountFiles();
         $this->app['utils']->setCountDirectories();
@@ -301,7 +307,7 @@ class Backup
         $this->backupFiles();
 
         $data = array();
-        $data['backup'] = $this->app['config']['syncdata']['server']['backup'];
+        $data['backup'] = $this->app['config']['backup'];
         $data['backup']['id'] = $backup_id;
 
         $jsonFormat = new JSONFormat();
