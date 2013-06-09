@@ -32,13 +32,27 @@ class Check
         try {
             $General = new General($this->app);
             $BackupTables = new BackupTables($this->app);
+            $BackupMaster = new BackupMaster($this->app);
 
             // get the actual checksum of the table
             $checksum = $General->getTableContentChecksum(CMS_TABLE_PREFIX.$table['table_name']);
             if ($checksum !== $table['last_checksum']) {
-                echo "differ: ".$table['table_name']." $checksum - ".$table['last_checksum']."<br>";
+                // the checksum of the table has changed
+                if ($table['index_field'] === BackupMaster::NO_INDEX_FIELD) {
+                    // this table has no index fields an can only updated complete
+                    $data = array(
+                        'last_checksum' => $checksum
+                    );
+                    $BackupMaster->update($table['id'], $data);
+                    $this->app['monolog']->addInfo(sprintf("Table %s has changed. Register the new checksum and do nothing more because this table has no index and must be updated complete.", $table['table_name']));
+                }
+                else {
+                    echo "differ: ".$table['table_name']." $checksum - ".$table['last_checksum']."<br>";
+                }
+
             }
         } catch (\Exception $e) {
+            throw $e;
         }
     }
 
@@ -46,7 +60,7 @@ class Check
     {
         $BackupMaster = new BackupMaster($this->app);
         // first we need the last backup ID
-        if (false === (self::$backup_id = $BackupMaster->getLastBackupID())) {
+        if (false === (self::$backup_id = $BackupMaster->selectLastBackupID())) {
             $result = "Got no backup ID for processing a check for changed tables and files. Please create a backup first!";
             $this->app['monolog']->addInfo($result);
             return $result;
