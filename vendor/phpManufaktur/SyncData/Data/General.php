@@ -17,6 +17,11 @@ class General {
 
     protected $app = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -46,6 +51,13 @@ class General {
         }
     }
 
+    /**
+     * Return all rows of the given table
+     *
+     * @param string $table
+     * @throws \Exception
+     * @return unknown
+     */
     public function getTableContent($table)
     {
         try {
@@ -56,6 +68,13 @@ class General {
         }
     }
 
+    /**
+     * Get the checksum for the given tables, looping through all rows
+     *
+     * @param string $table
+     * @throws \Exception
+     * @return Ambigous <boolean, string>
+     */
     public function getTableContentChecksum($table)
     {
         try {
@@ -74,6 +93,13 @@ class General {
         }
     }
 
+    /**
+     * Return the index fields for the given table
+     *
+     * @param string $table
+     * @throws \Exception
+     * @return array of the index fields
+     */
     public function listTableIndexes($table)
     {
         try {
@@ -85,6 +111,15 @@ class General {
         }
     }
 
+    /**
+     * Return the SQL code to create the given table
+     *
+     * @param string $table
+     * @param boolean $replaceTablePrefix TRUE to replace the table prefix with a placeholder
+     * @param boolean $useIfNotExists add IF NOT EXISTS if TRUE
+     * @throws \Exception
+     * @return Ambigous <boolean, mixed>
+     */
     public function getCreateTableSQL($table, $replaceTablePrefix=true, $useIfNotExists=true)
     {
         try {
@@ -109,6 +144,12 @@ class General {
         }
     }
 
+    /**
+     * Check wether the given table exists
+     *
+     * @param string $table
+     * @return boolean
+     */
     public function tableExists($table)
     {
         try {
@@ -120,6 +161,12 @@ class General {
         }
     }
 
+    /**
+     * Drop (delete) the given table
+     *
+     * @param string $table
+     * @throws \Exception
+     */
     public function dropTable($table)
     {
         try {
@@ -129,6 +176,12 @@ class General {
         }
     }
 
+    /**
+     * Execute the given SQL code
+     *
+     * @param string $SQL
+     * @throws \Exception
+     */
     public function query($SQL)
     {
         try {
@@ -138,6 +191,14 @@ class General {
         }
     }
 
+    /**
+     * Insert an array of rows into the given table
+     *
+     * @param string $table
+     * @param array $rows
+     * @param boolean $replace_cms_url replace the CMS URL with a placeholder if TRUE
+     * @throws \Exception
+     */
     public function insertRows($table, $rows, $replace_cms_url=true)
     {
         try {
