@@ -41,6 +41,7 @@ class SynchronizeTables
     CREATE TABLE IF NOT EXISTS `$table` (
       `id` INT(11) NOT NULL AUTO_INCREMENT,
       `backup_id` VARCHAR(16) NOT NULL DEFAULT '',
+      `index_field` VARCHAR(128) NOT NULL DEFAULT '',
       `index_id` INT(11) NOT NULL DEFAULT '0',
       `checksum` VARCHAR(32) NOT NULL DEFAULT '',
       `table_name` VARCHAR(128) NOT NULL DEFAULT '',
