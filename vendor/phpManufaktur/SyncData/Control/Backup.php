@@ -36,6 +36,7 @@ class Backup
         $this->app = $app;
         $this->General = new General($this->app);
         $this->BackupMaster = new BackupMaster($this->app);
+        $this->BackupTables = new BackupTables($this->app);
     }
 
     public function createBackupID()
@@ -106,6 +107,7 @@ class Backup
     protected function backupTable($table, $backup_id=null)
     {
         try {
+
             $indexField = (false === $idx = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $idx;
             $rows = $this->General->getTableContent(CMS_TABLE_PREFIX.$table);
             $content = array();
@@ -128,11 +130,15 @@ class Backup
                 $content[] = $new_row;
 
                 if (!is_null($backup_id) && ($indexField != 'NO_INDEX_FIELD')) {
+                    $checksum = md5(str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', implode(',', $row)));
                     $data = array(
                         'backup_id' => $backup_id,
                         'table_name' => $table,
+                        'index_field' => $indexField,
                         'index_id' => $row[$indexField],
-                        'checksum' => md5(implode(',', $row))
+                        'origin_checksum' => $checksum,
+                        'last_checksum' => $checksum,
+                        'action' => 'BACKUP'
                     );
                     $this->BackupTables->insert($data);
                     $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table));
