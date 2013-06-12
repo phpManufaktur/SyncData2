@@ -14,6 +14,7 @@ namespace phpManufaktur\SyncData\Data\Configuration;
 use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Data\Configuration\ConfigurationException;
 use phpManufaktur\SyncData\Data\CMS\Settings;
+use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 
 class Configuration
 {
@@ -25,7 +26,7 @@ class Configuration
     public function __construct(Application $app)
     {
         $this->app = $app;
-        self::$config_file = SYNC_DATA_PATH.'/config/syncdata.jsoni';
+        self::$config_file = SYNC_DATA_PATH.'/config/syncdata.json';
     }
 
     /**
@@ -100,7 +101,8 @@ class Configuration
                 'tables' => array(
                     'ignore' => array(
                         'syncdata_backup_master',
-                        'syncdata_backup_tables'
+                        'syncdata_backup_tables',
+                        'syncdata_synchronize_tables'
                     )
                 )
             ),
@@ -128,12 +130,20 @@ class Configuration
                 ),
                 'tables' => array(
                     'ignore' => array(
-                        'syncdata_backup_master'
+                        'syncdata_backup_master',
+                        'syncdata_backup_tables',
+                        'syncdata_synchronize_tables'
                     )
                 )
             )
         );
-
+        // encode a formatted JSON file
+        $jsonFormat = new JSONFormat();
+        $json = $jsonFormat->format(self::$config_array);
+        if (!@file_put_contents(self::$config_file, $json)) {
+            throw new ConfigurationException("Can't write the configuration file for SyncData!");
+        }
+        $this->app['monolog']->addInfo("Create configuration file syncdata.json for SyncData");
     }
 
     /**
