@@ -47,7 +47,7 @@ class General {
             }
             return $tables;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -64,7 +64,31 @@ class General {
             $result = $this->app['db']->fetchAll("SELECT * FROM `$table`");
             return $result;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function getRowContent($table, $fields)
+    {
+        try {
+            $query_string = '';
+            foreach ($fields as $key => $value) {
+                if (!empty($query_string))
+                    $query .= ' AND ';
+                $query_string .= $this->app['db']->quoteIdentifier($key)."='$value'";
+            }
+            $SQL = "SELECT * FROM `$table` WHERE $query_string";
+            $result = $this->app['db']->fetchAssoc($SQL);
+            if (is_array($result)) {
+                $record = array();
+                foreach ($result as $key => $value) {
+                    $record[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value) : $value;
+                }
+                return $record;
+            }
+            return false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
         }
     }
 
@@ -89,7 +113,27 @@ class General {
             }
             return $checksum;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function getRowContentChecksum($table, $fields)
+    {
+        try {
+            $query_string = '';
+            foreach ($fields as $key => $value) {
+                if (!empty($query_string))
+                    $query .= ' AND ';
+                $query_string .= $this->app['db']->quoteIdentifier($key)."='$value'";
+            }
+            $SQL = "SELECT * FROM `$table` WHERE $query_string";
+            $result = $this->app['db']->fetchAssoc($SQL);
+            if (is_array($result)) {
+                return md5(str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', implode(',', $result)));
+            }
+            return false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
         }
     }
 
@@ -107,7 +151,7 @@ class General {
             $result = $shemaManager->listTableIndexes($table);
             return $result;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -140,7 +184,7 @@ class General {
             }
             return $SQL;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -156,6 +200,7 @@ class General {
             $result = $this->app['db']->fetchAssoc("DESCRIBE `$table`");
             return true;
         } catch (\Doctrine\DBAL\DBALException $e) {
+            // don't throw an exception, just log it!
             $this->app['monolog']->addInfo("The table $table does not exists!");
             return false;
         }
@@ -172,7 +217,7 @@ class General {
         try {
             $this->app['db']->query("DROP TABLE IF EXISTS `$table`");
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -187,7 +232,7 @@ class General {
         try {
             $this->app['db']->query($SQL);
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -213,8 +258,18 @@ class General {
                 $this->app['db']->insert($table, $row);
             }
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
+    public function selectRowsIndexField($table, $index_field)
+    {
+        try {
+            $SQL = "SELECT `$index_field` FROM `$table`";
+            $result = $this->app['db']->fetchAll($SQL);
+            return (is_array($result)) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
 }
