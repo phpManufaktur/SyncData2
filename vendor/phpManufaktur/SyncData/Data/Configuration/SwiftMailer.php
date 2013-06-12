@@ -14,8 +14,6 @@ namespace phpManufaktur\SyncData\Data\Configuration;
 use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Data\CMS\Settings;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SwiftMailerHandler;
 
 require_once SYNC_DATA_PATH.'/vendor/SwiftMailer/lib/swift_required.php';
@@ -110,7 +108,8 @@ class SwiftMailer
             ->setFrom(CMS_SERVER_EMAIL, CMS_SERVER_NAME)
             ->setTo($this->app['config']['monolog']['email']['to'])
             ->setBody('SyncDataServer errror');
-            $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, LOGGER::ERROR));
+            // 400 = Logger::ERROR
+            $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, 400));
             $this->app['monolog']->addInfo('Monolog handler for SwiftMailer initialized');
         }
     }
