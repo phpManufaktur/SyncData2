@@ -41,9 +41,12 @@ class BackupTables
     CREATE TABLE IF NOT EXISTS `$table` (
       `id` INT(11) NOT NULL AUTO_INCREMENT,
       `backup_id` VARCHAR(16) NOT NULL DEFAULT '',
+      `index_field` VARCHAR(128) NOT NULL DEFAULT '',
       `index_id` INT(11) NOT NULL DEFAULT '0',
-      `checksum` VARCHAR(32) NOT NULL DEFAULT '',
+      `origin_checksum` VARCHAR(32) NOT NULL DEFAULT '',
+      `last_checksum` VARCHAR(32) NOT NULL DEFAULT '',
       `table_name` VARCHAR(128) NOT NULL DEFAULT '',
+      `action` ENUM('BACKUP','SYNCHRONIZE') NOT NULL DEFAULT 'BACKUP',
       `timestamp` TIMESTAMP,
       PRIMARY KEY (`id`)
     )
@@ -80,5 +83,30 @@ EOD;
             throw $e;
         }
     }
+
+    public function selectTableByBackupID($backup_id, $table_name)
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `backup_id`='$backup_id' AND `table_name`='$table_name'";
+            $result = $this->app['db']->fetchAll($SQL);
+            return is_array($result) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    public function update($table_id, $data)
+    {
+        try {
+            $update = array();
+            foreach ($data as $key => $value)
+                $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
+            $this->app['db']->update(self::$table_name, $update, array('id' => $table_id));
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+
 
 }
