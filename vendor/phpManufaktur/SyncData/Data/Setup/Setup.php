@@ -15,6 +15,9 @@ use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Data\BackupMaster;
 use phpManufaktur\SyncData\Data\BackupTables;
 use phpManufaktur\SyncData\Data\SynchronizeTables;
+use phpManufaktur\SyncData\Data\BackupFiles;
+use phpManufaktur\SyncData\Data\SynchronizeMaster;
+use phpManufaktur\SyncData\Data\SynchronizeFiles;
 
 class Setup
 {
@@ -39,6 +42,15 @@ class Setup
             // Synchronize Tables
             $SynchronizeTables = new SynchronizeTables($this->app);
             $SynchronizeTables->createTable();
+            // Backup files
+            $BackupFiles = new BackupFiles($this->app);
+            $BackupFiles->createTable();
+            // Synchronize Master
+            $SynchronizeMaster = new SynchronizeMaster($this->app);
+            $SynchronizeMaster->createTable();
+            // Synchronize Files
+            $SynchronizeFiles = new SynchronizeFiles($this->app);
+            $SynchronizeFiles->createTable();
 
             $this->app['monolog']->addInfo('Setup is complete');
             return 'Setup is complete';
