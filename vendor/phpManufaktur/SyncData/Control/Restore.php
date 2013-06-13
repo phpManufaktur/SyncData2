@@ -13,6 +13,7 @@ namespace phpManufaktur\SyncData\Control;
 
 use phpManufaktur\SyncData\Control\Zip\unZip;
 use phpManufaktur\SyncData\Data\General;
+use phpManufaktur\SyncData\Data\SynchronizeClient;
 
 /**
  * Class to restore an existing backup archive to the CMS
@@ -53,7 +54,7 @@ class Restore
                 $backup->backupDatabase(null);
             } catch (\Exception $e) {
                 // backup failed
-                throw $e;
+                throw new \Exception($e);
             }
         }
 
@@ -151,7 +152,7 @@ class Restore
                 $this->app['monolog']->addInfo("The RESTORE from previous created BACKUP was SUCCESFULL");
                 throw new \Exception("The RESTORE process failed with errors. The tables where successfull recovered");
             } else {
-                throw $e;
+                throw new \Exception($e);
             }
         }
     }
@@ -165,13 +166,12 @@ class Restore
      */
     protected function restoreFiles($source_path, $create_backup=true)
     {
-        $backup = new Backup($this->app);
-
         if ($create_backup) {
             try {
-                $backup->backupFiles();
+                $backup = new Backup($this->app);
+                $backup->backupFiles(null);
             } catch (\Exception $e) {
-                throw $e;
+                throw new \Exception($e);
             }
         }
 
@@ -211,7 +211,7 @@ class Restore
                 throw new \Exception("The RESTORE process failed with errors. The files and tables where successfull recovered");
             }
             else {
-                throw $e;
+                throw new \Exception($e);
             }
         }
 
@@ -226,34 +226,39 @@ class Restore
      */
     protected function processArchive($archive)
     {
-        if (file_exists(TEMP_PATH.'/restore') && !$this->app['utils']->rrmdir(TEMP_PATH.'/restore')) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
+        try {
+            if (file_exists(TEMP_PATH.'/restore') && !$this->app['utils']->rrmdir(TEMP_PATH.'/restore')) {
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
+            }
+            if (!file_exists(TEMP_PATH.'/restore') && (false === @mkdir(TEMP_PATH.'/restore'))) {
+                throw new \Exception("Can't create the directory ".TEMP_PATH."/restore");
+            }
+
+            if (file_exists(TEMP_PATH.'/backup') && !$this->app['utils']->rrmdir(TEMP_PATH.'/backup')) {
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
+            }
+
+            $this->app['monolog']->addInfo("Start unzipping $archive");
+            $unZip = new unZip($this->app);
+            $unZip->setUnZipPath(TEMP_PATH.'/restore');
+            $unZip->extract($archive);
+            $this->app['monolog']->addInfo("Unzipped $archive");
+
+            // check if the syncdata.json exists
+            if (!file_exists(TEMP_PATH.'/restore/backup/syncdata.json')) {
+                throw new \Exception("Missing the syncdata.json file within the archive!");
+            }
+
+            // restore the tables
+            $this->restoreTables(TEMP_PATH.'/restore/backup/tables');
+
+            // restore the files
+            $this->restoreFiles(TEMP_PATH.'/restore/backup/cms');
+
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e);
         }
-        if (!file_exists(TEMP_PATH.'/restore') && (false === @mkdir(TEMP_PATH.'/restore'))) {
-            throw new \Exception("Can't create the directory ".TEMP_PATH."/restore");
-        }
-
-        if (file_exists(TEMP_PATH.'/backup') && !$this->app['utils']->rrmdir(TEMP_PATH.'/backup')) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
-        }
-
-        $this->app['monolog']->addInfo("Start unzipping $archive");
-        $unZip = new unZip($this->app);
-        $unZip->setUnZipPath(TEMP_PATH.'/restore');
-        $unZip->extract($archive);
-        $this->app['monolog']->addInfo("Unzipped $archive");
-
-        // check if the syncdata.json exists
-        if (!file_exists(TEMP_PATH.'/restore/backup/syncdata.json')) {
-            throw new \Exception("Missing the syncdata.json file within the archive!");
-        }
-
-        // restore the tables
-        $this->restoreTables(TEMP_PATH.'/restore/backup/tables');
-
-        // restore the files
-        $this->restoreFiles(TEMP_PATH.'/restore/backup/cms');
-        return true;
     }
 
     /**
@@ -290,7 +295,58 @@ class Restore
                 continue;
             }
             // process the restore file
+            if (!file_exists(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
+                $result = "Missing the MD5 checksum file for the backup archive!";
+                $this->app['monolog']->addError($result);
+                return $result;
+            }
+            if (false === ($md5_origin = @file_get_contents(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
+                $result = "Can't read the MD5 checksum file for the backup archive!";
+                $this->app['monolog']->addError($result);
+                return $result;
+            }
+            $md5 = md5_file($file);
+            if ($md5 !== $md5_origin) {
+                $result = "The checksum of the backup archive is not equal to the MD5 checksum file value!";
+                $this->app['monolog']->addError($result);
+                return $result;
+            }
+            $this->app['monolog']->addInfo("The MD5 checksum of the backup archive is valid ($md5).");
+
+            // processing the archive file
             $this->processArchive($file);
+
+            // very important: set the archive ID!
+            if (false === ($syncdata = json_decode(@file_get_contents(TEMP_PATH."/restore/backup/syncdata.json"), true))) {
+                throw new \Exception("Can't read the syncdata.json for the backup archive!");
+            }
+            $archive_id = (isset($syncdata['archive']['last_id'])) ? $syncdata['archive']['last_id'] : 0;
+            $data = array(
+                'backup_id' => (isset($syncdata['backup']['id'])) ? $syncdata['backup']['id'] : '',
+                'backup_date' => (isset($syncdata['backup']['date'])) ? $syncdata['backup']['date'] : '0000-00-00 00:00:00',
+                'archive_id' => $archive_id,
+                'archive_date' => date('Y-m-d H:i:s'),
+                'archive_name' => '',
+                'sync_files' => '',
+                'sync_master' => '',
+                'sync_tables' => '',
+                'action' => 'INIT'
+            );
+            $SynchronizeClient = new SynchronizeClient($this->app);
+            $SynchronizeClient->insert($data);
+            $this->app['monolog']->addInfo("Added informations for the Synchronize Client");
+
+            // move the backup archive to /data/backup
+            if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/backup');
+            }
+            if (!@rename(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNC_DATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
+                $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!");
+            }
+            if (!@rename(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNC_DATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
+                $this->app['monolog']->addError("Can't save the backup archive in /data/backup!");
+            }
+
             // and leave the loop
             break;
         }

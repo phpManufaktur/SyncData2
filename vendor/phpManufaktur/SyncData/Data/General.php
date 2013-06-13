@@ -288,6 +288,22 @@ class General {
         }
     }
 
+    public function insertRow($table, $data, $replace_cms_url=true)
+    {
+        try {
+            if ($replace_cms_url) {
+                $content = array();
+                foreach ($data as $key => $value) {
+                    $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                }
+                $data = $content;
+            }
+            $this->app['db']->insert($table, $data);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
     /**
      * Select the index field content for the given table
      *
@@ -302,6 +318,32 @@ class General {
             $SQL = "SELECT `$index_field` FROM `$table`";
             $result = $this->app['db']->fetchAll($SQL);
             return (is_array($result)) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Update the specified record
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function update($table, $fields, $data)
+    {
+        try {
+            $update = array();
+            foreach ($data as $key => $value)
+                $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+            $this->app['db']->update($table, $update, $fields);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    public function delete($table, $fields)
+    {
+        try {
+            $this->app['db']->delete($table, $fields);
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;
         }

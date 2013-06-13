@@ -328,7 +328,7 @@ class Utils
     public function createDirectoryProtection($path)
     {
         if (!file_exists($path)) {
-            if (true !== @mkdir($path)) {
+            if (true !== @mkdir($path, 0755, true)) {
             throw new \Exception("Can not create the directory $path!");
         }
         $this->app['monolog']->addInfo('Create the directory $path');

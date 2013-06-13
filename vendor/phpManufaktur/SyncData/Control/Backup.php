@@ -30,6 +30,7 @@ class Backup
     protected $app = null;
     protected $tables = null;
     protected static $backup_id = null;
+    protected static $backup_date = null;
     protected $General = null;
     protected $BackupMaster = null;
     protected $BackupTables = null;
@@ -55,6 +56,7 @@ class Backup
     public function createBackupID()
     {
         self::$backup_id = date('Ymd-Hi');
+        self::$backup_date = date('Y-m-d H:i:s');
         return self::$backup_id;
     }
 
@@ -179,7 +181,7 @@ class Backup
                 // add a record to backup master
                 $data = array(
                     'backup_id' => $backup_id,
-                    'date' => date('Y-m-d H:i:s'),
+                    'date' => self::$backup_date, //date('Y-m-d H:i:s'),
                     'sql_create_table' => $sql,
                     'index_field' => $indexField,
                     'origin_checksum' => $md5,
@@ -204,7 +206,7 @@ class Backup
      * Save the files of the CMS in the temporary directory
      *
      */
-    public function backupFiles()
+    public function backupFiles($backup_id=null)
     {
         $this->app['monolog']->addInfo('Start processing files');
         // create the temporary directory
@@ -226,24 +228,26 @@ class Backup
         $this->app['utils']->copyRecursive(CMS_PATH, TEMP_PATH.'/backup/cms', $ignore_directories, $ignore_subdirectories, $ignore_files, false, $copied_files);
 
         // process the copied files and save them to the backup table
-        $BackupFiles = new BackupFiles($this->app);
-        foreach ($copied_files as $file) {
-            if (!file_exists(CMS_PATH.$file)) {
-                throw new \Exception("Can't access the file $file!");
+        if (!is_null($backup_id)) {
+            $BackupFiles = new BackupFiles($this->app);
+            foreach ($copied_files as $file) {
+                if (!file_exists(CMS_PATH.$file)) {
+                    throw new \Exception("Can't access the file $file!");
+                }
+                $checksum = md5_file(CMS_PATH.$file);
+                $data = array(
+                    'backup_id' => self::$backup_id,
+                    'date' => self::$backup_date, //date('Y-m-d H:i:s'),
+                    'relative_path' => $file,
+                    'file_name' => basename($file),
+                    'file_checksum_origin' => $checksum,
+                    'file_checksum_last' => $checksum,
+                    'file_size' => filesize(CMS_PATH.$file),
+                    'file_date' => date('Y-m-d H:i:s', filemtime(CMS_PATH.$file)),
+                    'action' => 'BACKUP'
+                );
+                $BackupFiles->insert($data);
             }
-            $checksum = md5_file(CMS_PATH.$file);
-            $data = array(
-                'backup_id' => self::$backup_id,
-                'date' => date('Y-m-d H:i:s'),
-                'relative_path' => $file,
-                'file_name' => basename($file),
-                'file_checksum_origin' => $checksum,
-                'file_checksum_last' => $checksum,
-                'file_size' => filesize(CMS_PATH.$file),
-                'file_date' => date('Y-m-d H:i:s', filemtime(CMS_PATH.$file)),
-                'action' => 'BACKUP'
-            );
-            $BackupFiles->insert($data);
         }
         $this->app['monolog']->addInfo(sprintf('Processed %d files in %d directories',
             $this->app['utils']->getCountFiles(),
@@ -280,7 +284,8 @@ class Backup
 
         $data = array();
         $data['backup'] = $this->app['config']['backup'];
-        $data['backup']['id'] = $backup_id;
+        $data['backup']['id'] = self::$backup_id;
+        $data['backup']['date'] = self::$backup_date;
 
         $SynchronizeArchives = new SynchronizeArchives($this->app);
         $data['archive']['last_id'] = $SynchronizeArchives->selectLastID();

@@ -122,7 +122,9 @@ class Configuration
                         'syncdata_backup_files',
                         'syncdata_synchronize_tables',
                         'syncdata_synchronize_master',
-                        'syncdata_synchronize_files'
+                        'syncdata_synchronize_files',
+                        'syncdata_synchronize_archives',
+                        'syncdata_synchronize_client'
                     )
                 )
             ),
@@ -157,7 +159,9 @@ class Configuration
                         'syncdata_backup_files',
                         'syncdata_synchronize_tables',
                         'syncdata_synchronize_master',
-                        'syncdata_synchronize_files'
+                        'syncdata_synchronize_files',
+                        'syncdata_synchronize_archives',
+                        'syncdata_synchronize_client'
                     )
                 )
             )
