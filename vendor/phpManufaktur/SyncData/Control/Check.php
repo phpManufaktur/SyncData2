@@ -16,6 +16,9 @@ use phpManufaktur\SyncData\Data\BackupMaster;
 use phpManufaktur\SyncData\Data\General;
 use phpManufaktur\SyncData\Data\BackupTables;
 use phpManufaktur\SyncData\Data\SynchronizeTables;
+use phpManufaktur\SyncData\Data\SynchronizeMaster;
+use phpManufaktur\SyncData\Data\BackupFiles;
+use phpManufaktur\SyncData\Data\SynchronizeFiles;
 
 class Check
 {
@@ -42,7 +45,7 @@ class Check
         return Check::$backup_id;
     }
 
-	/**
+	  /**
      * @param Ambigous <\phpManufaktur\SyncData\Data\Ambigous, boolean, unknown> $backup_id
      */
     public static function setBackupID ($backup_id)
@@ -50,7 +53,7 @@ class Check
         Check::$backup_id = $backup_id;
     }
 
-	/**
+	  /**
      * Check the given table for different checksums
      *
      * @param string $table without CMS_TABLE_PREFIX
@@ -96,7 +99,8 @@ class Check
                                 'checksum' => '',
                                 'table_name' => $table['table_name'],
                                 'action' => 'DELETE',
-                                'content' => ''
+                                'content' => '',
+                                'sync_status' => 'CHECKED'
                             );
                             // add entry to the synchronize table
                             $sync_id = -1;
@@ -117,7 +121,8 @@ class Check
                                 'checksum' => $new_checksum,
                                 'table_name' => $table['table_name'],
                                 'action' => 'UPDATE',
-                                'content' => json_encode($record)
+                                'content' => json_encode($record),
+                                'sync_status' => 'CHECKED'
                             );
                             // add entry to the synchronize table
                             $sync_id = -1;
@@ -154,7 +159,8 @@ class Check
                                     'checksum' => $new_checksum,
                                     'table_name' => $table['table_name'],
                                     'action' => 'INSERT',
-                                    'content' => json_encode($record)
+                                    'content' => json_encode($record),
+                                    'sync_status' => 'CHECKED'
                                 );
                                 // add entry to the synchronize table
                                 $sync_id = -1;
@@ -193,8 +199,138 @@ class Check
                         throw new \Exception("Problem: all steps done, but the calculated checksum differs from the real checksum for the table {$table['table_name']}!");
                     }
                 }
-
             }
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Try to get the primary index field of the given table
+     *
+     * @param string $table
+     * @return Ambigous <string, boolean> return the name of the field or false
+     */
+    protected function getPrimaryIndexField($table)
+    {
+        $General = new General($this->app);
+        $indexes = $General->listTableIndexes($table);
+        $indexField = false;
+        foreach ($indexes as $index) {
+            if ($index->isPrimary()) {
+                $columns = $index->getColumns();
+                $indexField = $columns[0];
+            }
+        }
+        return $indexField;
+    }
+
+    protected function checkFiles()
+    {
+        try {
+            $BackupFiles = new BackupFiles($this->app);
+            $SynchronizeFiles = new SynchronizeFiles($this->app);
+            if (false === ($files = $BackupFiles->selectFilesByBackupID(self::$backup_id))) {
+                $this->app['monolog']->addInfo("Found no files to process!");
+                return false;
+            }
+            $backup_files = array();
+            foreach ($files as $file) {
+                if (file_exists(CMS_PATH.$file['relative_path'])) {
+                    // the file still exists
+                    $new_checksum = md5_file(CMS_PATH.$file['relative_path']);
+                    if ($new_checksum !== $file['file_checksum_last']) {
+                        // the file has changed
+                        $data = array(
+                            'file_checksum_last' => $new_checksum
+                        );
+                        $BackupFiles->update($file['id'], $data);
+
+                        $data = array(
+                            'backup_id' => self::$backup_id,
+                            'relative_path' => $file['relative_path'],
+                            'file_name' => $file['file_name'],
+                            'file_checksum' => $new_checksum,
+                            'file_date' => date('Y-m-d H:i:s', filemtime(CMS_PATH.$file['relative_path'])),
+                            'file_size' => filesize(CMS_PATH.$file['relative_path']),
+                            'action' => 'CHANGED',
+                            'sync_status' => 'CHECKED'
+                        );
+                        $SynchronizeFiles->insert($data);
+                        $this->app['monolog']->addInfo("The file {$file['relative_path']} has changed.");
+                    }
+                    $backup_files[] = CMS_PATH.$file['relative_path'];
+                }
+                elseif (!$SynchronizeFiles->isFileMarkedAsDeleted($file['relative_path'], self::$backup_id)) {
+                    $data = array(
+                        'backup_id' => self::$backup_id,
+                        'relative_path' => $file['relative_path'],
+                        'file_name' => $file['file_name'],
+                        'file_checksum' => '',
+                        'file_date' => $file['file_date'],
+                        'file_size' => $file['file_size'],
+                        'action' => 'DELETE',
+                        'sync_status' => 'CHECKED'
+                    );
+                    $SynchronizeFiles->insert($data);
+                    $this->app['monolog']->addInfo("The file {$file['relative_path']} does no longer exists.");
+                }
+            }
+
+            // now we check for new files
+            $stack = array();
+            $stack[] = CMS_PATH;
+            while ($stack) {
+                $thisdir = array_pop($stack);
+                if (false !== ($dircont = scandir($thisdir))) {
+                    $i=0;
+                    while (isset($dircont[$i])) {
+                        if ($dircont[$i] !== '.' && $dircont[$i] !== '..') {
+                            $current_file = "{$thisdir}/{$dircont[$i]}";
+                            if (is_file($current_file) && !in_array($current_file, $backup_files) &&
+                                !in_array(basename($current_file), $this->app['config']['backup']['files']['ignore'])) {
+                                // this is a new file
+                                $checksum = md5_file($current_file);
+                                $file_date = date('Y-m-d H:i:s', filemtime($current_file));
+                                $file_size = filesize($current_file);
+                                $data = array(
+                                    'backup_id' => self::$backup_id,
+                                    'date' => date('Y-m-d H:i:s'),
+                                    'relative_path' => substr($current_file, strlen(CMS_PATH)),
+                                    'file_name' => basename($current_file),
+                                    'file_checksum_origin' => $checksum,
+                                    'file_checksum_last' => $checksum,
+                                    'file_date' => $file_date,
+                                    'file_size' => $file_size,
+                                    'action' => 'SYNCHRONIZE'
+                                );
+                                $BackupFiles->insert($data);
+                                $data = array(
+                                    'backup_id' => self::$backup_id,
+                                    'relative_path' => substr($current_file, strlen(CMS_PATH)),
+                                    'file_name' => basename($current_file),
+                                    'file_checksum' => $checksum,
+                                    'file_date' => $file_date,
+                                    'file_size' => $file_size,
+                                    'action' => 'NEW',
+                                    'sync_status' => 'CHECKED'
+                                );
+                                $SynchronizeFiles->insert($data);
+                                $this->app['monolog']->addInfo("Added the new file $current_file to the Synchronize files");
+                            }
+                            elseif (is_dir($current_file) && !in_array(substr($current_file, strlen(CMS_PATH)+1),
+                                    $this->app['config']['backup']['directories']['ignore']['directory']) &&
+                                    !in_array(substr($current_file, strrpos($current_file, DIRECTORY_SEPARATOR)+1),
+                                    $this->app['config']['backup']['directories']['ignore']['subdirectory'])) {
+                                // directory is not ignored so dive in
+                                $stack[] = $current_file;
+                            }
+                        }
+                        $i++;
+                    }
+                }
+            }
+            return true;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -202,31 +338,93 @@ class Check
 
     public function exec()
     {
-        $BackupMaster = new BackupMaster($this->app);
-        // first we need the last backup ID
-        if (false === (self::$backup_id = $BackupMaster->selectLastBackupID())) {
-            $result = "Got no backup ID for processing a check for changed tables and files. Please create a backup first!";
-            $this->app['monolog']->addInfo($result);
-            return $result;
-        }
-        if (false === ($tables = $BackupMaster->selectTablesByBackupID(self::$backup_id))) {
-            $result = "Found no tables for the backup ID ".self::$backup_id;
-            $this->app['monolog']->addInfo($result);
-            return $result;
-        }
-        foreach ($tables as $table) {
-            if (!in_array($table['table_name'], $this->app['config']['backup']['tables']['ignore'])) {
-                $this->app['monolog']->addInfo("Check table ".$table['table_name']." for changes");
-                $this->checkTable($table);
+        try {
+            // first check the tables
+            $BackupMaster = new BackupMaster($this->app);
+            $General = new General($this->app);
+            $SynchronizeMaster = new SynchronizeMaster($this->app);
+            // first we need the last backup ID
+            if (false === (self::$backup_id = $BackupMaster->selectLastBackupID())) {
+                $result = "Got no backup ID for processing a check for changed tables and files. Please create a backup first!";
+                $this->app['monolog']->addInfo($result);
+                return $result;
             }
-            else {
-                // ignore this table
-                $this->app['monolog']->addInfo("Ignored table {$table['table_name']}");
+            if (false === ($tables = $BackupMaster->selectTablesByBackupID(self::$backup_id))) {
+                $result = "Found no tables for the backup ID ".self::$backup_id;
+                $this->app['monolog']->addInfo($result);
+                return $result;
             }
-        }
+            $backup_tables = array();
+            foreach ($tables as $table) {
+                // loop through the backup tables
+                if (!in_array($table['table_name'], $this->app['config']['backup']['tables']['ignore'])) {
+                    $this->app['monolog']->addInfo("Check table ".$table['table_name']." for changes");
+                    if ($General->tableExists(CMS_TABLE_PREFIX.$table['table_name'])) {
+                        $this->checkTable($table);
+                        $backup_tables[] = $table['table_name'];
+                    }
+                    elseif (!$SynchronizeMaster->isTableMarkedAsDeleted($table['table_name'], self::$backup_id)) {
+                        // the table does no longer exists and is not marked for delete!
+                        $data = array(
+                            'backup_id' => self::$backup_id,
+                            'checksum' => '',
+                            'table_name' => $table['table_name'],
+                            'action' => 'DELETE',
+                            'sql_create_table' => '',
+                            'sync_status' => 'CHECKED'
+                        );
+                        $SynchronizeMaster->insert($data);
+                        $this->app['monolog']->addInfo("Add table {$table['table_name']} to synchronize master");
+                    }
+                }
+                else {
+                    // ignore this table
+                    $this->app['monolog']->addInfo("Ignored table {$table['table_name']}");
+                }
+            }
 
-        //print_r($tables);
-        return 'ok';
+            // check for new tables - strip table prefix!
+            $tables = $General->getTables(true);
+            foreach ($tables as $table) {
+                if (!in_array($table, $this->app['config']['backup']['tables']['ignore']) &&
+                    !in_array($table, $backup_tables)) {
+                    // new table detected!
+                    $SQL = $General->getCreateTableSQL(CMS_TABLE_PREFIX.$table);
+                    $indexField = (false === $idx = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $idx;
+                    $checksum = $General->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
+                    // add the table to the backup master (with actual date!)
+                    $data = array(
+                        'backup_id' => self::$backup_id,
+                        'date' => date('Y-m-d H:i:s'),
+                        'sql_create_table' => $SQL,
+                        'index_field' => $indexField,
+                        'origin_checksum' => $checksum,
+                        'last_checksum' => $checksum,
+                        'table_name' => $table
+                    );
+                    $BackupMaster->insert($data);
+                    $this->app['monolog']->addInfo("Add table $table to backup master");
+                    // add the table to synchronize master
+                    $data = array(
+                        'backup_id' => self::$backup_id,
+                        'checksum' => $checksum,
+                        'table_name' => $table,
+                        'action' => 'CREATE',
+                        'sql_create_table' => $SQL,
+                        'sync_status' => 'CHECKED'
+                    );
+                    $SynchronizeMaster->insert($data);
+                    $this->app['monolog']->addInfo('Add table $table to synchronize master');
+                }
+            }
+
+            // now we check the files
+            $this->checkFiles();
+
+            return 'ok';
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
     }
 
 }
