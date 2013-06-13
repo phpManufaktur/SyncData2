@@ -22,7 +22,8 @@ use phpManufaktur\SyncData\Data\Configuration\Configuration;
 use phpManufaktur\SyncData\Data\Configuration\Doctrine;
 use phpManufaktur\SyncData\Data\Configuration\SwiftMailer;
 use phpManufaktur\SyncData\Data\Setup\Setup;
-use phpManufaktur\SyncData\Control\Create;
+use phpManufaktur\SyncData\Control\CreateArchive;
+use phpManufaktur\SyncData\Control\SynchronizeClient;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -134,8 +135,12 @@ try {
             $result = $check->exec();
             break;
         case '/create':
-            $create = new Create($app);
-            $result = $create->exex();
+            $createArchive = new CreateArchive($app);
+            $result = $createArchive->exec();
+            break;
+        case '/sync':
+            $synchronizeClient = new SynchronizeClient($app);
+            $result = $synchronizeClient->exec();
             break;
         case '/':
         default:

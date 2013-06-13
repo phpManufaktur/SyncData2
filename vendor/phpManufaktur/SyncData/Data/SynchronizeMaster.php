@@ -110,4 +110,42 @@ EOD;
         }
     }
 
+    /**
+     * Select tables to synchronize by given backup ID and sync status
+     *
+     * @param string $backup_id
+     * @param string $status CHECKED or ARCHIVED
+     * @throws \Doctrine\DBAL\DBALException
+     * @return Ambigous <boolean, unknown>
+     */
+    public function selectByBackupIDandStatus($backup_id, $sync_status='CHECKED')
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `backup_id`='$backup_id' AND `sync_status`='$sync_status'";
+            $result = $this->app['db']->fetchAll($SQL);
+            return (is_array($result)) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Update the specified record
+     *
+     * @param string $id
+     * @param array $data associative array with the fields and data
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function update($id, $data)
+    {
+        try {
+            $update = array();
+            foreach ($data as $key => $value)
+                $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
+            $this->app['db']->update(self::$table_name, $update, array('id' => $id));
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
+
 }

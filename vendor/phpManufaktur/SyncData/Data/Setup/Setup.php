@@ -18,6 +18,7 @@ use phpManufaktur\SyncData\Data\SynchronizeTables;
 use phpManufaktur\SyncData\Data\BackupFiles;
 use phpManufaktur\SyncData\Data\SynchronizeMaster;
 use phpManufaktur\SyncData\Data\SynchronizeFiles;
+use phpManufaktur\SyncData\Data\SynchronizeArchives;
 
 /**
  * Setup routines for SyncData
@@ -68,6 +69,9 @@ class Setup
             // Synchronize Files
             $SynchronizeFiles = new SynchronizeFiles($this->app);
             $SynchronizeFiles->createTable();
+            // Synchronize Archives
+            $SynchronizeArchives = new SynchronizeArchives($this->app);
+            $SynchronizeArchives->createTable();
 
             $this->app['monolog']->addInfo('Setup is complete');
             return 'Setup is complete';

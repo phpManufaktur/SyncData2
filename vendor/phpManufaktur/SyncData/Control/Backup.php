@@ -17,6 +17,7 @@ use phpManufaktur\SyncData\Data\BackupMaster;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Data\BackupTables;
 use phpManufaktur\SyncData\Data\BackupFiles;
+use phpManufaktur\SyncData\Data\SynchronizeArchives;
 
 /**
  * Class to create a Backup archive for itself or for clients
@@ -281,6 +282,9 @@ class Backup
         $data['backup'] = $this->app['config']['backup'];
         $data['backup']['id'] = $backup_id;
 
+        $SynchronizeArchives = new SynchronizeArchives($this->app);
+        $data['archive']['last_id'] = $SynchronizeArchives->selectLastID();
+
         $jsonFormat = new JSONFormat();
         $json = $jsonFormat->format($data);
         if (!file_put_contents(TEMP_PATH.'/backup/syncdata.json', $json)) {
@@ -301,6 +305,11 @@ class Backup
 
         $zip = new Zip($this->app);
         $zip->zipDir(TEMP_PATH.'/backup', SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+
+        $md5 = md5_file(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+        if (!file_put_contents(SYNC_DATA_PATH."/data/backup/$backup_id.md5", $md5)) {
+            throw new \Exception("Can't write the MD5 checksum file for the backup!");
+        }
 
         // delete an existing backup directory an all content
         if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {

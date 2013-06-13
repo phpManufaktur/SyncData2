@@ -144,4 +144,20 @@ EOD;
             throw $e;
         }
     }
+
+    /**
+     * Get the creation date for the given backup ID
+     *
+     * @param string $backup_id
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function selectBackupDate($backup_id)
+    {
+        try {
+            $SQL = "SELECT `date` FROM `".self::$table_name."` WHERE `backup_id`='$backup_id' ORDER BY `date` ASC LIMIT 1";
+            return $this->app['db']->fetchColumn($SQL);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw $e;
+        }
+    }
 }
