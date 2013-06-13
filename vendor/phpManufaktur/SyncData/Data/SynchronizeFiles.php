@@ -13,6 +13,12 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Track all changes of files
+ *
+ * @author ralf
+ *
+ */
 class SynchronizeFiles
 {
     protected $app = null;
@@ -87,6 +93,14 @@ EOD;
         }
     }
 
+    /**
+     * Check wether a file is already marked for deletion
+     *
+     * @param string $relative_path
+     * @param string $backup_id
+     * @throws \Doctrine\DBAL\DBALException
+     * @return boolean
+     */
     public function isFileMarkedAsDeleted($relative_path, $backup_id)
     {
         try {

@@ -16,6 +16,12 @@ use phpManufaktur\SyncData\Data\Configuration\ConfigurationException;
 use phpManufaktur\SyncData\Data\CMS\Settings;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 
+/**
+ * Create and read the configuration files for SyncData
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Configuration
 {
 
@@ -23,6 +29,11 @@ class Configuration
     protected static $config_array = null;
     protected static $config_file = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -39,7 +50,13 @@ class Configuration
         return self::$config_array;
     }
 
-
+    /**
+     * Get the configuration information from the parent CMS
+     * and create syncdata.json
+     *
+     * @throws \Exception
+     * @throws ConfigurationException
+     */
     protected function getConfigurationFromCMS()
     {
         $cmsSettings = new Settings($this->app);

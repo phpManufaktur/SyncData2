@@ -11,6 +11,12 @@
 
 namespace phpManufaktur\SyncData\Data\Configuration;
 
+/**
+ * Exception handler for the configuration classes
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class ConfigurationException extends \Exception
 {
 

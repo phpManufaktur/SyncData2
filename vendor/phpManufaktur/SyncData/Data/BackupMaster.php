@@ -13,18 +13,34 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * The master class for syncdata_backup_master
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class BackupMaster
 {
     const NO_INDEX_FIELD = 'NO_INDEX_FIELD';
     protected $app = null;
     protected static $table_name = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
         self::$table_name = CMS_TABLE_PREFIX.'syncdata_backup_master';
     }
 
+    /**
+     * Create the table
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function createTable ()
     {
         $table = self::$table_name;
@@ -92,6 +108,13 @@ EOD;
         }
     }
 
+    /**
+     * Select all tables from the given backup ID
+     *
+     * @param string $backup_id
+     * @throws \Doctrine\DBAL\DBALException
+     * @return Ambigous <boolean, unknown>
+     */
     public function selectTablesByBackupID($backup_id)
     {
         try {
@@ -103,6 +126,13 @@ EOD;
         }
     }
 
+    /**
+     * Update the specified master ID with a data record
+     *
+     * @param string $master_id
+     * @param array $data associative array with the fields and data
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function update($master_id, $data)
     {
         try {

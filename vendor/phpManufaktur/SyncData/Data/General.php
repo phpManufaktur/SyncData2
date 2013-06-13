@@ -13,6 +13,13 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * General class for queries and functions to access the different
+ * tables of the CMS
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class General {
 
     protected $app = null;
@@ -71,6 +78,14 @@ class General {
         }
     }
 
+    /**
+     * Read a row from the given table
+     *
+     * @param string $table
+     * @param array $fields associative array with fields and data for the WHERE clause
+     * @throws \Doctrine\DBAL\DBALException
+     * @return multitype:Ambigous <mixed, unknown> |boolean
+     */
     public function getRowContent($table, $fields)
     {
         try {
@@ -120,6 +135,14 @@ class General {
         }
     }
 
+    /**
+     * Get the MD5 checksum for the given table row
+     *
+     * @param string $table
+     * @param array $fields associative array with fields and data for the WHERE clause
+     * @throws \Doctrine\DBAL\DBALException
+     * @return string|boolean
+     */
     public function getRowContentChecksum($table, $fields)
     {
         try {
@@ -265,6 +288,14 @@ class General {
         }
     }
 
+    /**
+     * Select the index field content for the given table
+     *
+     * @param string $table
+     * @param string $index_field
+     * @throws \Doctrine\DBAL\DBALException
+     * @return Ambigous <boolean, unknown>
+     */
     public function selectRowsIndexField($table, $index_field)
     {
         try {

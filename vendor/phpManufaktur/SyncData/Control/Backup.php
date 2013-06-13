@@ -18,6 +18,12 @@ use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Data\BackupTables;
 use phpManufaktur\SyncData\Data\BackupFiles;
 
+/**
+ * Class to create a Backup archive for itself or for clients
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Backup
 {
     protected $app = null;
@@ -40,6 +46,11 @@ class Backup
         $this->BackupTables = new BackupTables($this->app);
     }
 
+    /**
+     * Create a new Backup ID based on the actual date and time
+     *
+     * @return string
+     */
     public function createBackupID()
     {
         self::$backup_id = date('Ymd-Hi');
@@ -239,6 +250,12 @@ class Backup
             ));
     }
 
+    /**
+     * Action handler for the class Backup
+     *
+     * @throws \Exception
+     * @return string
+     */
     public function exec()
     {
         $this->app['monolog']->addInfo('Backup started');

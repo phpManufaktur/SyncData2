@@ -13,6 +13,12 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Checksums for comparison for all tables of the backup
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class BackupTables
 {
     protected $app = null;
@@ -84,6 +90,14 @@ EOD;
         }
     }
 
+    /**
+     * Select a table by the given Backup ID
+     *
+     * @param string $backup_id
+     * @param string $table_name without table prefix
+     * @throws \Doctrine\DBAL\DBALException
+     * @return Ambigous <boolean, unknown>
+     */
     public function selectTableByBackupID($backup_id, $table_name)
     {
         try {
@@ -95,6 +109,13 @@ EOD;
         }
     }
 
+    /**
+     * Update the table information
+     *
+     * @param integer $table_id
+     * @param array $data associative array with the fields and data
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function update($table_id, $data)
     {
         try {
@@ -106,7 +127,5 @@ EOD;
             throw $e;
         }
     }
-
-
 
 }

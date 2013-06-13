@@ -19,16 +19,33 @@ use phpManufaktur\SyncData\Data\BackupFiles;
 use phpManufaktur\SyncData\Data\SynchronizeMaster;
 use phpManufaktur\SyncData\Data\SynchronizeFiles;
 
+/**
+ * Setup routines for SyncData
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Setup
 {
 
     protected $app = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
     }
 
+    /**
+     * Action handler for the setup routines
+     *
+     * @throws Exception
+     * @return string
+     */
     public function exec()
     {
         // create the needed tables

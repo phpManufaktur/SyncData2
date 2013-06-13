@@ -18,12 +18,25 @@ use Monolog\Handler\SwiftMailerHandler;
 
 require_once SYNC_DATA_PATH.'/vendor/SwiftMailer/lib/swift_required.php';
 
+/**
+ * Get the configuration for the mailer from the parent CMS and create the
+ * configuration file swiftmailer.json
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class SwiftMailer
 {
     protected $app = null;
     protected static $config_file = null;
     protected static $config_array = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     * @throws ConfigurationException
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -45,6 +58,11 @@ class SwiftMailer
         return self::$config_array;
     }
 
+    /**
+     * Get the configuration information from the parent CMS
+     *
+     * @throws ConfigurationException
+     */
     protected function getConfigurationFromCMS()
     {
         $cmsSettings = new Settings($this->app);
@@ -83,6 +101,12 @@ class SwiftMailer
         }
     }
 
+    /**
+     * Initialize the Swiftmailer for SMTP and create a default message for
+     * the Monolog Swiftmailer handler
+     *
+     * @return Ambigous <Swift_Mailer, Swift_Mailer>
+     */
     public function initSwiftMailer()
     {
         $security = !empty(self::$config_array['SMTP_SECURITY']) ? self::$config_array['SMTP_SECURITY'] : null;

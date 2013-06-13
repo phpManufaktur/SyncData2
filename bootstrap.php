@@ -22,6 +22,7 @@ use phpManufaktur\SyncData\Data\Configuration\Configuration;
 use phpManufaktur\SyncData\Data\Configuration\Doctrine;
 use phpManufaktur\SyncData\Data\Configuration\SwiftMailer;
 use phpManufaktur\SyncData\Data\Setup\Setup;
+use phpManufaktur\SyncData\Control\Create;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -38,7 +39,7 @@ try {
     // init the application
     $app = new Application();
     // check the logfile size
-    $max_size = 2*1024*1024; // 2 MB
+    $max_size = 5*1024*1024; // 5 MB
     $log_file = SYNC_DATA_PATH.'/logfile/syncdata.log';
     if (file_exists($log_file) && (filesize($log_file) > $max_size)) {
         // delete existing backup file
@@ -131,6 +132,10 @@ try {
         case '/check':
             $check = new Check($app);
             $result = $check->exec();
+            break;
+        case '/create':
+            $create = new Create($app);
+            $result = $create->exex();
             break;
         case '/':
         default:

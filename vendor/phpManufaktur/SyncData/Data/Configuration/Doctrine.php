@@ -14,6 +14,13 @@ namespace phpManufaktur\SyncData\Data\Configuration;
 use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 
+/**
+ * Get the configuration for the database from the parent CMS and create
+ * the syncdata config file doctrine.json
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Doctrine
 {
     protected $app = null;

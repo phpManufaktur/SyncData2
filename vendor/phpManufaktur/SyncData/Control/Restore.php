@@ -14,11 +14,22 @@ namespace phpManufaktur\SyncData\Control;
 use phpManufaktur\SyncData\Control\Zip\unZip;
 use phpManufaktur\SyncData\Data\General;
 
+/**
+ * Class to restore an existing backup archive to the CMS
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Restore
 {
 
     protected $app = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -145,6 +156,13 @@ class Restore
         }
     }
 
+    /**
+     * Restore files from the archive
+     *
+     * @param string $source_path
+     * @param string $create_backup
+     * @throws \Exception
+     */
     protected function restoreFiles($source_path, $create_backup=true)
     {
         $backup = new Backup($this->app);
@@ -199,6 +217,13 @@ class Restore
 
     }
 
+    /**
+     * Start unzipping and processing the backup archive
+     *
+     * @param string $archive
+     * @throws \Exception
+     * @return boolean
+     */
     protected function processArchive($archive)
     {
         if (file_exists(TEMP_PATH.'/restore') && !$this->app['utils']->rrmdir(TEMP_PATH.'/restore')) {
@@ -231,6 +256,11 @@ class Restore
         return true;
     }
 
+    /**
+     * Action handler for the class Restore
+     *
+     * @return string
+     */
     public function exec()
     {
         // start restore

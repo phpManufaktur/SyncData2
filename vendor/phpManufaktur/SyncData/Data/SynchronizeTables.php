@@ -13,6 +13,12 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Track the synchronization of tables
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class SynchronizeTables
 {
     protected $app = null;

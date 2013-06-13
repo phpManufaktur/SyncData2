@@ -13,10 +13,21 @@ namespace phpManufaktur\SyncData\Data\CMS;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Get the basic settings of the parent CMS from the settings table
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Settings {
 
     protected $app = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;

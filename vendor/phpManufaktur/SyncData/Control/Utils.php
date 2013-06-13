@@ -11,6 +11,12 @@
 
 namespace phpManufaktur\SyncData\Control;
 
+/**
+ * Utils and help functions for SyncData
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Utils
 {
     protected $app = null;
@@ -18,6 +24,11 @@ class Utils
     protected static $count_directories = 0;
     protected static $count_tables = 0;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -308,6 +319,12 @@ class Utils
         return true;
     }
 
+    /**
+     * Create a .htaccess and .htpasswd protection with a random user and password
+     *
+     * @param string $path
+     * @throws \Exception
+     */
     public function createDirectoryProtection($path)
     {
         if (!file_exists($path)) {

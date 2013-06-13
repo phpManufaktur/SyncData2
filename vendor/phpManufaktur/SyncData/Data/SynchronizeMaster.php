@@ -13,6 +13,12 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Master table for administration of the Synchronization
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class SynchronizeMaster
 {
     protected $app = null;
@@ -85,6 +91,14 @@ EOD;
         }
     }
 
+    /**
+     * Check wether a table is already marked for deletion
+     *
+     * @param string $table_name
+     * @param string $backup_id
+     * @throws \Doctrine\DBAL\DBALException
+     * @return boolean
+     */
     public function isTableMarkedAsDeleted($table_name, $backup_id)
     {
         try {

@@ -20,6 +20,13 @@ use phpManufaktur\SyncData\Data\SynchronizeMaster;
 use phpManufaktur\SyncData\Data\BackupFiles;
 use phpManufaktur\SyncData\Data\SynchronizeFiles;
 
+/**
+ * Check for changes in the actual installation - compare with the last
+ * Backup archive and track all changes
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class Check
 {
 
@@ -225,6 +232,13 @@ class Check
         return $indexField;
     }
 
+    /**
+     * Loop through the backup archive and check the registered files for changes,
+     * removing, check for new files and add them
+     *
+     * @throws \Exception
+     * @return boolean
+     */
     protected function checkFiles()
     {
         try {
@@ -336,6 +350,12 @@ class Check
         }
     }
 
+    /**
+     * Action handler for the class Check
+     *
+     * @throws \Exception
+     * @return string
+     */
     public function exec()
     {
         try {

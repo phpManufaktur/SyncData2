@@ -13,6 +13,12 @@ namespace phpManufaktur\SyncData\Data;
 
 use phpManufaktur\SyncData\Control\Application;
 
+/**
+ * Data class for syncdata_backup_files
+ *
+ * @author ralf.hertsch@phpmanufaktur.de
+ *
+ */
 class BackupFiles
 {
     protected $app = null;
@@ -86,6 +92,13 @@ EOD;
         }
     }
 
+    /**
+     * Select all files from the given backup ID and return an array with the file records
+     *
+     * @param string $backup_id
+     * @throws \Doctrine\DBAL\DBALException
+     * @return Ambigous <boolean, unknown>
+     */
     public function selectFilesByBackupID($backup_id)
     {
         try {
@@ -97,6 +110,13 @@ EOD;
         }
     }
 
+    /**
+     * Update the specified record
+     *
+     * @param string $id
+     * @param array $data associative array with the fields and data
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function update($id, $data)
     {
         try {
