@@ -16,6 +16,7 @@ use phpManufaktur\SyncData\Control\Zip\Zip;
 use phpManufaktur\SyncData\Data\BackupMaster;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Data\BackupTables;
+use phpManufaktur\SyncData\Data\BackupFiles;
 
 class Backup
 {
@@ -209,8 +210,29 @@ class Backup
 
         $this->app['utils']->setCountFiles();
         $this->app['utils']->setCountDirectories();
-        $this->app['utils']->copyRecursive(CMS_PATH, TEMP_PATH.'/backup/cms', $ignore_directories, $ignore_subdirectories, $ignore_files);
+        $copied_files = array();
+        $this->app['utils']->copyRecursive(CMS_PATH, TEMP_PATH.'/backup/cms', $ignore_directories, $ignore_subdirectories, $ignore_files, false, $copied_files);
 
+        // process the copied files and save them to the backup table
+        $BackupFiles = new BackupFiles($this->app);
+        foreach ($copied_files as $file) {
+            if (!file_exists(CMS_PATH.$file)) {
+                throw new \Exception("Can't access the file $file!");
+            }
+            $checksum = md5_file(CMS_PATH.$file);
+            $data = array(
+                'backup_id' => self::$backup_id,
+                'date' => date('Y-m-d H:i:s'),
+                'relative_path' => $file,
+                'file_name' => basename($file),
+                'file_checksum_origin' => $checksum,
+                'file_checksum_last' => $checksum,
+                'file_size' => filesize(CMS_PATH.$file),
+                'file_date' => date('Y-m-d H:i:s', filemtime(CMS_PATH.$file)),
+                'action' => 'BACKUP'
+            );
+            $BackupFiles->insert($data);
+        }
         $this->app['monolog']->addInfo(sprintf('Processed %d files in %d directories',
             $this->app['utils']->getCountFiles(),
             $this->app['utils']->getCountDirectories()
