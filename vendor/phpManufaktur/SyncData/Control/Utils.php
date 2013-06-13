@@ -230,11 +230,12 @@ class Utils
      * @param array $ignore_subdirectories directory name only
      * @param array $ignore_files filename only
      * @param boolean $delete_directory_before remove the directory before copying
+     * @param array reference $copied_files collect all copied files with relative path
      * @throws \Exception
      * @return boolean
      */
     public function copyRecursive($source_directory, $destination_directory, $ignore_directories=array(),
-        $ignore_subdirectories=array(), $ignore_files=array(), $delete_directory_before=false)
+        $ignore_subdirectories=array(), $ignore_files=array(), $delete_directory_before=false, &$copied_files=array())
     {
         if (is_dir($source_directory))
             $directory_handle = dir($source_directory);
@@ -270,9 +271,13 @@ class Utils
                 if (!file_exists($target) && (true !== @mkdir($target, 0755, true ))) {
                     throw new \Exception("Can't create directory $target");
                 }
+                // set the datetime
+                if (false === @touch($target, filemtime($source))) {
+                    $this->app['monolog']->addInfo("Can't set the modification date/time for $target");
+                }
                 self::increaseCountDirectories();
                 // recursive call
-                $this->copyRecursive($source, $target, $ignore_directories, $ignore_subdirectories, $ignore_files, $delete_directory_before);
+                $this->copyRecursive($source, $target, $ignore_directories, $ignore_subdirectories, $ignore_files, $delete_directory_before, $copied_files);
             }
             else {
                 // check files
@@ -289,6 +294,13 @@ class Utils
                 if (true !== @copy($source, $target)) {
                     throw new \Exception("Can't copy file $source");
                 }
+                // set the datetime
+                if (false === @touch($target, filemtime($source))) {
+                    $this->app['monolog']->addInfo("Can't set the modification date/time for $file");
+                }
+                // add file to the copied_files array
+                $copied_files[] = substr($source, strlen(CMS_PATH));
+                // increase the counter
                 self::increaseCountFiles();
             }
         }
