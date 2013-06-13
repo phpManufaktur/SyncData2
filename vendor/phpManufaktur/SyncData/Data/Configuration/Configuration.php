@@ -102,7 +102,10 @@ class Configuration
                     'ignore' => array(
                         'syncdata_backup_master',
                         'syncdata_backup_tables',
-                        'syncdata_synchronize_tables'
+                        'syncdata_backup_files',
+                        'syncdata_synchronize_tables',
+                        'syncdata_synchronize_master',
+                        'syncdata_synchronize_files'
                     )
                 )
             ),
@@ -121,7 +124,9 @@ class Configuration
                 'directories' => array(
                     'ignore' => array(
                         'directory' => array(
-                            'temp'
+                            'temp',
+                            'syncdata',
+                            'kit2'
                         ),
                         'subdirectory' => array(
                             '.git'
@@ -132,7 +137,10 @@ class Configuration
                     'ignore' => array(
                         'syncdata_backup_master',
                         'syncdata_backup_tables',
-                        'syncdata_synchronize_tables'
+                        'syncdata_backup_files',
+                        'syncdata_synchronize_tables',
+                        'syncdata_synchronize_master',
+                        'syncdata_synchronize_files'
                     )
                 )
             )
