@@ -47,6 +47,9 @@ class SynchronizeTables
       `table_name` VARCHAR(128) NOT NULL DEFAULT '',
       `action` ENUM('UPDATE','INSERT','DELETE') NOT NULL DEFAULT 'UPDATE',
       `content` MEDIUMTEXT,
+      `sync_status` ENUM('CHECKED','ARCHIVED') NOT NULL DEFAULT 'CHECKED',
+      `sync_archive_name` VARCHAR(128) NOT NULL DEFAULT '',
+      `sync_archive_date` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
       `timestamp` TIMESTAMP,
       PRIMARY KEY (`id`)
     )
