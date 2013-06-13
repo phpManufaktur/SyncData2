@@ -33,7 +33,7 @@ class General {
      * @throws \Exception
      * @return array
      */
-    public function getTables()
+    public function getTables($strip_table_prefix=false)
     {
         try {
             $result = $this->app['db']->fetchAll("SHOW TABLES");
@@ -41,6 +41,9 @@ class General {
             if (is_array($result)) {
                 foreach ($result as $item) {
                     foreach ($item as $show => $table) {
+                        if ($strip_table_prefix && (strpos($table, CMS_TABLE_PREFIX) === 0)) {
+                            $table = substr($table, strlen(CMS_TABLE_PREFIX));
+                        }
                         $tables[] = $table;
                     }
                 }
