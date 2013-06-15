@@ -161,7 +161,7 @@ class Restore
      * Restore files from the archive
      *
      * @param string $source_path
-     * @param string $create_backup
+     * @param boolean $create_backup
      * @throws \Exception
      */
     protected function restoreFiles($source_path, $create_backup=true)
@@ -179,7 +179,7 @@ class Restore
             $ignore_directories = array();
             foreach ($this->app['config']['restore']['directories']['ignore']['directory'] as $directory) {
                 // take the real path for the directory
-                $ignore_directories[] = CMS_PATH.DIRECTORY_SEPARATOR.$directory;
+                $ignore_directories[] = $this->app['utils']->sanitizePath(CMS_PATH.DIRECTORY_SEPARATOR.$directory);
             }
             $ignore_subdirectories = $this->app['config']['restore']['directories']['ignore']['subdirectory'];
             $ignore_files = $this->app['config']['restore']['files']['ignore'];
@@ -230,12 +230,12 @@ class Restore
             if (file_exists(TEMP_PATH.'/restore') && !$this->app['utils']->rrmdir(TEMP_PATH.'/restore')) {
                 throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
             }
-            if (!file_exists(TEMP_PATH.'/restore') && (false === @mkdir(TEMP_PATH.'/restore'))) {
+            if (!file_exists(TEMP_PATH.'/restore') && (false === @mkdir(TEMP_PATH.'/restore', 0755, true))) {
                 throw new \Exception("Can't create the directory ".TEMP_PATH."/restore");
             }
 
             if (file_exists(TEMP_PATH.'/backup') && !$this->app['utils']->rrmdir(TEMP_PATH.'/backup')) {
-                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/restore'));
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
             }
 
             $this->app['monolog']->addInfo("Start unzipping $archive");
@@ -300,11 +300,13 @@ class Restore
                 $this->app['monolog']->addError($result);
                 return $result;
             }
+            // get the origin checksum of the backup archive
             if (false === ($md5_origin = @file_get_contents(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
                 $result = "Can't read the MD5 checksum file for the backup archive!";
                 $this->app['monolog']->addError($result);
                 return $result;
             }
+            // compare the checksums
             $md5 = md5_file($file);
             if ($md5 !== $md5_origin) {
                 $result = "The checksum of the backup archive is not equal to the MD5 checksum file value!";
@@ -321,6 +323,7 @@ class Restore
                 throw new \Exception("Can't read the syncdata.json for the backup archive!");
             }
             $archive_id = (isset($syncdata['archive']['last_id'])) ? $syncdata['archive']['last_id'] : 0;
+            // @todo data record for SynchronizeClient is not complete! Missing some information from the archive!
             $data = array(
                 'backup_id' => (isset($syncdata['backup']['id'])) ? $syncdata['backup']['id'] : '',
                 'backup_date' => (isset($syncdata['backup']['date'])) ? $syncdata['backup']['date'] : '0000-00-00 00:00:00',
