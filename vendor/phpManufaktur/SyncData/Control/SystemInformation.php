@@ -20,23 +20,67 @@ class SystemInformation
     protected static $detected_MYSQL_VERSION = null;
     protected static $required_MYSQL_VERSION = null;
 
+    protected static $detected_CURL = null;
+    protected static $required_CURL = null;
+
+    protected static $detected_ZIPArchive = null;
+    protected static $required_ZIPArchive = null;
+
     protected static $cms_config_path = null;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         self::$cms_config_path = realpath(dirname(__FILE__).'/../../../../../config.php');
     }
 
-    public function setPromptResult($prompt_result)
+    /**
+     * Set the required PHP version
+     *
+     * @param string $php_version i.e. '5.3.2'
+     */
+    public function setRequriredPHPVersion($php_version)
     {
-        self::$prompt_result = $prompt_result;
+        self::$required_PHP_VERSION = $php_version;
     }
 
-    public function setMinimumPHPVersion($php_version)
+    /**
+     * Set the required MySQL version
+     *
+     * @param string $mysql_version i.e. '5.0.0'
+     */
+    public function setRequiredMySQLVersion($mysql_version)
     {
-        self::$minimum_PHP_VERSION = $php_version;
+        self::$required_MYSQL_VERSION = $mysql_version;
     }
 
+    /**
+     * Determine wether cURL is needed or not
+     *
+     * @param boolean $required
+     */
+    public function setRequiredCURL($required)
+    {
+        self::$required_CURL = (bool) $required;
+    }
+
+    /**
+     * Determine wether the ZIPArchive is needed or not
+     *
+     * @param boolean $required
+     */
+    public function setRequriredZIPArchive($required)
+    {
+        self::$required_ZIPArchive = (bool) $required;
+    }
+
+    /**
+     * Return the operating system: WINDOWS or LINUX
+     *
+     * @return string
+     */
     protected function getOperatingSystem()
     {
         return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'WINDOWS' : 'LINUX';
@@ -90,6 +134,11 @@ class SystemInformation
         return $result;
     }
 
+    /**
+     * Return an array with information about MySQL
+     *
+     * @return multitype:mixed NULL
+     */
     protected function getMySQLinformation()
     {
         self::$detected_MYSQL_VERSION = mysql_get_client_info();
@@ -103,6 +152,11 @@ class SystemInformation
             );
     }
 
+    /**
+     * Return an array with information about PHP
+     *
+     * @return multitype:number NULL
+     */
     protected function getPHPinformation()
     {
         if (is_null(self::$required_PHP_VERSION)) {
@@ -118,15 +172,27 @@ class SystemInformation
 
     protected function isCURLinstalled()
     {
+        self::$detected_CURL = function_exists('curl_init');
+        if (is_null(self::$required_CURL)) {
+            self::$required_CURL = self::$detected_CURL;
+        }
         return array(
-            'installed' => (int) function_exists('curl_init')
+            'installed' => (int) self::$detected_CURL,
+            'required' => (int) self::$required_CURL,
+            'checked' => (self::$required_CURL && !self::$detected_CURL) ? 0 : 1
             );
     }
 
     protected function isZIParchiveInstalled()
     {
+        self::$detected_ZIPArchive = class_exists('ZipArchive');
+        if (is_null(self::$required_ZIPArchive)) {
+            self::$required_ZIPArchive = self::$detected_ZIPArchive;
+        }
         return array(
-            'installed' => (int) class_exists('ZipArchive')
+            'installed' => (int) self::$detected_ZIPArchive,
+            'required' => (int) self::$required_ZIPArchive,
+            'checked' => (self::$required_ZIPArchive && !self::$detected_ZIPArchive) ? 0 : 1
         );
     }
 

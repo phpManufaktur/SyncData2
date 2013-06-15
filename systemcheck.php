@@ -13,6 +13,10 @@
 require_once realpath(dirname(__FILE__).'/vendor/phpManufaktur/SyncData/Control/SystemInformation.php');
 
 $SystemInformation = new SystemInformation();
+$SystemInformation->setRequriredPHPVersion('5.3.2');
+$SystemInformation->setRequiredMySQLVersion('5.0.0');
+$SystemInformation->setRequiredCURL(false);
+$SystemInformation->setRequriredZIPArchive(true);
 $result = $SystemInformation->exec();
 echo "<pre>";
 print_r($result);
