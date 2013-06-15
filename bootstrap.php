@@ -115,6 +115,10 @@ try {
     define('SYNC_DATA_URL', $app['config']['CMS']['CMS_URL'].DIRECTORY_SEPARATOR.$route);
 
     switch ($route) {
+        case '/precheck.php':
+        case '/info.php';
+            $result = "This is not an WebsiteBaker or LEPTON CMS installation!";
+            break;
         case '/setup':
             $setup = new Setup($app);
             $result = $setup->exec();
