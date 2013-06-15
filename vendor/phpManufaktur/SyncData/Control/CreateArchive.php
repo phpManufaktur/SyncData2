@@ -129,7 +129,7 @@ class CreateArchive
                 throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/archive'));
             }
             // create the backup directory
-            if (false === @mkdir(TEMP_PATH.'/archive')) {
+            if (false === @mkdir(TEMP_PATH.'/archive', 0755, true)) {
                 throw new \Exception("Can't create the directory ".TEMP_PATH."/archive");
             }
             $this->app['monolog']->addInfo('Prepared temporary directory for the archive');
