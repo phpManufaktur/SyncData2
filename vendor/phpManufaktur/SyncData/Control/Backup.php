@@ -210,15 +210,16 @@ class Backup
     {
         $this->app['monolog']->addInfo('Start processing files');
         // create the temporary directory
-        if (!file_exists(TEMP_PATH.'/backup/cms') && (false === @mkdir(TEMP_PATH.'/backup/cms'))) {
+        if (!file_exists(TEMP_PATH.'/backup/cms') && (false === @mkdir(TEMP_PATH.'/backup/cms', 0755, true))) {
             throw new \Exception("Can't create the directory ".TEMP_PATH."/backup/cms");
         }
 
         $ignore_directories = array();
         foreach ($this->app['config']['backup']['directories']['ignore']['directory'] as $directory) {
             // take the real path for the directory
-            $ignore_directories[] = CMS_PATH.DIRECTORY_SEPARATOR.$directory;
+            $ignore_directories[] = $this->app['utils']->sanitizePath(CMS_PATH.DIRECTORY_SEPARATOR.$directory);
         }
+
         $ignore_subdirectories = $this->app['config']['backup']['directories']['ignore']['subdirectory'];
         $ignore_files = $this->app['config']['backup']['files']['ignore'];
 
@@ -263,66 +264,70 @@ class Backup
      */
     public function exec()
     {
-        $this->app['monolog']->addInfo('Backup started');
+        try{
+            $this->app['monolog']->addInfo('Backup started');
 
-        // delete an existing backup directory an all content
-        if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
-        }
-        // create the backup directory
-        if (false === @mkdir(TEMP_PATH.'/backup')) {
-            throw new \Exception("Can't create the directory ".TEMP_PATH."/backup");
-        }
-        $this->app['monolog']->addInfo('Prepared temporary directory for the backup');
-
-        // backup the database with all tables
-        $backup_id = $this->createBackupID();
-        $this->backupDatabase(self::$backup_id);
-
-        // backup all files
-        $this->backupFiles();
-
-        $data = array();
-        $data['backup'] = $this->app['config']['backup'];
-        $data['backup']['id'] = self::$backup_id;
-        $data['backup']['date'] = self::$backup_date;
-
-        $SynchronizeArchives = new SynchronizeArchives($this->app);
-        $data['archive']['last_id'] = $SynchronizeArchives->selectLastID();
-
-        $jsonFormat = new JSONFormat();
-        $json = $jsonFormat->format($data);
-        if (!file_put_contents(TEMP_PATH.'/backup/syncdata.json', $json)) {
-            throw new \Exception("Can't write the syncdata.json file for the backup!");
-        }
-
-        if (!file_exists(SYNC_DATA_PATH.'/data/backup')) {
-            if (!@mkdir(SYNC_DATA_PATH.'/data/backup', 0755, true)) {
-                throw new \Exception("Can't create the directory ".SYNC_DATA_PATH.'/data/backup');
+            // delete an existing backup directory an all content
+            if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
             }
-        }
-        if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
-            $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/backup');
-        }
-        if (file_exists(SYNC_DATA_PATH."/data/backup/$backup_id.zip")) {
-            @unlink(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
-        }
+            // create the backup directory
+            if (!file_exists(TEMP_PATH.'/backup') && (false === @mkdir(TEMP_PATH.'/backup', 0755, true))) {
+                throw new \Exception("Can't create the directory ".TEMP_PATH."/backup");
+            }
+            $this->app['monolog']->addInfo('Prepared temporary directory for the backup');
 
-        $zip = new Zip($this->app);
-        $zip->zipDir(TEMP_PATH.'/backup', SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+            // backup the database with all tables
+            $backup_id = $this->createBackupID();
+            $this->backupDatabase(self::$backup_id);
 
-        $md5 = md5_file(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
-        if (!file_put_contents(SYNC_DATA_PATH."/data/backup/$backup_id.md5", $md5)) {
-            throw new \Exception("Can't write the MD5 checksum file for the backup!");
+            // backup all files
+            $this->backupFiles();
+
+            $data = array();
+            $data['backup'] = $this->app['config']['backup'];
+            $data['backup']['id'] = self::$backup_id;
+            $data['backup']['date'] = self::$backup_date;
+
+            $SynchronizeArchives = new SynchronizeArchives($this->app);
+            $data['archive']['last_id'] = $SynchronizeArchives->selectLastID();
+
+            $jsonFormat = new JSONFormat();
+            $json = $jsonFormat->format($data);
+            if (!file_put_contents(TEMP_PATH.'/backup/syncdata.json', $json)) {
+                throw new \Exception("Can't write the syncdata.json file for the backup!");
+            }
+
+            if (!file_exists(SYNC_DATA_PATH.'/data/backup')) {
+                if (!@mkdir(SYNC_DATA_PATH.'/data/backup', 0755, true)) {
+                    throw new \Exception("Can't create the directory ".SYNC_DATA_PATH.'/data/backup');
+                }
+            }
+            if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/backup');
+            }
+            if (file_exists(SYNC_DATA_PATH."/data/backup/$backup_id.zip")) {
+                @unlink(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+            }
+
+            $zip = new Zip($this->app);
+            $zip->zipDir(TEMP_PATH.'/backup', SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+
+            $md5 = md5_file(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+            if (!file_put_contents(SYNC_DATA_PATH."/data/backup/$backup_id.md5", $md5)) {
+                throw new \Exception("Can't write the MD5 checksum file for the backup!");
+            }
+
+            // delete an existing backup directory an all content
+            if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
+            }
+
+            $this->app['monolog']->addInfo('Backup finished');
+            return "Processed ".$this->app['utils']->getCountTables()." tables and create a backup file.";
+        } catch (\Exception $e) {
+            throw new \Exception($e);
         }
-
-        // delete an existing backup directory an all content
-        if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
-            throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
-        }
-
-        $this->app['monolog']->addInfo('Backup finished');
-        return "Processed ".$this->app['utils']->getCountTables()." tables and create a backup file.";
     }
 
 }
