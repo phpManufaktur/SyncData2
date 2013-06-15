@@ -183,7 +183,7 @@ class SynchronizeClient
                 if (file_exists(TEMP_PATH.'/sync') && !$this->app['utils']->rrmdir(TEMP_PATH.'/sync')) {
                     throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/sync'));
                 }
-                if (!file_exists(TEMP_PATH.'/sync') && (false === @mkdir(TEMP_PATH.'/sync'))) {
+                if (!file_exists(TEMP_PATH.'/sync') && (false === @mkdir(TEMP_PATH.'/sync', 0755, true))) {
                     throw new \Exception("Can't create the directory ".TEMP_PATH."/sync");
                 }
                 // unzip the archive

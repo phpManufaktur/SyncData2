@@ -256,8 +256,8 @@ class Utils
 
         while (false !== ($file = $directory_handle->read())) {
             if (($file == '.') || ($file == '..')) continue;
-            $source = self::sanitizePath($source_directory.'/'.$file);
-            $target = self::sanitizePath($destination_directory.'/'.$file);
+            $source = self::sanitizePath($source_directory.DIRECTORY_SEPARATOR.$file);
+            $target = self::sanitizePath($destination_directory.DIRECTORY_SEPARATOR.$file);
             if (is_dir($source)) {
                 // check directories
                 $skip = false;
