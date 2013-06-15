@@ -68,6 +68,9 @@ class Configuration
             throw new \Exception("Can't read the CMS configuration, SyncData stopped.");
         }
 
+        // Windows OS?
+        $is_WIN = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
+
         self::$config_array = array(
             'CMS' => array(
                 'CMS_SERVER_EMAIL' => $cms_settings['server_email'],
@@ -81,7 +84,7 @@ class Configuration
             ),
             'monolog' => array(
                 'email' => array(
-                    'active' => true,
+                    'active' => $is_WIN ? false : true,
                     'level' => 400,
                     'to' => $cms_settings['server_email'],
                     'subject' => 'SyncData Alert'

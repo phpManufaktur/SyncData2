@@ -63,13 +63,16 @@ class Doctrine
         $this->app['monolog']->addInfo(sprintf("The doctrine config file %s does not exists!", self::$config_file));
         // try to get the configuration from the CMS
         try {
+            // Windows OS?
+            $is_WIN = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
+
             $this->app['monolog']->addInfo("Search for the CMS configuration file");
             if (file_exists(realpath(SYNC_DATA_PATH.'/../config.php'))) {
                 include_once realpath(SYNC_DATA_PATH.'/../config.php');
                 self::$config_array = array(
                     'DB_TYPE' => DB_TYPE,
-                    'DB_HOST' => DB_HOST,
-                    'DB_PORT' => DB_PORT,
+                    'DB_HOST' => ((DB_HOST === 'localhost') && $is_WIN) ? '127.0.0.1' : DB_HOST,
+                    'DB_PORT' => defined('DB_PORT') ? DB_PORT : '3306',
                     'DB_USERNAME' => DB_USERNAME,
                     'DB_PASSWORD' => DB_PASSWORD,
                     'DB_NAME' => DB_NAME,
