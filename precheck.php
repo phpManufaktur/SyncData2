@@ -8,15 +8,15 @@
  * @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  *
- * ATTENTION: This is no WebsiteBaker or LEPTON CMS Add-on!
+ * ATTENTION: This is not a installable WebsiteBaker or LEPTON CMS Add-on!
  *
  * The files info.php and precheck.php exists only to give the user
- * a hint if he try to install SyncData as a Add-on.
+ * a hint for the setup if he try to install SyncData as a Add-on.
  */
 
-if (file_exists(__DIR__.'/config/syncdata.json')) {
-    // if the config file exists SyncData is installed regular
-    include __DIR__.'/bootstrap.php';
+if (file_exists(dirname(__FILE__).'/config/syncdata.json')) {
+    // if the config file exists SyncData is installed regular, just ignore this file!
+    include dirname(__FILE__).'/bootstrap.php';
 }
 else {
     // assume: user try to install SyncData as a add-on, so give the CMS some information
