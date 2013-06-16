@@ -11,7 +11,7 @@
 
 namespace phpManufaktur\SyncData\Control;
 
-require_once SYNC_DATA_PATH.'/vendor/Pimple/Pimple.php';
+require_once SYNCDATA_PATH.'/vendor/Pimple/Pimple.php';
 
 /**
  * Basic class for the SyncData Application

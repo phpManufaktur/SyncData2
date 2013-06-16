@@ -298,23 +298,23 @@ class Backup
                 throw new \Exception("Can't write the syncdata.json file for the backup!");
             }
 
-            if (!file_exists(SYNC_DATA_PATH.'/data/backup')) {
-                if (!@mkdir(SYNC_DATA_PATH.'/data/backup', 0755, true)) {
-                    throw new \Exception("Can't create the directory ".SYNC_DATA_PATH.'/data/backup');
+            if (!file_exists(SYNCDATA_PATH.'/data/backup')) {
+                if (!@mkdir(SYNCDATA_PATH.'/data/backup', 0755, true)) {
+                    throw new \Exception("Can't create the directory ".SYNCDATA_PATH.'/data/backup');
                 }
             }
-            if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
-                $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/backup');
+            if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
             }
-            if (file_exists(SYNC_DATA_PATH."/data/backup/$backup_id.zip")) {
-                @unlink(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+            if (file_exists(SYNCDATA_PATH."/data/backup/$backup_id.zip")) {
+                @unlink(SYNCDATA_PATH."/data/backup/$backup_id.zip");
             }
 
             $zip = new Zip($this->app);
-            $zip->zipDir(TEMP_PATH.'/backup', SYNC_DATA_PATH."/data/backup/$backup_id.zip");
+            $zip->zipDir(TEMP_PATH.'/backup', SYNCDATA_PATH."/data/backup/$backup_id.zip");
 
-            $md5 = md5_file(SYNC_DATA_PATH."/data/backup/$backup_id.zip");
-            if (!file_put_contents(SYNC_DATA_PATH."/data/backup/$backup_id.md5", $md5)) {
+            $md5 = md5_file(SYNCDATA_PATH."/data/backup/$backup_id.zip");
+            if (!file_put_contents(SYNCDATA_PATH."/data/backup/$backup_id.md5", $md5)) {
                 throw new \Exception("Can't write the MD5 checksum file for the backup!");
             }
 

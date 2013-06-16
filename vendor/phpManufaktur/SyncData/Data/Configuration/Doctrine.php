@@ -35,7 +35,7 @@ class Doctrine
     public function __construct(Application $app)
     {
         $this->app = $app;
-        self::$config_file = SYNC_DATA_PATH.'/config/doctrine.json';
+        self::$config_file = SYNCDATA_PATH.'/config/doctrine.json';
         if (!$this->app->offsetExists('monolog')) {
             // missing the logging!
             throw new ConfigurationException("Monolog is not available!");
@@ -67,8 +67,8 @@ class Doctrine
             $is_WIN = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
 
             $this->app['monolog']->addInfo("Search for the CMS configuration file");
-            if (file_exists(realpath(SYNC_DATA_PATH.'/../config.php'))) {
-                include_once realpath(SYNC_DATA_PATH.'/../config.php');
+            if (file_exists(realpath(SYNCDATA_PATH.'/../config.php'))) {
+                include_once realpath(SYNCDATA_PATH.'/../config.php');
                 self::$config_array = array(
                     'DB_TYPE' => DB_TYPE,
                     'DB_HOST' => ((DB_HOST === 'localhost') && $is_WIN) ? '127.0.0.1' : DB_HOST,

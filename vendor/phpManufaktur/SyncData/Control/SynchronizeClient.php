@@ -136,7 +136,7 @@ class SynchronizeClient
                 // CHANGED or NEW
                 if (file_exists(TEMP_PATH.'/sync/archive/CMS'.$file['relative_path'])) {
                     if (!@copy(TEMP_PATH.'/sync/archive/CMS'.$file['relative_path'],
-                        SYNC_DATA_PATH.'/sync/archive/CMS'.$file['relative_path'])) {
+                        SYNCDATA_PATH.'/sync/archive/CMS'.$file['relative_path'])) {
                         $this->app['monolog']->addError("Can't copy file to ".$file['relative_path']);
                     }
                     else {
@@ -165,8 +165,8 @@ class SynchronizeClient
             $archive_id = $SyncClient->selectLastArchiveID();
             self::$archive_id = $archive_id+1;
 
-            $zip_path = sprintf('%s/inbox/syncdata_archive_%05d.zip', SYNC_DATA_PATH, self::$archive_id);
-            $md5_path = sprintf('%s/inbox/syncdata_archive_%05d.md5', SYNC_DATA_PATH, self::$archive_id);
+            $zip_path = sprintf('%s/inbox/syncdata_archive_%05d.zip', SYNCDATA_PATH, self::$archive_id);
+            $md5_path = sprintf('%s/inbox/syncdata_archive_%05d.md5', SYNCDATA_PATH, self::$archive_id);
             if (file_exists($zip_path) && file_exists($md5_path)) {
                 // ok - expected archive is there, proceed
                 if (false === ($md5_origin = file_get_contents($md5_path))) {

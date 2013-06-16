@@ -16,7 +16,7 @@ use phpManufaktur\SyncData\Control\JSON\JSONFormat;
 use phpManufaktur\SyncData\Data\CMS\Settings;
 use Monolog\Handler\SwiftMailerHandler;
 
-require_once SYNC_DATA_PATH.'/vendor/SwiftMailer/lib/swift_required.php';
+require_once SYNCDATA_PATH.'/vendor/SwiftMailer/lib/swift_required.php';
 
 /**
  * Get the configuration for the mailer from the parent CMS and create the
@@ -40,7 +40,7 @@ class SwiftMailer
     public function __construct(Application $app)
     {
         $this->app = $app;
-        self::$config_file = SYNC_DATA_PATH.'/config/swiftmailer.json';
+        self::$config_file = SYNCDATA_PATH.'/config/swiftmailer.json';
         if (!$this->app->offsetExists('monolog')) {
             // missing the logging!
             throw new ConfigurationException("Monolog is not available!");

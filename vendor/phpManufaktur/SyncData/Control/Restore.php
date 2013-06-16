@@ -273,11 +273,11 @@ class Restore
 
         // check the /inbox
         $files = array();
-        $directory_handle = dir(SYNC_DATA_PATH.'/inbox');
+        $directory_handle = dir(SYNCDATA_PATH.'/inbox');
         while (false !== ($file = $directory_handle->read())) {
             // get all files into an array
             if (($file == '.') || ($file == '..')) continue;
-            $path = $this->app['utils']->sanitizePath(SYNC_DATA_PATH."/inbox/$file");
+            $path = $this->app['utils']->sanitizePath(SYNCDATA_PATH."/inbox/$file");
             if (is_dir($path)) {
                 // RESTORE does not scan subdirectories!
                 $this->app['monolog']->addInfo("Sipped subdirectory $path, RESTORE search only for files in the /inbox!");
@@ -295,13 +295,13 @@ class Restore
                 continue;
             }
             // process the restore file
-            if (!file_exists(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
+            if (!file_exists(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
                 $result = "Missing the MD5 checksum file for the backup archive!";
                 $this->app['monolog']->addError($result);
                 return $result;
             }
             // get the origin checksum of the backup archive
-            if (false === ($md5_origin = @file_get_contents(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
+            if (false === ($md5_origin = @file_get_contents(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
                 $result = "Can't read the MD5 checksum file for the backup archive!";
                 $this->app['monolog']->addError($result);
                 return $result;
@@ -340,13 +340,13 @@ class Restore
             $this->app['monolog']->addInfo("Added informations for the Synchronize Client");
 
             // move the backup archive to /data/backup
-            if (!file_exists(SYNC_DATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/backup/.htpasswd')) {
-                $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/backup');
+            if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
             }
-            if (!@rename(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNC_DATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
+            if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
                 $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!");
             }
-            if (!@rename(SYNC_DATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNC_DATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
+            if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
                 $this->app['monolog']->addError("Can't save the backup archive in /data/backup!");
             }
 

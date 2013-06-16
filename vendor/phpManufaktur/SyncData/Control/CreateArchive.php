@@ -153,18 +153,18 @@ class CreateArchive
                 throw new \Exception("Can't write the archive.json file for the archive!");
             }
 
-            if (!file_exists(SYNC_DATA_PATH.'/data/archive/.htaccess') || !file_exists(SYNC_DATA_PATH.'/data/archive/.htpasswd')) {
-                $this->app['utils']->createDirectoryProtection(SYNC_DATA_PATH.'/data/archive');
+            if (!file_exists(SYNCDATA_PATH.'/data/archive/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/archive/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/archive');
             }
-            if (file_exists(SYNC_DATA_PATH."/data/archive/".self::$archive_name.".zip")) {
-                @unlink(SYNC_DATA_PATH."/data/archive/".self::$archive_name.".zip");
+            if (file_exists(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip")) {
+                @unlink(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
             }
 
             $zip = new Zip($this->app);
-            $zip->zipDir(TEMP_PATH.'/archive', SYNC_DATA_PATH."/data/archive/".self::$archive_name.".zip");
+            $zip->zipDir(TEMP_PATH.'/archive', SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
 
-            $md5 = md5_file(SYNC_DATA_PATH."/data/archive/".self::$archive_name.".zip");
-            if (!file_put_contents(SYNC_DATA_PATH."/data/archive/".self::$archive_name.".md5", $md5)) {
+            $md5 = md5_file(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
+            if (!file_put_contents(SYNCDATA_PATH."/data/archive/".self::$archive_name.".md5", $md5)) {
                 throw new \Exception("Can't write the MD5 checksum file for the archive!");
             }
 

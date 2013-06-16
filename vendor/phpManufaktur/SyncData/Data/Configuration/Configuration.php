@@ -37,7 +37,7 @@ class Configuration
     public function __construct(Application $app)
     {
         $this->app = $app;
-        self::$config_file = SYNC_DATA_PATH.'/config/syncdata.json';
+        self::$config_file = SYNCDATA_PATH.'/config/syncdata.json';
     }
 
     /**
@@ -61,8 +61,8 @@ class Configuration
     {
         $cmsSettings = new Settings($this->app);
         $cms_settings = $cmsSettings->getSettings();
-        if (file_exists(realpath(SYNC_DATA_PATH.'/../config.php'))) {
-            include_once realpath(SYNC_DATA_PATH.'/../config.php');
+        if (file_exists(realpath(SYNCDATA_PATH.'/../config.php'))) {
+            include_once realpath(SYNCDATA_PATH.'/../config.php');
         }
         else {
             throw new \Exception("Can't read the CMS configuration, SyncData stopped.");
@@ -202,7 +202,7 @@ class Configuration
         define('CMS_PAGES_DIRECTORY', self::$config_array['CMS']['CMS_PAGES_DIRECTORY']);
         define('CMS_SERVER_EMAIL', self::$config_array['CMS']['CMS_SERVER_EMAIL']);
         define('CMS_SERVER_NAME', self::$config_array['CMS']['CMS_SERVER_NAME']);
-        define('TEMP_PATH', SYNC_DATA_PATH.'/temp');
+        define('TEMP_PATH', SYNCDATA_PATH.'/temp');
 
         if (false === ini_set('memory_limit', self::$config_array['general']['memory_limit'])) {
             throw new ConfigurationException(sprintf("Can't set the memory limit to %s", self::$config_array['general']['memory_limit']));
