@@ -131,7 +131,7 @@ class SwiftMailer
             $message = \Swift_Message::newInstance($this->app['config']['monolog']['email']['subject'])
             ->setFrom(CMS_SERVER_EMAIL, CMS_SERVER_NAME)
             ->setTo($this->app['config']['monolog']['email']['to'])
-            ->setBody('SyncDataServer errror');
+            ->setBody('SyncData errror');
             // 400 = Logger::ERROR
             $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, 400));
             $this->app['monolog']->addInfo('Monolog handler for SwiftMailer initialized');

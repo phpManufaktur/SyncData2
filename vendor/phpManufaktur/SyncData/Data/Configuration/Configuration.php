@@ -15,6 +15,7 @@ use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Data\Configuration\ConfigurationException;
 use phpManufaktur\SyncData\Data\CMS\Settings;
 use phpManufaktur\SyncData\Control\JSON\JSONFormat;
+use phpManufaktur\SyncData\Data\Setup\Setup;
 
 /**
  * Create and read the configuration files for SyncData
@@ -28,6 +29,8 @@ class Configuration
     protected $app = null;
     protected static $config_array = null;
     protected static $config_file = null;
+    protected static $key = null;
+    protected static $executed_setup = false;
 
     /**
      * Constructor
@@ -38,6 +41,11 @@ class Configuration
     {
         $this->app = $app;
         self::$config_file = SYNCDATA_PATH.'/config/syncdata.json';
+    }
+
+    public function executedSetup()
+    {
+        return self::$executed_setup;
     }
 
     /**
@@ -71,6 +79,9 @@ class Configuration
         // Windows OS?
         $is_WIN = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
 
+        // generate a KEY
+        self::$key = $this->app['utils']->generatePassword(9, false, 'lud');
+
         self::$config_array = array(
             'CMS' => array(
                 'CMS_SERVER_EMAIL' => $cms_settings['server_email'],
@@ -82,6 +93,9 @@ class Configuration
                 'CMS_URL' => WB_URL,
                 'CMS_PATH' => WB_PATH
             ),
+            'email' => array(
+                'active' => $is_WIN ? false : true
+            ),
             'monolog' => array(
                 'email' => array(
                     'active' => $is_WIN ? false : true,
@@ -91,8 +105,12 @@ class Configuration
                 )
             ),
             'general' => array(
-                'memory_limit' => '512M',
+                'memory_limit' => '256M',
                 'max_execution_time' => '300'
+            ),
+            'security' => array(
+                'active' => true,
+                'key' => self::$key
             ),
             'backup' => array(
                 'settings' => array(
@@ -188,6 +206,10 @@ class Configuration
         if (!file_exists(self::$config_file)) {
             // get the configuration directly from CMS
             $this->getConfigurationFromCMS();
+            // because the configuration file does not exist we also execute the setup!
+            $Setup = new Setup($this->app);
+            $Setup->exec();
+            self::$executed_setup = true;
         }
         elseif ((false === (self::$config_array = json_decode(@file_get_contents(self::$config_file), true))) || !is_array(self::$config_array)) {
             throw new ConfigurationException("Can't read the SyncData configuration file!");

@@ -117,8 +117,12 @@ try {
     $route = substr($_SERVER['REQUEST_URI'], strlen($syncdata_directory)+1,
         (false !== ($pos = strpos($_SERVER['REQUEST_URI'], '?'))) ? $pos-strlen($syncdata_directory)-1 : strlen($_SERVER['REQUEST_URI']));
 
-    define('SYNCDATA_URL', $app['config']['CMS']['CMS_URL'].DIRECTORY_SEPARATOR.$route);
+    define('SYNCDATA_URL', substr($app['utils']->sanitizePath($app['config']['CMS']['CMS_URL'].substr(SYNCDATA_PATH, strlen($app['config']['CMS']['CMS_PATH']))), 1));
 
+    if ($initConfig->executedSetup() && $app['config']['security']['active']) {
+        // if SyncData was initialized prompt a message!
+        $route = '#init_syncdata';
+    }
     $app_result = null;
     switch ($route) {
         case '/precheck.php':
@@ -160,6 +164,20 @@ try {
             $synchronizeClient = new SynchronizeClient($app);
             $app_result = $synchronizeClient->exec();
             break;
+        case '#init_syncdata':
+            $app_result = 'SyncData has successfull initialized and also created a security key: <b>'.
+                $app['config']['security']['key'].'</b><br />'.
+                'Please remember this key, you will need it to execute some commands and to setup cronjobs.';
+            if ($app['config']['email']['active']) {
+                // send the key also with email
+                $message = \Swift_Message::newInstance('SyncData: Key generated')
+                ->setFrom(CMS_SERVER_EMAIL, CMS_SERVER_NAME)
+                ->setTo(CMS_SERVER_EMAIL)
+                ->setBody('SyncData has created a new key: '.$app['config']['security']['key']);
+                $app['mailer']->send($message);
+                $app_result .= '<br />SyncData has also send the key to '.CMS_SERVER_EMAIL;
+            }
+            break;
         case '/':
         default:
             $app_result = '- nothing to do -';
@@ -177,7 +195,7 @@ try {
             $execution_time<br />
             $peak_usage<br />
             <br />
-            Executed: $app_result<br />
+            $app_result<br />
             <br />
             SyncData {$syncdata_version}: Ready
 EOD;
