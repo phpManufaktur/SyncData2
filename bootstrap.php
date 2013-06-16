@@ -119,41 +119,50 @@ try {
 
     define('SYNCDATA_URL', $app['config']['CMS']['CMS_URL'].DIRECTORY_SEPARATOR.$route);
 
+    $app_result = null;
     switch ($route) {
         case '/precheck.php':
         case '/info.php';
-            $result = "This is not an WebsiteBaker or LEPTON CMS installation!";
+            $app_result = "This is not an WebsiteBaker or LEPTON CMS installation!";
+            break;
+        case '/phpinfo':
+            // show phpinfo()
+            phpinfo();
+            break;
+        case '/precheck':
+        case '/systemcheck':
+            include SYNCDATA_PATH.'/systemcheck.php';
             break;
         case '/setup':
             $setup = new Setup($app);
-            $result = $setup->exec();
+            $app_result = $setup->exec();
             break;
         case '/update':
-            $result = 'Update is not implemented';
+            $app_result = 'Update is not implemented';
             break;
         case '/backup':
             $backup = new Backup($app);
-            $result = $backup->exec();
+            $app_result = $backup->exec();
             break;
         case '/restore':
             $restore = new Restore($app);
-            $result = $restore->exec();
+            $app_result = $restore->exec();
             break;
         case '/check':
             $check = new Check($app);
-            $result = $check->exec();
+            $app_result = $check->exec();
             break;
         case '/create':
             $createArchive = new CreateArchive($app);
-            $result = $createArchive->exec();
+            $app_result = $createArchive->exec();
             break;
         case '/sync':
             $synchronizeClient = new SynchronizeClient($app);
-            $result = $synchronizeClient->exec();
+            $app_result = $synchronizeClient->exec();
             break;
         case '/':
         default:
-            $result = '- nothing to do -';
+            $app_result = '- nothing to do -';
             break;
     }
 
@@ -162,16 +171,21 @@ try {
     $peak_usage = sprintf('Memory peak usage: %s MB (Limit: %s)', memory_get_peak_usage(true)/(1024*1024), $app['config']['general']['memory_limit']);
     $app['monolog']->addInfo($peak_usage);
 
-    // exit with result
-    $exit = <<<EOD
-        $execution_time<br />
-        $peak_usage<br />
-        <br />
-        Executed: $result<br />
-        <br />
-        SyncData {$syncdata_version}: Ready
+    if (!is_null($app_result)) {
+        // exit with formatted result
+        $exit = <<<EOD
+            $execution_time<br />
+            $peak_usage<br />
+            <br />
+            Executed: $app_result<br />
+            <br />
+            SyncData {$syncdata_version}: Ready
 EOD;
-    exit($exit);
+        exit($exit);
+    } else {
+        // exit without additional information
+        exit();
+    }
 } catch (\Exception $e) {
     if ($app->offsetExists('monolog')) {
         $app['monolog']->addError(strip_tags($e->getMessage()), array('file' => $e->getFile(), 'line' => $e->getLine()));
