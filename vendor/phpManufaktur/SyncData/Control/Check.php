@@ -290,7 +290,6 @@ class Check
                     $this->app['monolog']->addInfo("The file {$file['relative_path']} does no longer exists.");
                 }
             }
-
             // now we check for new files
             $stack = array();
             $stack[] = CMS_PATH;

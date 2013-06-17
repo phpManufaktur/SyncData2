@@ -282,7 +282,7 @@ class Backup
             $this->backupDatabase(self::$backup_id);
 
             // backup all files
-            $this->backupFiles();
+            $this->backupFiles(self::$backup_id);
 
             $data = array();
             $data['backup'] = $this->app['config']['backup'];
