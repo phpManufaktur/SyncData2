@@ -22,8 +22,9 @@ use phpManufaktur\SyncData\Data\Configuration\Configuration;
 use phpManufaktur\SyncData\Data\Configuration\Doctrine;
 use phpManufaktur\SyncData\Data\Configuration\SwiftMailer;
 use phpManufaktur\SyncData\Data\Setup\Setup;
-use phpManufaktur\SyncData\Control\CreateArchive;
+use phpManufaktur\SyncData\Control\CreateSynchronizeArchive;
 use phpManufaktur\SyncData\Control\SynchronizeClient;
+use phpManufaktur\SyncData\Control\CheckKey;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -124,9 +125,12 @@ try {
         $route = '#init_syncdata';
     }
     $app_result = null;
+    // init the KEY check class
+    $CheckKey = new CheckKey($app);
     switch ($route) {
         case '/precheck.php':
         case '/info.php';
+            // information for the CMS backward compatibility only
             $app_result = "This is not an WebsiteBaker or LEPTON CMS installation!";
             break;
         case '/phpinfo':
@@ -135,36 +139,85 @@ try {
             break;
         case '/precheck':
         case '/systemcheck':
+            // execute a systemcheck
             include SYNCDATA_PATH.'/systemcheck.php';
             break;
         case '/setup':
+            // force a setup
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $setup = new Setup($app);
             $app_result = $setup->exec();
             break;
         case '/update':
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $app_result = 'Update is not implemented';
             break;
         case '/backup':
+            // create a backup
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $backup = new Backup($app);
             $app_result = $backup->exec();
             break;
         case '/restore':
+            // restore a backup to itself or to a client
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $restore = new Restore($app);
             $app_result = $restore->exec();
             break;
         case '/check':
+            // check changes in the CMS but don't create an archive yet
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $check = new Check($app);
             $app_result = $check->exec();
             break;
         case '/create':
-            $createArchive = new CreateArchive($app);
+            // create the synchronize archive for the client
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $createArchive = new CreateSynchronizeArchive($app);
+            $app_result = $createArchive->exec();
+            break;
+        case '/createsync':
+            // check and create a synchronize archive
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            // check the system for changes
+            $check = new Check($app);
+            $check->exec();
+            // create a archive for the client
+            $createArchive = new CreateSynchronizeArchive($app);
             $app_result = $createArchive->exec();
             break;
         case '/sync':
+            // synchronize the client with the server
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
             $synchronizeClient = new SynchronizeClient($app);
             $app_result = $synchronizeClient->exec();
             break;
         case '#init_syncdata':
+            // initialized SyncData2
             $app_result = 'SyncData has successfull initialized and also created a security key: <b>'.
                 $app['config']['security']['key'].'</b><br />'.
                 'Please remember this key, you will need it to execute some commands and to setup cronjobs.';

@@ -55,7 +55,7 @@ class Backup
      */
     public function createBackupID()
     {
-        self::$backup_id = date('Ymd-Hi');
+        self::$backup_id = date('Ymd_Hi');
         self::$backup_date = date('Y-m-d H:i:s');
         return self::$backup_id;
     }
@@ -97,10 +97,14 @@ class Backup
 
         // get the tables to ignore
         $ignore_tables = $this->app['config']['backup']['tables']['ignore'];
-
         $this->app['utils']->setCountTables();
         foreach ($this->tables as $table) {
             // $table contains also the table prefix!
+            $prefix = substr($table, 0, strlen(CMS_TABLE_PREFIX));
+            if ($prefix !== CMS_TABLE_PREFIX) {
+                // ignore all tables with another table prefix!
+                continue;
+            }
             $table = substr($table, strlen(CMS_TABLE_PREFIX));
             if (!is_null($ignore_tables) && in_array($table, $ignore_tables)) continue;
             $this->app['monolog']->addInfo("Start backup table $table");
@@ -281,6 +285,9 @@ class Backup
             $backup_id = $this->createBackupID();
             $this->backupDatabase(self::$backup_id);
 
+            // backup filename
+            $backup_file = SYNCDATA_PATH."/data/backup/syncdata_backup_$backup_id.zip";
+
             // backup all files
             $this->backupFiles(self::$backup_id);
 
@@ -306,15 +313,16 @@ class Backup
             if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
                 $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
             }
-            if (file_exists(SYNCDATA_PATH."/data/backup/$backup_id.zip")) {
-                @unlink(SYNCDATA_PATH."/data/backup/$backup_id.zip");
+
+            if (file_exists($backup_file)) {
+                @unlink($backup_file);
             }
 
             $zip = new Zip($this->app);
-            $zip->zipDir(TEMP_PATH.'/backup', SYNCDATA_PATH."/data/backup/$backup_id.zip");
+            $zip->zipDir(TEMP_PATH.'/backup', $backup_file);
 
-            $md5 = md5_file(SYNCDATA_PATH."/data/backup/$backup_id.zip");
-            if (!file_put_contents(SYNCDATA_PATH."/data/backup/$backup_id.md5", $md5)) {
+            $md5 = md5_file($backup_file);
+            if (!file_put_contents(SYNCDATA_PATH."/data/backup/syncdata_backup_$backup_id.md5", $md5)) {
                 throw new \Exception("Can't write the MD5 checksum file for the backup!");
             }
 

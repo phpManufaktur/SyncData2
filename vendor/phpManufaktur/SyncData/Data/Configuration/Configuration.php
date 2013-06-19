@@ -91,7 +91,8 @@ class Configuration
                 'CMS_MEDIA_DIRECTORY' => $cms_settings['media_directory'],
                 'CMS_PAGES_DIRECTORY' => $cms_settings['pages_directory'],
                 'CMS_URL' => WB_URL,
-                'CMS_PATH' => WB_PATH
+                'CMS_PATH' => WB_PATH,
+                'INSTALLATION_NAME' => defined('INSTALLATION_NAME') ? INSTALLATION_NAME : ''
             ),
             'email' => array(
                 'active' => $is_WIN ? false : true
@@ -105,6 +106,7 @@ class Configuration
                 )
             ),
             'general' => array(
+                'client_id' => $this->app['utils']->generatePassword(9, false, 'ld'),
                 'memory_limit' => '256M',
                 'max_execution_time' => '300'
             ),

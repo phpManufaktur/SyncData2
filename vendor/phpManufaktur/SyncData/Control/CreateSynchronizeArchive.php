@@ -18,7 +18,7 @@ use phpManufaktur\SyncData\Data\SynchronizeFiles;
 use phpManufaktur\SyncData\Data\SynchronizeArchives;
 use phpManufaktur\SyncData\Control\Zip\Zip;
 
-class CreateArchive
+class CreateSynchronizeArchive
 {
 
     protected $app = null;
@@ -43,8 +43,8 @@ class CreateArchive
             $temp_master[] = $master;
         }
         $syncMaster = $temp_master;
-        if (!file_put_contents(TEMP_PATH.'/archive/master.json', json_encode($syncMaster))) {
-            throw new \Exception("Can't write the master.json file for the archive!");
+        if (!file_put_contents(TEMP_PATH.'/synchronize/master.json', json_encode($syncMaster))) {
+            throw new \Exception("Can't write the master.json file for the synchronize archive!");
         }
     }
 
@@ -58,8 +58,8 @@ class CreateArchive
             $temp_tables[] = $table;
         }
         $syncTables = $temp_tables;
-        if (!file_put_contents(TEMP_PATH.'/archive/tables.json', json_encode($syncTables))) {
-            throw new \Exception("Can't write the tables.json file for the archive!");
+        if (!file_put_contents(TEMP_PATH.'/synchronize/tables.json', json_encode($syncTables))) {
+            throw new \Exception("Can't write the tables.json file for the synchronize archive!");
         }
     }
 
@@ -74,7 +74,7 @@ class CreateArchive
             if ($file['action'] !== 'DELETE') {
                 // copy the file to the archive
                 $source = CMS_PATH.$file['relative_path'];
-                $target = TEMP_PATH.'/archive/CMS'.$file['relative_path'];
+                $target = TEMP_PATH.'/synchronize/CMS'.$file['relative_path'];
                 if (!file_exists(dirname($target)) && !@mkdir(dirname($target), 0755, true)) {
                     throw new \Exception("Can't create the directory ".dirname($target));
                 }
@@ -84,8 +84,8 @@ class CreateArchive
             }
         }
         $syncFiles = $temp_files;
-        if (!file_put_contents(TEMP_PATH.'/archive/files.json', json_encode($syncFiles))) {
-            throw new \Exception("Can't write the files.json file for the archive!");
+        if (!file_put_contents(TEMP_PATH.'/synchronize/files.json', json_encode($syncFiles))) {
+            throw new \Exception("Can't write the files.json file for the synchronize archive!");
         }
     }
 
@@ -107,7 +107,7 @@ class CreateArchive
 
         self::$archive_date = date('Y-m-d H:i:s');
 
-        self::$archive_name = sprintf('syncdata_archive_%05d', self::$archive_id);
+        self::$archive_name = sprintf('syncdata_synchronize_%05d', self::$archive_id);
 
         // check if there are data for synchronizing pending
         $SynchronizeMaster = new SynchronizeMaster($this->app);
@@ -125,14 +125,14 @@ class CreateArchive
 
             // process the sync informations
             $this->app['monolog']->addInfo("Start creating the new archive ".self::$archive_name);
-            if (file_exists(TEMP_PATH.'/archive') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/archive'))) {
-                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/archive'));
+            if (file_exists(TEMP_PATH.'/synchronize') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/synchronize'))) {
+                throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/synchronize'));
             }
             // create the backup directory
-            if (false === @mkdir(TEMP_PATH.'/archive', 0755, true)) {
-                throw new \Exception("Can't create the directory ".TEMP_PATH."/archive");
+            if (false === @mkdir(TEMP_PATH.'/synchronize', 0755, true)) {
+                throw new \Exception("Can't create the directory ".TEMP_PATH."/synchronize");
             }
-            $this->app['monolog']->addInfo('Prepared temporary directory for the archive');
+            $this->app['monolog']->addInfo('Prepared temporary directory for the synchronize archive');
 
             // process master
             $this->processMaster($syncMaster);
@@ -149,24 +149,26 @@ class CreateArchive
                 'archive_date' => self::$archive_date,
                 'backup_id' => self::$backup_id
             );
-            if (!file_put_contents(TEMP_PATH.'/archive/archive.json', json_encode($data))) {
-                throw new \Exception("Can't write the archive.json file for the archive!");
+            if (!file_put_contents(TEMP_PATH.'/synchronize/archive.json', json_encode($data))) {
+                throw new \Exception("Can't write the archive.json file for the synchronize archive!");
             }
 
-            if (!file_exists(SYNCDATA_PATH.'/data/archive/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/archive/.htpasswd')) {
-                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/archive');
+            if (!file_exists(SYNCDATA_PATH.'/data/synchronize/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/synchronize/.htpasswd')) {
+                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/synchronize');
             }
-            if (file_exists(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip")) {
-                @unlink(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
+            if (file_exists(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip")) {
+                @unlink(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip");
             }
 
             $zip = new Zip($this->app);
-            $zip->zipDir(TEMP_PATH.'/archive', SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
+            $zip->zipDir(TEMP_PATH.'/synchronize', SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip");
 
-            $md5 = md5_file(SYNCDATA_PATH."/data/archive/".self::$archive_name.".zip");
-            if (!file_put_contents(SYNCDATA_PATH."/data/archive/".self::$archive_name.".md5", $md5)) {
-                throw new \Exception("Can't write the MD5 checksum file for the archive!");
+            $md5 = md5_file(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip");
+            if (!file_put_contents(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".md5", $md5)) {
+                throw new \Exception("Can't write the MD5 checksum file for the synchronize archive!");
             }
+
+
 
             // ok - all done, now update the sync tables
             $sync_master = array();
@@ -200,7 +202,7 @@ class CreateArchive
                 throw new \Exception("Fatal: got not the expected archive ID!");
             }
 
-            $this->app['monolog']->addInfo("Finished, archive created: ".self::$archive_name);
+            $this->app['monolog']->addInfo("Finished, synchronize archive created: ".self::$archive_name);
             return 'ok';
         }
         else {

@@ -39,10 +39,10 @@ class SynchronizeClient
 
     protected function processTables()
     {
-        if (!file_exists(TEMP_PATH.'/sync/archive/tables.json')) {
+        if (!file_exists(TEMP_PATH.'/sync/synchronize/tables.json')) {
             throw new \Exception("tables.json does not exists!");
         }
-        if (false === ($tables = json_decode(@file_get_contents(TEMP_PATH.'/sync/archive/tables.json'), true))) {
+        if (false === ($tables = json_decode(@file_get_contents(TEMP_PATH.'/sync/synchronize/tables.json'), true))) {
             throw new \Exception("Can't decode the tables.json file!");
         }
         $General = new General($this->app);
@@ -119,10 +119,10 @@ class SynchronizeClient
      */
     protected function processFiles()
     {
-        if (!file_exists(TEMP_PATH.'/sync/archive/files.json')) {
+        if (!file_exists(TEMP_PATH.'/sync/synchronize/files.json')) {
             throw new \Exception("files.json does not exists!");
         }
-        if (false === ($files = json_decode(@file_get_contents(TEMP_PATH.'/sync/archive/files.json'), true))) {
+        if (false === ($files = json_decode(@file_get_contents(TEMP_PATH.'/sync/synchronize/files.json'), true))) {
             throw new \Exception("Can't decode the files.json file!");
         }
         foreach ($files as $file) {
@@ -134,9 +134,9 @@ class SynchronizeClient
             }
             else {
                 // CHANGED or NEW
-                if (file_exists(TEMP_PATH.'/sync/archive/CMS'.$file['relative_path'])) {
-                    if (!@copy(TEMP_PATH.'/sync/archive/CMS'.$file['relative_path'],
-                        SYNCDATA_PATH.'/sync/archive/CMS'.$file['relative_path'])) {
+                if (file_exists(TEMP_PATH.'/sync/synchronize/CMS'.$file['relative_path'])) {
+                    if (!@copy(TEMP_PATH.'/sync/synchronize/CMS'.$file['relative_path'],
+                        CMS_PATH.$file['relative_path'])) {
                         $this->app['monolog']->addError("Can't copy file to ".$file['relative_path']);
                     }
                     else {
@@ -165,8 +165,8 @@ class SynchronizeClient
             $archive_id = $SyncClient->selectLastArchiveID();
             self::$archive_id = $archive_id+1;
 
-            $zip_path = sprintf('%s/inbox/syncdata_archive_%05d.zip', SYNCDATA_PATH, self::$archive_id);
-            $md5_path = sprintf('%s/inbox/syncdata_archive_%05d.md5', SYNCDATA_PATH, self::$archive_id);
+            $zip_path = sprintf('%s/inbox/syncdata_synchronize_%05d.zip', SYNCDATA_PATH, self::$archive_id);
+            $md5_path = sprintf('%s/inbox/syncdata_synchronize_%05d.md5', SYNCDATA_PATH, self::$archive_id);
             if (file_exists($zip_path) && file_exists($md5_path)) {
                 // ok - expected archive is there, proceed
                 if (false === ($md5_origin = file_get_contents($md5_path))) {
