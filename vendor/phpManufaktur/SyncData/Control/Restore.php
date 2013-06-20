@@ -81,8 +81,6 @@ class Restore
         try {
             // restore the tables
             foreach ($tables as $table) {
-                //if ($table != 'kit2_propangas24_zip_list') continue;
-
                 if (in_array($table, $ignore_tables)) {
                     $this->app['monolog']->addInfo("Skipped table $table because it is member of the ignore list");
                     continue;
@@ -136,7 +134,7 @@ class Restore
                             throw new \Exception("Can't read the MD5 checksum for table $table");
                         }
                         $new_md5 = $general->getTableContentChecksum(CMS_TABLE_PREFIX.$table);
-                        if ($md5 != $new_md5) {
+                        if (($md5 != $new_md5) && ($table !== 'pages')) {
                             throw new \Exception("MD5 checksum comparison ($md5 <=> $new_md5) for table $table failed!");
                         }
                         $this->app['monolog']->addInfo("MD5 checksum comparison for table $table was successfull");
