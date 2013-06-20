@@ -32,11 +32,11 @@ class SynchronizeClient
         $this->app = $app;
     }
 
-    protected function processMaster()
-    {
-        return true;
-    }
-
+    /**
+     * Process the tables for the synchronization
+     *
+     * @throws \Exception
+     */
     protected function processTables()
     {
         if (!file_exists(TEMP_PATH.'/sync/synchronize/tables.json')) {
@@ -65,7 +65,7 @@ class SynchronizeClient
                     if (false === ($data = json_decode($this->app['utils']->unsanitizeText($table['content']), true))) {
                         throw new \Exception("Problem decoding json content!");
                     }
-                    $General->insertRow(CMS_TABLE_PREFIX.$table['table_name'], $data);
+                    $General->insert(CMS_TABLE_PREFIX.$table['table_name'], $data);
                     $checksum = $General->getRowContentChecksum(CMS_TABLE_PREFIX.$table['table_name'], array($table['index_field'] => $table['index_id']));
                     if ($checksum !== $table['checksum']) {
                         $this->app['monolog']->addError(sprintf("Table %s INSERT %s => %s successfull, but the checksum differ! Please check the table!",
@@ -155,6 +155,12 @@ class SynchronizeClient
         }
     }
 
+    /**
+     * Main routine to exec the synchronization
+     *
+     * @throws \Exception
+     * @return string
+     */
     public function exec()
     {
         try {
@@ -167,6 +173,8 @@ class SynchronizeClient
 
             $zip_path = sprintf('%s/inbox/syncdata_synchronize_%05d.zip', SYNCDATA_PATH, self::$archive_id);
             $md5_path = sprintf('%s/inbox/syncdata_synchronize_%05d.md5', SYNCDATA_PATH, self::$archive_id);
+            $md5_archive_path = sprintf('%s/data/synchronize/syncdata_synchronize_%05d.md5', SYNCDATA_PATH, self::$archive_id);
+            $zip_archive_path = sprintf('%s/data/synchronize/syncdata_synchronize_%05d.zip', SYNCDATA_PATH, self::$archive_id);
             if (file_exists($zip_path) && file_exists($md5_path)) {
                 // ok - expected archive is there, proceed
                 if (false === ($md5_origin = file_get_contents($md5_path))) {
@@ -193,9 +201,6 @@ class SynchronizeClient
                 $unZip->extract($zip_path);
                 $this->app['monolog']->addInfo("Unzipped $zip_path");
 
-                // process the master
-                $this->processMaster();
-
                 // process the tables
                 $this->processTables();
 
@@ -209,6 +214,24 @@ class SynchronizeClient
                 );
                 $SyncClient->insert($data);
 
+                // move the files from the /inbox to /data/synchronize
+                if (!file_exists(SYNCDATA_PATH.'/data/synchronize/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/synchronize/.htpasswd')) {
+                    $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/synchronize');
+                }
+                if (!@rename($md5_path, $md5_archive_path)) {
+                    $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/synchronize!");
+                }
+                if (!@rename($zip_path, $zip_archive_path)) {
+                    $this->app['monolog']->addError("Can't save the synchronize archive in /data/synchronize!");
+                }
+
+                // delete the temp directories
+                $directories = array('/backup', '/restore', '/sync', '/unzip');
+                foreach ($directories as $directory) {
+                    if (file_exists(TEMP_PATH.$directory) && (true !== $this->app['utils']->rrmdir(TEMP_PATH.$directory))) {
+                        throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.directory));
+                    }
+                }
                 $this->app['monolog']->addInfo("SYNC finished!");
             }
             else {
