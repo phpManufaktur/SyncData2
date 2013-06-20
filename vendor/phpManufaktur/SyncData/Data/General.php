@@ -274,27 +274,90 @@ class General {
     {
         try {
             foreach ($rows as $row) {
-                if ($replace_cms_url) {
-                    $content = array();
-                    foreach ($row as $key => $value) {
-                        $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
-                    }
-                    $row = $content;
-                }
-                $this->app['db']->insert($table, $row);
+                $this->insertRow($table, $row, $replace_cms_url);
             }
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw $e;
+            throw new \Exception($e);
         }
     }
 
-    public function insertRow($table, $data, $replace_cms_url=true)
+    /**
+     * Compatibility SQL Insert for CMS tables which does not handle UTF-8 in a proper way
+     *
+     * @param string $table including the CMS_TABLE_PREFIX
+     * @param array $data
+     * @param boolean $replace_cms_url
+     * @throws \Exception
+     * @throws Exception
+     */
+    protected function compatibilityInsert($table, $data, $replace_cms_url)
     {
         try {
+            $SQL = "INSERT INTO `$table` SET ";
+            $start = true;
+            foreach ($data as $key => $value) {
+                if (($table === CMS_TABLE_PREFIX.'pages') && (($key === 'menu_title') || ($key == 'page_title'))) {
+                    $value = htmlspecialchars($value);
+                }
+                if ($replace_cms_url) {
+                    $value = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                }
+                if (!$start) {
+                    $SQL .= ", ";
+                }
+                if ($start) {
+                    $start = false;
+                }
+                $SQL .= "`$key`='$value'";
+
+            }
+            // create a separated MySQL connection
+            if ((false === ($db_config = json_decode(@file_get_contents(SYNCDATA_PATH.'/config/doctrine.json'), true))) || !is_array($db_config)) {
+                throw new \Exception("Can't read the Doctrine configuration file!");
+            }
+            // connect MySQL
+            if (false === ($link = mysql_connect($db_config['DB_HOST'], $db_config['DB_USERNAME'], $db_config['DB_PASSWORD']))) {
+                throw new \Exception("Error connectiong to the database: ".mysql_error());
+            }
+            // select database
+            if (!mysql_select_db($db_config['DB_NAME'], $link)) {
+                throw new \Exception("Error selecting the database: ".mysql_error());
+            }
+            // insert the row "as it is"
+            if (!mysql_query($SQL, $link)) {
+                throw new \Exception("Error compatibility INSERT: ".mysql_error());
+            }
+            // close the connection
+            mysql_close($link);
+        }
+        catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Standard SQL insert routine
+     *
+     * @param string $table including the CMS_TABLE_PREFIX
+     * @param array $data
+     * @param boolean $replace_cms_url
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function insert($table, $data, $replace_cms_url=true)
+    {
+        try {
+            if ($table === CMS_TABLE_PREFIX.'pages') {
+                return $this->compatibilityInsert($table, $data, $replace_cms_url);
+            }
             if ($replace_cms_url) {
                 $content = array();
                 foreach ($data as $key => $value) {
-                    $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                    if ($replace_cms_url) {
+                        $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                    }
+                    else {
+                        $content[$this->app['db']->quoteIdentifier($key)] = $value;
+                    }
                 }
                 $data = $content;
             }
@@ -324,22 +387,105 @@ class General {
     }
 
     /**
-     * Update the specified record
+     * Compatibility SQL update which submit the bare data without any checks
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @param string $table including the CMS_TABLE_PREFIX
+     * @param array $fields with key and value for the WHERE clause
+     * @param array $data to update
+     * @param boolean $replace_cms_url
+     * @throws \Exception
+     * @throws Exception
      */
-    public function update($table, $fields, $data)
+    protected function compatibilityUpdate($table, $fields, $data, $replace_cms_url=true)
     {
         try {
+            $SQL = "UPDATE `$table` SET ";
+            $start = true;
+            foreach ($data as $key => $value) {
+                if (($table === CMS_TABLE_PREFIX.'pages') && (($key === 'menu_title') || ($key == 'page_title'))) {
+                    $value = htmlspecialchars($value);
+                }
+                if ($replace_cms_url) {
+                    $value = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                }
+                if (!$start) {
+                    $SQL .= ", ";
+                }
+                if ($start) {
+                    $start = false;
+                }
+                $SQL .= "`$key`='$value'";
+            }
+            $SQL .= " WHERE ";
+            $start = true;
+            foreach ($fields as $key => $value) {
+                if (!$start) {
+                    $SQL .= " AND ";
+                }
+                else {
+                    $start = false;
+                }
+                $SQL .= "`$key`='$value'";
+            }
+            // create a separated MySQL connection
+            if ((false === ($db_config = json_decode(@file_get_contents(SYNCDATA_PATH.'/config/doctrine.json'), true))) || !is_array($db_config)) {
+                throw new \Exception("Can't read the Doctrine configuration file!");
+            }
+            // connect MySQL
+            if (false === ($link = mysql_connect($db_config['DB_HOST'], $db_config['DB_USERNAME'], $db_config['DB_PASSWORD']))) {
+                throw new \Exception("Error connecting to the database: ".mysql_error());
+            }
+            // select database
+            if (!mysql_select_db($db_config['DB_NAME'], $link)) {
+                throw new \Exception("Error selecting the database: ".mysql_error());
+            }
+            // insert the row "as it is"
+            if (!mysql_query($SQL, $link)) {
+                throw new \Exception("Error compatibility UPDATE: ".mysql_error());
+            }
+            // close the connection
+            mysql_close($link);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Update the specified table with the specified data
+     *
+     * @param string $table including the CMS_TABLE_PREFIX
+     * @param array $fields with key and value for the WHERE clause
+     * @param array $data to update
+     * @param boolean $replace_cms_url
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function update($table, $fields, $data, $replace_cms_url=true)
+    {
+        try {
+            if ($table === CMS_TABLE_PREFIX.'pages') {
+                return $this->compatibilityUpdate($table, $fields, $data);
+            }
             $update = array();
             foreach ($data as $key => $value)
-                $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                if ($replace_cms_url) {
+                    $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                }
+                else {
+                    $update[$this->app['db']->quoteIdentifier($key)] = $value;
+                }
             $this->app['db']->update($table, $update, $fields);
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;
         }
     }
 
+    /**
+     * Standard SQL to delete rows from a table
+     *
+     * @param string $table including the CMS_TABLE_PREFIX
+     * @param array $fields associative fields and values for the WHERE clause
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function delete($table, $fields)
     {
         try {
