@@ -53,7 +53,7 @@ class Settings {
             $this->app['monolog']->addInfo('Read the CMS settings from DB');
             return $settings;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e);
         }
     }
 }
