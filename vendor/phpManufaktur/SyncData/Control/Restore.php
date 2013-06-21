@@ -146,7 +146,7 @@ class Restore
                 // we have created a backup before and can restore!
                 $this->app['monolog']->addError($e->getMessage());
                 $this->app['monolog']->addCritical("Abort RESTORE, try to restore the previous created BACKUP!");
-                //$this->restoreTables(TEMP_PATH.'/backup/tables', false);
+                $this->restoreTables(TEMP_PATH.'/backup/tables', false);
                 $this->app['monolog']->addInfo("The RESTORE from previous created BACKUP was SUCCESFULL");
                 throw new \Exception("The RESTORE process failed with errors. The tables where successfull recovered");
             } else {
