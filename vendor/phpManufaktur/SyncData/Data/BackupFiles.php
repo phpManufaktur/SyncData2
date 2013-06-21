@@ -68,7 +68,7 @@ EOD;
             $this->app['db']->query($SQL);
             $this->app['monolog']->addInfo("Created table '".self::$table_name."' for the class BackupFiles");
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw $e;
+            throw new \Exception($e);
         }
     } // createTable()
 
@@ -88,7 +88,7 @@ EOD;
             $this->app['db']->insert(self::$table_name, $insert);
             $id = $this->app['db']->lastInsertId();
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw $e;
+            throw new \Exception($e);
         }
     }
 
@@ -106,7 +106,7 @@ EOD;
             $result = $this->app['db']->fetchAll($SQL);
             return is_array($result) ? $result : false;
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw $e;
+            throw new \Exception($e);
         }
     }
 
@@ -125,7 +125,7 @@ EOD;
                 $update[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? $this->app['utils']->sanitizeText($value) : $value;
             $this->app['db']->update(self::$table_name, $update, array('id' => $id));
         } catch (\Doctrine\DBAL\DBALException $e) {
-            throw $e;
+            throw new \Exception($e);
         }
     }
 
