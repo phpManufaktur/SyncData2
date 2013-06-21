@@ -81,7 +81,7 @@ class SwiftMailer
         if (!@file_put_contents(self::$config_file, $json)) {
             throw new ConfigurationException("Can't write the configuration file for SwiftMailer!");
         }
-        $this->app['monolog']->addInfo('Create /config/swiftmailer.json');
+        $this->app['monolog']->addInfo('Create /config/swiftmailer.json', array('method' => __METHOD__, 'line' => __LINE__));
     }
 
     /**
@@ -93,7 +93,8 @@ class SwiftMailer
     {
         if (!file_exists(self::$config_file)) {
             // get the configuration directly from CMS
-            $this->app['monolog']->addInfo('SwiftMailer configuration does not exists');
+            $this->app['monolog']->addInfo('SwiftMailer configuration does not exists',
+                array('method' => __METHOD__, 'line' => __LINE__));
             $this->getConfigurationFromCMS();
         }
         elseif ((false === (self::$config_array = json_decode(@file_get_contents(self::$config_file), true))) || !is_array(self::$config_array)) {
@@ -114,17 +115,20 @@ class SwiftMailer
             $transport = \Swift_SmtpTransport::newInstance(self::$config_array['SMTP_HOST'], self::$config_array['SMTP_PORT'], $security)
             ->setUsername(self::$config_array['SMTP_USERNAME'])
             ->setPassword(self::$config_array['SMTP_PASSWORD']);
-            $this->app['monolog']->addInfo('SwiftMailer transport with SMTP authentication initialized');
+            $this->app['monolog']->addInfo('SwiftMailer transport with SMTP authentication initialized',
+                array('method' => __METHOD__, 'line' => __LINE__));
         }
         else {
             $transport = \Swift_SmtpTransport::newInstance(self::$config_array['SMTP_HOST'], self::$config_array['SMTP_PORT']);
-            $this->app['monolog']->addInfo('SwiftMailer transport without SMTP authentication initialized');
+            $this->app['monolog']->addInfo('SwiftMailer transport without SMTP authentication initialized',
+                array('method' => __METHOD__, 'line' => __LINE__));
         }
 
         $this->app['mailer'] = $this->app->share(function() use ($transport) {
             return \Swift_Mailer::newInstance($transport);
         });
-        $this->app['monolog']->addInfo('SwiftMailer initialized');
+        $this->app['monolog']->addInfo('SwiftMailer initialized',
+            array('method' => __METHOD__, 'line' => __LINE__));
 
         if ($this->app['config']['monolog']['email']['active']) {
             // push handler for SwiftMail to Monolog to prompt errors
@@ -134,7 +138,8 @@ class SwiftMailer
             ->setBody('SyncData errror');
             // 400 = Logger::ERROR
             $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, 400));
-            $this->app['monolog']->addInfo('Monolog handler for SwiftMailer initialized');
+            $this->app['monolog']->addInfo('Monolog handler for SwiftMailer initialized',
+                array('method' => __METHOD__, 'line' => __LINE__));
         }
     }
 

@@ -95,7 +95,7 @@ class CreateSynchronizeArchive
         $BackupMaster = new BackupMaster($this->app);
         if (false === (self::$backup_id = $BackupMaster->selectLastBackupID())) {
             $result = "Got no valid backup ID - please create a backup first!";
-            $this->app['monolog']->addInfo($result);
+            $this->app['monolog']->addInfo($result, array('method' => __METHOD__, 'line' => __LINE__));
             return $result;
         }
         self::$backup_date = $BackupMaster->selectBackupDate(self::$backup_id);
@@ -124,7 +124,8 @@ class CreateSynchronizeArchive
             (is_array($syncFiles) && (count($syncFiles) > 0))) {
 
             // process the sync informations
-            $this->app['monolog']->addInfo("Start creating the new archive ".self::$archive_name);
+            $this->app['monolog']->addInfo("Start creating the new archive ".self::$archive_name,
+                array('method' => __METHOD__, 'line' => __LINE__));
             if (file_exists(TEMP_PATH.'/synchronize') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/synchronize'))) {
                 throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/synchronize'));
             }
@@ -132,7 +133,8 @@ class CreateSynchronizeArchive
             if (false === @mkdir(TEMP_PATH.'/synchronize', 0755, true)) {
                 throw new \Exception("Can't create the directory ".TEMP_PATH."/synchronize");
             }
-            $this->app['monolog']->addInfo('Prepared temporary directory for the synchronize archive');
+            $this->app['monolog']->addInfo('Prepared temporary directory for the synchronize archive',
+                array('method' => __METHOD__, 'line' => __LINE__));
 
             // process master
             $this->processMaster($syncMaster);
@@ -202,13 +204,14 @@ class CreateSynchronizeArchive
                 throw new \Exception("Fatal: got not the expected archive ID!");
             }
 
-            $this->app['monolog']->addInfo("Finished, synchronize archive created: ".self::$archive_name);
+            $this->app['monolog']->addInfo("Finished, synchronize archive created: ".self::$archive_name,
+                array('method' => __METHOD__, 'line' => __LINE__));
             return 'ok';
         }
         else {
             // nothing to do...
             $result = "Create: there is nothing to do!";
-            $this->app['monolog']->addInfo($result);
+            $this->app['monolog']->addInfo($result, array('method' => __METHOD__, 'line' => __LINE__));
             return $result;
         }
     }

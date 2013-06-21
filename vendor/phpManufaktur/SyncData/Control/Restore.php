@@ -82,7 +82,8 @@ class Restore
             // restore the tables
             foreach ($tables as $table) {
                 if (in_array($table, $ignore_tables)) {
-                    $this->app['monolog']->addInfo("Skipped table $table because it is member of the ignore list");
+                    $this->app['monolog']->addInfo("Skipped table $table because it is member of the ignore list",
+                        array('method' => __METHOD__, 'line' => __LINE__));
                     continue;
                 }
 
@@ -107,7 +108,8 @@ class Restore
                     try {
                         // disable the table keys
                         $this->app['db']->query("ALTER TABLE ".CMS_TABLE_PREFIX."$table DISABLE KEYS");
-                        $this->app['monolog']->addInfo("DISABLE KEYS for $table");
+                        $this->app['monolog']->addInfo("DISABLE KEYS for $table",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     } catch (\Doctrine\DBAL\DBALException $e) {
                         throw $e->getMessage();
                     }
@@ -118,12 +120,14 @@ class Restore
                     // insert the table rows
                     $replace_cms_url = $this->app['config']['restore']['settings']['replace_cms_url'];
                     $general->insertRows(CMS_TABLE_PREFIX.$table, $rows, $replace_cms_url);
-                    $this->app['monolog']->addInfo(sprintf("Inserted %d rows into table %s", count($rows), $table));
+                    $this->app['monolog']->addInfo(sprintf("Inserted %d rows into table %s", count($rows), $table),
+                        array('method' => __METHOD__, 'line' => __LINE__));
 
                     try{
                         // enable the table keys
                         $this->app['db']->query("ALTER TABLE ".CMS_TABLE_PREFIX."$table ENABLE KEYS");
-                        $this->app['monolog']->addInfo("ENABLE KEYS for $table");
+                        $this->app['monolog']->addInfo("ENABLE KEYS for $table",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     } catch (\Doctrine\DBAL\DBALException $e) {
                         throw $e->getMessage();
                     }
@@ -137,17 +141,21 @@ class Restore
                         if (($md5 != $new_md5) && ($table !== 'pages')) {
                             throw new \Exception("MD5 checksum comparison ($md5 <=> $new_md5) for table $table failed!");
                         }
-                        $this->app['monolog']->addInfo("MD5 checksum comparison for table $table was successfull");
+                        $this->app['monolog']->addInfo("MD5 checksum comparison for table $table was successfull",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     }
                 }
             }
         } catch (\Exception $e) {
             if ($create_backup) {
                 // we have created a backup before and can restore!
-                $this->app['monolog']->addError($e->getMessage());
-                $this->app['monolog']->addCritical("Abort RESTORE, try to restore the previous created BACKUP!");
+                $this->app['monolog']->addError($e->getMessage(),
+                    array('method' => __METHOD__, 'line' => __LINE__));
+                $this->app['monolog']->addCritical("Abort RESTORE, try to restore the previous created BACKUP!",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 $this->restoreTables(TEMP_PATH.'/backup/tables', false);
-                $this->app['monolog']->addInfo("The RESTORE from previous created BACKUP was SUCCESFULL");
+                $this->app['monolog']->addInfo("The RESTORE from previous created BACKUP was SUCCESFULL",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 throw new \Exception("The RESTORE process failed with errors. The tables where successfull recovered");
             } else {
                 throw new \Exception($e);
@@ -199,13 +207,16 @@ class Restore
         } catch (\Exception $e) {
             if ($create_backup) {
                 // Restore fails but we have backup the files
-                $this->app['monolog']->addError($e->getMessage());
-                $this->app['monolog']->addCritical("Abort RESTORE of files, try to restore the previous saved tables and files");
+                $this->app['monolog']->addError($e->getMessage(), array('method' => __METHOD__, 'line' => __LINE__));
+                $this->app['monolog']->addCritical("Abort RESTORE of files, try to restore the previous saved tables and files",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 // restore the tables
                 $this->restoreTables(TEMP_PATH.'/backup/tables', false);
-                $this->app['monolog']->addInfo("The RESTORE of the previous saved tables was SUCCESSFULL");
+                $this->app['monolog']->addInfo("The RESTORE of the previous saved tables was SUCCESSFULL",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 $this->restoreFiles(TEMP_PATH.'/backup/cms', false);
-                $this->app['monolog']->addInfo("The RESTORE of the previous saved files was SUCCESSFULL");
+                $this->app['monolog']->addInfo("The RESTORE of the previous saved files was SUCCESSFULL",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 throw new \Exception("The RESTORE process failed with errors. The files and tables where successfull recovered");
             }
             else {
@@ -236,11 +247,11 @@ class Restore
                 throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
             }
 
-            $this->app['monolog']->addInfo("Start unzipping $archive");
+            $this->app['monolog']->addInfo("Start unzipping $archive", array('method' => __METHOD__, 'line' => __LINE__));
             $unZip = new unZip($this->app);
             $unZip->setUnZipPath(TEMP_PATH.'/restore');
             $unZip->extract($archive);
-            $this->app['monolog']->addInfo("Unzipped $archive");
+            $this->app['monolog']->addInfo("Unzipped $archive", array('method' => __METHOD__, 'line' => __LINE__));
 
             // check if the syncdata.json exists
             if (!file_exists(TEMP_PATH.'/restore/backup/syncdata.json')) {
@@ -267,7 +278,7 @@ class Restore
     public function exec()
     {
         // start restore
-        $this->app['monolog']->addInfo('Start RESTORE');
+        $this->app['monolog']->addInfo('Start RESTORE', array('method' => __METHOD__, 'line' => __LINE__));
 
         // check the /inbox
         $files = array();
@@ -278,7 +289,8 @@ class Restore
             $path = $this->app['utils']->sanitizePath(SYNCDATA_PATH."/inbox/$file");
             if (is_dir($path)) {
                 // RESTORE does not scan subdirectories!
-                $this->app['monolog']->addInfo("Sipped subdirectory $path, RESTORE search only for files in the /inbox!");
+                $this->app['monolog']->addInfo("Sipped subdirectory $path, RESTORE search only for files in the /inbox!",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 continue;
             }
             $files[] = $path;
@@ -289,29 +301,31 @@ class Restore
         foreach ($files as $file) {
             $fileinfo = pathinfo($file);
             if (strtolower($fileinfo['extension']) !== 'zip') {
-                $this->app['monolog']->addInfo(sprintf('RESTORE does only accept ZIP files, %s rejected', basename($file)));
+                $this->app['monolog']->addInfo(sprintf('RESTORE does only accept ZIP files, %s rejected', basename($file)),
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 continue;
             }
             // process the restore file
             if (!file_exists(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
                 $result = "Missing the MD5 checksum file for the backup archive!";
-                $this->app['monolog']->addError($result);
+                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
                 return $result;
             }
             // get the origin checksum of the backup archive
             if (false === ($md5_origin = @file_get_contents(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
                 $result = "Can't read the MD5 checksum file for the backup archive!";
-                $this->app['monolog']->addError($result);
+                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
                 return $result;
             }
             // compare the checksums
             $md5 = md5_file($file);
             if ($md5 !== $md5_origin) {
                 $result = "The checksum of the backup archive is not equal to the MD5 checksum file value!";
-                $this->app['monolog']->addError($result);
+                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
                 return $result;
             }
-            $this->app['monolog']->addInfo("The MD5 checksum of the backup archive is valid ($md5).");
+            $this->app['monolog']->addInfo("The MD5 checksum of the backup archive is valid ($md5).",
+                array('method' => __METHOD__, 'line' => __LINE__));
 
             // processing the archive file
             $this->processArchive($file);
@@ -335,17 +349,20 @@ class Restore
             );
             $SynchronizeClient = new SynchronizeClient($this->app);
             $SynchronizeClient->insert($data);
-            $this->app['monolog']->addInfo("Added informations for the Synchronize Client");
+            $this->app['monolog']->addInfo("Added informations for the Synchronize Client",
+                array('method' => __METHOD__, 'line' => __LINE__));
 
             // move the backup archive to /data/backup
             if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
                 $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
             }
             if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
-                $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!");
+                $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!",
+                    array('method' => __METHOD__, 'line' => __LINE__));
             }
             if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
-                $this->app['monolog']->addError("Can't save the backup archive in /data/backup!");
+                $this->app['monolog']->addError("Can't save the backup archive in /data/backup!",
+                    array('method' => __METHOD__, 'line' => __LINE__));
             }
 
             // and leave the loop
@@ -353,7 +370,7 @@ class Restore
         }
 
 
-        $this->app['monolog']->addInfo('Finished RESTORE');
+        $this->app['monolog']->addInfo('Finished RESTORE', array('method' => __METHOD__, 'line' => __LINE__));
         return 'Finished RESTORE';
     }
 

@@ -60,13 +60,15 @@ class Doctrine
      */
     protected function getConfigurationFromCMS()
     {
-        $this->app['monolog']->addInfo(sprintf("The doctrine config file %s does not exists!", self::$config_file));
+        $this->app['monolog']->addInfo(sprintf("The doctrine config file %s does not exists!", self::$config_file),
+            array('method' => __METHOD__, 'line' => __LINE__));
         // try to get the configuration from the CMS
         try {
             // Windows OS?
             $is_WIN = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
 
-            $this->app['monolog']->addInfo("Search for the CMS configuration file");
+            $this->app['monolog']->addInfo("Search for the CMS configuration file",
+                array('method' => __METHOD__, 'line' => __LINE__));
             if (file_exists(realpath(SYNCDATA_PATH.'/../config.php'))) {
                 include_once realpath(SYNCDATA_PATH.'/../config.php');
                 self::$config_array = array(
@@ -78,14 +80,16 @@ class Doctrine
                     'DB_NAME' => DB_NAME,
                     'TABLE_PREFIX' => TABLE_PREFIX
                 );
-                $this->app['monolog']->addInfo('Read the database configuration from the CMS config.php');
+                $this->app['monolog']->addInfo('Read the database configuration from the CMS config.php',
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 // encode a formatted JSON file
                 $jsonFormat = new JSONFormat();
                 $json = $jsonFormat->format(self::$config_array);
                 if (!@file_put_contents(self::$config_file, $json)) {
                     throw new ConfigurationException("Can't write the configuration file for Doctrine!");
                 }
-                $this->app['monolog']->addInfo("Create configuration file doctrine.json for Doctrine");
+                $this->app['monolog']->addInfo("Create configuration file doctrine.json for Doctrine",
+                    array('method' => __METHOD__, 'line' => __LINE__));
             }
             else {
                 throw new ConfigurationException("Can't read the CMS configuration, SyncData stopped.");
@@ -133,7 +137,8 @@ class Doctrine
         $this->app['db'] = $this->app->share(function() use($connectionParams, $config) {
             return \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
         });
-        $this->app['monolog']->addInfo("Doctrine initialized");
+        $this->app['monolog']->addInfo("Doctrine initialized",
+            array('method' => __METHOD__, 'line' => __LINE__));
     }
 
 }

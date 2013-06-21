@@ -42,7 +42,8 @@ class Zip {
                 $localPath = substr($filePath, $exclusiveLength);
                 if (is_file($filePath)) {
                     if (!$zipFile->addFile($filePath, $localPath)) {
-                        $this->app['monolog']->addError("Can't add $filePath to the ZIP");
+                        $this->app['monolog']->addError("Can't add $filePath to the ZIP",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     }
                     else {
                         $this->app['utils']->increaseCountFiles();
@@ -70,7 +71,8 @@ class Zip {
      */
     public function zipDir($sourcePath, $outZipPath)
     {
-        $this->app['monolog']->addInfo("Create the $outZipPath ZIP archive from $sourcePath");
+        $this->app['monolog']->addInfo("Create the $outZipPath ZIP archive from $sourcePath",
+            array('method' => __METHOD__, 'line' => __LINE__));
         $pathInfo = pathInfo($sourcePath);
         $parentPath = $pathInfo['dirname'];
         $dirName = $pathInfo['basename'];
@@ -80,12 +82,15 @@ class Zip {
         $z = new \ZipArchive();
         $z->open($outZipPath, \ZIPARCHIVE::CREATE);
         $z->addEmptyDir($dirName);
-        $this->app['monolog']->addInfo('Start adding files to the ZIP archive');
+        $this->app['monolog']->addInfo('Start adding files to the ZIP archive',
+            array('method' => __METHOD__, 'line' => __LINE__));
         $this->folderToZip($sourcePath, $z, strlen("$parentPath/"));
         $z->close();
         $this->app['monolog']->addInfo(sprintf('Added %d files in %d directories to the ZIP',
-            $this->app['utils']->getCountFiles(), $this->app['utils']->getCountDirectories()));
-        $this->app['monolog']->addInfo("Closed ZIP the archive $outZipPath");
+            $this->app['utils']->getCountFiles(), $this->app['utils']->getCountDirectories()),
+            array('method' => __METHOD__, 'line' => __LINE__));
+        $this->app['monolog']->addInfo("Closed ZIP the archive $outZipPath",
+            array('method' => __METHOD__, 'line' => __LINE__));
     }
 
 }

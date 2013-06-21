@@ -50,7 +50,7 @@ class Settings {
                     $settings[$setting['name']] = $setting['value'];
                 }
             }
-            $this->app['monolog']->addInfo('Read the CMS settings from DB');
+            $this->app['monolog']->addInfo('Read the CMS settings from DB', array('method' => __METHOD__, 'line' => __LINE__));
             return $settings;
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw new \Exception($e);

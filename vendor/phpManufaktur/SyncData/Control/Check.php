@@ -84,12 +84,14 @@ class Check
                         'last_checksum' => $table_checksum
                     );
                     $BackupMaster->update($table['id'], $data);
-                    $this->app['monolog']->addInfo(sprintf("Table %s has changed. Register the new checksum and do nothing more because this table has no index and must be updated complete.", $table['table_name']));
+                    $this->app['monolog']->addInfo(sprintf("Table %s has changed. Register the new checksum and do nothing more because this table has no index and must be updated complete.", $table['table_name']),
+                        array('method' => __METHOD__, 'line' => __LINE__));
                 }
                 else {
                     // now we check, what has changed
                     if (false === ($backupStatus = $BackupTables->selectTableByBackupID(self::$backup_id, $table['table_name']))) {
-                        $this->app['monolog']->addInfo(sprintf("Found no infornations for table %s", $table));
+                        $this->app['monolog']->addInfo(sprintf("Found no infornations for table %s", $table),
+                            array('method' => __METHOD__, 'line' => __LINE__));
                         return false;
                     }
                     $calculate_checksum = '';
@@ -113,7 +115,8 @@ class Check
                             $sync_id = -1;
                             $SynchronizeTables->insert($data, $sync_id);
                             $this->app['monolog']->addInfo(sprintf("Add DELETE %s for index field %s => %s with the ID %d",
-                                $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id));
+                                $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id),
+                                array('method' => __METHOD__, 'line' => __LINE__));
 
                         }
                         elseif ($new_checksum !== $backupRow['last_checksum']) {
@@ -135,7 +138,8 @@ class Check
                             $sync_id = -1;
                             $SynchronizeTables->insert($data, $sync_id);
                             $this->app['monolog']->addInfo(sprintf("Add UPDATE %s for index field %s => %s with the ID %d",
-                                $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id));
+                                $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id),
+                                array('method' => __METHOD__, 'line' => __LINE__));
                             // update the backup tables
                             $data = array(
                                 'last_checksum' => $new_checksum
@@ -173,7 +177,8 @@ class Check
                                 $sync_id = -1;
                                 $SynchronizeTables->insert($data, $sync_id);
                                 $this->app['monolog']->addInfo(sprintf("Add INSERT %s for index field %s => %s with the ID %d",
-                                    $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id));
+                                    $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id),
+                                    array('method' => __METHOD__, 'line' => __LINE__));
 
                                 // update the backup tables ???
                                 $data = array(
@@ -186,7 +191,8 @@ class Check
                                     'action' => 'SYNCHRONIZE'
                                 );
                                 $BackupTables->insert($data);
-                                $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $table['index_field'], $table['table_name']));
+                                $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $table['index_field'], $table['table_name']),
+                                    array('method' => __METHOD__, 'line' => __LINE__));
 
                                 // add the new checksum to the calculated checksum!
                                 $calculate_checksum .= $new_checksum;
@@ -199,7 +205,8 @@ class Check
                             'last_checksum' => $table_checksum
                         );
                         $BackupMaster->update($table['id'], $data);
-                        $this->app['monolog']->addInfo("Updated the checksum for the backup master table {$table['table_name']}");
+                        $this->app['monolog']->addInfo("Updated the checksum for the backup master table {$table['table_name']}",
+                        array('method' => __METHOD__, 'line' => __LINE__));
                     }
                     else {
                         // big problem - the checksum should be equal!
@@ -245,7 +252,8 @@ class Check
             $BackupFiles = new BackupFiles($this->app);
             $SynchronizeFiles = new SynchronizeFiles($this->app);
             if (false === ($files = $BackupFiles->selectFilesByBackupID(self::$backup_id))) {
-                $this->app['monolog']->addInfo("Found no files to process!");
+                $this->app['monolog']->addInfo("Found no files to process!",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 return false;
             }
             $backup_files = array();
@@ -271,7 +279,8 @@ class Check
                             'sync_status' => 'CHECKED'
                         );
                         $SynchronizeFiles->insert($data);
-                        $this->app['monolog']->addInfo("The file {$file['relative_path']} has changed.");
+                        $this->app['monolog']->addInfo("The file {$file['relative_path']} has changed.",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     }
                     $backup_files[] = CMS_PATH.$file['relative_path'];
                 }
@@ -287,7 +296,8 @@ class Check
                         'sync_status' => 'CHECKED'
                     );
                     $SynchronizeFiles->insert($data);
-                    $this->app['monolog']->addInfo("The file {$file['relative_path']} does no longer exists.");
+                    $this->app['monolog']->addInfo("The file {$file['relative_path']} does no longer exists.",
+                        array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }
             // now we check for new files
@@ -329,7 +339,8 @@ class Check
                                     'sync_status' => 'CHECKED'
                                 );
                                 $SynchronizeFiles->insert($data);
-                                $this->app['monolog']->addInfo("Added the new file $current_file to the Synchronize files");
+                                $this->app['monolog']->addInfo("Added the new file $current_file to the Synchronize files",
+                                    array('method' => __METHOD__, 'line' => __LINE__));
                             }
                             elseif (is_dir($current_file) && !in_array(substr($current_file, strlen(CMS_PATH)+1),
                                     $this->app['config']['backup']['directories']['ignore']['directory']) &&
@@ -365,19 +376,20 @@ class Check
             // first we need the last backup ID
             if (false === (self::$backup_id = $BackupMaster->selectLastBackupID())) {
                 $result = "Got no backup ID for processing a check for changed tables and files. Please create a backup first!";
-                $this->app['monolog']->addInfo($result);
+                $this->app['monolog']->addInfo($result, array('method' => __METHOD__, 'line' => __LINE__));
                 return $result;
             }
             if (false === ($tables = $BackupMaster->selectTablesByBackupID(self::$backup_id))) {
                 $result = "Found no tables for the backup ID ".self::$backup_id;
-                $this->app['monolog']->addInfo($result);
+                $this->app['monolog']->addInfo($result, array('method' => __METHOD__, 'line' => __LINE__));
                 return $result;
             }
             $backup_tables = array();
             foreach ($tables as $table) {
                 // loop through the backup tables
                 if (!in_array($table['table_name'], $this->app['config']['backup']['tables']['ignore'])) {
-                    $this->app['monolog']->addInfo("Check table ".$table['table_name']." for changes");
+                    $this->app['monolog']->addInfo("Check table ".$table['table_name']." for changes",
+                        array('method' => __METHOD__, 'line' => __LINE__));
                     if ($General->tableExists(CMS_TABLE_PREFIX.$table['table_name'])) {
                         $this->checkTable($table);
                         $backup_tables[] = $table['table_name'];
@@ -393,12 +405,14 @@ class Check
                             'sync_status' => 'CHECKED'
                         );
                         $SynchronizeMaster->insert($data);
-                        $this->app['monolog']->addInfo("Add table {$table['table_name']} to synchronize master");
+                        $this->app['monolog']->addInfo("Add table {$table['table_name']} to synchronize master",
+                            array('method' => __METHOD__, 'line' => __LINE__));
                     }
                 }
                 else {
                     // ignore this table
-                    $this->app['monolog']->addInfo("Ignored table {$table['table_name']}");
+                    $this->app['monolog']->addInfo("Ignored table {$table['table_name']}",
+                        array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }
 
@@ -422,7 +436,7 @@ class Check
                         'table_name' => $table
                     );
                     $BackupMaster->insert($data);
-                    $this->app['monolog']->addInfo("Add table $table to backup master");
+                    $this->app['monolog']->addInfo("Add table $table to backup master", array('method' => __METHOD__, 'line' => __LINE__));
                     // add the table to synchronize master
                     $data = array(
                         'backup_id' => self::$backup_id,
@@ -433,7 +447,7 @@ class Check
                         'sync_status' => 'CHECKED'
                     );
                     $SynchronizeMaster->insert($data);
-                    $this->app['monolog']->addInfo('Add table $table to synchronize master');
+                    $this->app['monolog']->addInfo('Add table $table to synchronize master', array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }
 

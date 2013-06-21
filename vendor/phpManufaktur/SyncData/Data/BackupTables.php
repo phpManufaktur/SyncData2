@@ -64,7 +64,8 @@ class BackupTables
 EOD;
         try {
             $this->app['db']->query($SQL);
-            $this->app['monolog']->addInfo("Created table '".self::$table_name."' for the class BackupTables");
+            $this->app['monolog']->addInfo("Created table '".self::$table_name."' for the class BackupTables",
+                array('method' => __METHOD__, 'line' => __LINE__));
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;
         }

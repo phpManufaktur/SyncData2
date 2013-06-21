@@ -227,7 +227,8 @@ class General {
             return true;
         } catch (\Doctrine\DBAL\DBALException $e) {
             // don't throw an exception, just log it!
-            $this->app['monolog']->addInfo("The table $table does not exists!");
+            $this->app['monolog']->addInfo("The table $table does not exists!",
+                array('method' => __METHOD__, 'line' => __LINE__));
             return false;
         }
     }

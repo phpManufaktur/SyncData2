@@ -77,7 +77,8 @@ class Setup
             $SynchronizeClient = new SynchronizeClient($this->app);
             $SynchronizeClient->createTable();
 
-            $this->app['monolog']->addInfo('Setup is complete');
+            $this->app['monolog']->addInfo('Setup is complete',
+                array('method' => __METHOD__, 'line' => __LINE__));
             return 'Setup is complete';
         } catch (\Exception $e) {
             throw new \Exception($e);

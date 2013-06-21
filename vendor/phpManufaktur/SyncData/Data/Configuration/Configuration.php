@@ -195,7 +195,8 @@ class Configuration
         if (!@file_put_contents(self::$config_file, $json)) {
             throw new ConfigurationException("Can't write the configuration file for SyncData!");
         }
-        $this->app['monolog']->addInfo("Create configuration file syncdata.json for SyncData");
+        $this->app['monolog']->addInfo("Create configuration file syncdata.json for SyncData",
+            array('method' => __METHOD__, 'line' => __LINE__));
     }
 
     /**
@@ -232,13 +233,15 @@ class Configuration
             throw new ConfigurationException(sprintf("Can't set the memory limit to %s", self::$config_array['general']['memory_limit']));
         }
         else {
-            $this->app['monolog']->addInfo(sprintf("Set the memory limit to %s", self::$config_array['general']['memory_limit']));
+            $this->app['monolog']->addInfo(sprintf("Set the memory limit to %s", self::$config_array['general']['memory_limit']),
+                array('method' => __METHOD__, 'line' => __LINE__));
         }
         if (false === ini_set('max_execution_time', self::$config_array['general']['max_execution_time'])) {
             throw new ConfigurationException(sprintf("Can't set the max_execution_time to %s seconds", self::$config_array['general']['max_execution_time']));
         }
         else {
-            $this->app['monolog']->addInfo(sprintf("Set the max_execution_time to %s seconds", self::$config_array['general']['max_execution_time']));
+            $this->app['monolog']->addInfo(sprintf("Set the max_execution_time to %s seconds", self::$config_array['general']['max_execution_time']),
+                array('method' => __METHOD__, 'line' => __LINE__));
         }
 
         $cfg = $this->getConfiguration();

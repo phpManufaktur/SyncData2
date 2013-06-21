@@ -93,7 +93,8 @@ class Backup
         }
 
         $this->tables = $this->General->getTables();
-        $this->app['monolog']->addInfo('Got all table names of the database');
+        $this->app['monolog']->addInfo('Got all table names of the database',
+            array('method' => __METHOD__, 'line' => __LINE__));
 
         // get the tables to ignore
         $ignore_tables = $this->app['config']['backup']['tables']['ignore'];
@@ -107,11 +108,13 @@ class Backup
             }
             $table = substr($table, strlen(CMS_TABLE_PREFIX));
             if (!is_null($ignore_tables) && in_array($table, $ignore_tables)) continue;
-            $this->app['monolog']->addInfo("Start backup table $table");
+            $this->app['monolog']->addInfo("Start backup table $table",
+                array('method' => __METHOD__, 'line' => __LINE__));
             $this->backupTable($table, $backup_id);
             $this->app['utils']->increaseCountTables();
         }
-        $this->app['monolog']->addInfo('Saved all tables in the temporary directory');
+        $this->app['monolog']->addInfo('Saved all tables in the temporary directory',
+            array('method' => __METHOD__, 'line' => __LINE__));
     }
 
     /**
@@ -139,7 +142,8 @@ class Backup
                         $count = 0;
                         $new_row[$key] = is_string($value) ? str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', $value, $count) : $value;
                         if ($count > 0) {
-                            $this->app['monolog']->addInfo(sprintf("Replaced the CMS URL %d time(s) in row %s of table %s", $count, $key, $table));
+                            $this->app['monolog']->addInfo(sprintf("Replaced the CMS URL %d time(s) in row %s of table %s", $count, $key, $table),
+                                array('method' => __METHOD__, 'line' => __LINE__));
                         }
                     }
                     else {
@@ -160,7 +164,8 @@ class Backup
                         'action' => 'BACKUP'
                     );
                     $this->BackupTables->insert($data);
-                    $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table));
+                    $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table),
+                        array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }
 
@@ -174,12 +179,14 @@ class Backup
             if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.sql", $sql)) {
                 throw new \Exception("Can't create the SQL file for $table");
             }
-            $this->app['monolog']->addInfo("Saved the SQL code for $table temporary");
+            $this->app['monolog']->addInfo("Saved the SQL code for $table temporary",
+                array('method' => __METHOD__, 'line' => __LINE__));
             // save the MD5 checksum
             if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.md5", $md5)) {
                 throw new \Exception("Can't create the MD5 file for $table");
             }
-            $this->app['monolog']->addInfo("Saved the MD5 checksum for $table temporary");
+            $this->app['monolog']->addInfo("Saved the MD5 checksum for $table temporary",
+                array('method' => __METHOD__, 'line' => __LINE__));
 
             if (!is_null($backup_id)) {
                 // add a record to backup master
@@ -194,13 +201,15 @@ class Backup
                 );
                 $id = -1;
                 $this->BackupMaster->insert($data, $id);
-                $this->app['monolog']->addInfo("Add table $table to backup master");
+                $this->app['monolog']->addInfo("Add table $table to backup master",
+                    array('method' => __METHOD__, 'line' => __LINE__));
             }
 
             if (!@file_put_contents(TEMP_PATH."/backup/tables/$table.json", json_encode($content))) {
                 throw new \Exception("Can't create the backup file for $table");
             }
-            $this->app['monolog']->addInfo("Create backup of table $table and saved it temporary");
+            $this->app['monolog']->addInfo("Create backup of table $table and saved it temporary",
+                array('method' => __METHOD__, 'line' => __LINE__));
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -212,7 +221,8 @@ class Backup
      */
     public function backupFiles($backup_id=null)
     {
-        $this->app['monolog']->addInfo('Start processing files');
+        $this->app['monolog']->addInfo('Start processing files',
+            array('method' => __METHOD__, 'line' => __LINE__));
         // create the temporary directory
         if (!file_exists(TEMP_PATH.'/backup/cms') && (false === @mkdir(TEMP_PATH.'/backup/cms', 0755, true))) {
             throw new \Exception("Can't create the directory ".TEMP_PATH."/backup/cms");
@@ -257,7 +267,8 @@ class Backup
         $this->app['monolog']->addInfo(sprintf('Processed %d files in %d directories',
             $this->app['utils']->getCountFiles(),
             $this->app['utils']->getCountDirectories()
-            ));
+            ),
+            array('method' => __METHOD__, 'line' => __LINE__));
     }
 
     /**
@@ -269,7 +280,7 @@ class Backup
     public function exec()
     {
         try{
-            $this->app['monolog']->addInfo('Backup started');
+            $this->app['monolog']->addInfo('Backup started', array('method' => __METHOD__, 'line' => __LINE__));
 
             // delete an existing backup directory an all content
             if (file_exists(TEMP_PATH.'/backup') && (true !== $this->app['utils']->rrmdir(TEMP_PATH.'/backup'))) {
@@ -279,7 +290,8 @@ class Backup
             if (!file_exists(TEMP_PATH.'/backup') && (false === @mkdir(TEMP_PATH.'/backup', 0755, true))) {
                 throw new \Exception("Can't create the directory ".TEMP_PATH."/backup");
             }
-            $this->app['monolog']->addInfo('Prepared temporary directory for the backup');
+            $this->app['monolog']->addInfo('Prepared temporary directory for the backup',
+                array('method' => __METHOD__, 'line' => __LINE__));
 
             // backup the database with all tables
             $backup_id = $this->createBackupID();
@@ -331,7 +343,7 @@ class Backup
                 throw new \Exception(sprintf("Can't delete the directory %s", TEMP_PATH.'/backup'));
             }
 
-            $this->app['monolog']->addInfo('Backup finished');
+            $this->app['monolog']->addInfo('Backup finished', array('method' => __METHOD__, 'line' => __LINE__));
             return "Processed ".$this->app['utils']->getCountTables()." tables and create a backup file.";
         } catch (\Exception $e) {
             throw new \Exception($e);
