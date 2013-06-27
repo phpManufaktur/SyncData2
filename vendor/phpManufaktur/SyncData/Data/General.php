@@ -275,7 +275,7 @@ class General {
     {
         try {
             foreach ($rows as $row) {
-                $this->insertRow($table, $row, $replace_cms_url);
+                $this->insert($table, $row, $replace_cms_url);
             }
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw new \Exception($e);
