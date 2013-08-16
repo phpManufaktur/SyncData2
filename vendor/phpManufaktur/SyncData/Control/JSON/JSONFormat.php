@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
   JSON Format :: Creates nicely formatted json. Use in place of json_encode().
