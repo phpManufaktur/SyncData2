@@ -44,13 +44,19 @@ class CheckKey
      */
     public function check()
     {
+        if (!isset($this->app['config']['security']['active']) || !isset($this->app['config']['security']['key'])) {
+            $this->app['monolog']->addInfo('Missing the config entries for the security key!',
+                array('method' => __METHOD__, 'line' => __LINE__));
+        }
+
         if ($this->app['config']['security']['active'] === false) {
             // don't check the security key!
             $this->app['monolog']->addInfo('Passed KEY check because the security is not active.',
                 array('method' => __METHOD__, 'line' => __LINE__));
             return true;
         }
-        if (isset($_GET['key']) && ($_GET['key'] === $this->app['config']['security']['key'])) {
+
+        if (isset($_GET['key']) && ($_GET['key'] == $this->app['config']['security']['key'])) {
             $this->app['monolog']->addInfo('KEY check was successfull!',
                 array('method' => __METHOD__, 'line' => __LINE__));
             return true;
