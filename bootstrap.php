@@ -25,6 +25,7 @@ use phpManufaktur\SyncData\Data\Setup\Setup;
 use phpManufaktur\SyncData\Control\CreateSynchronizeArchive;
 use phpManufaktur\SyncData\Control\SynchronizeClient;
 use phpManufaktur\SyncData\Control\CheckKey;
+use phpManufaktur\SyncData\Control\Template;
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -32,14 +33,33 @@ require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-$script_start = microtime(true);
+define('SYNCDATA_SCRIPT_START', microtime(true));
 
 try {
-    define('LOGGER_LEVEL', Logger::INFO);
-    define('SYNCDATA_PATH', __DIR__);
 
     // init the application
     $app = new Application();
+
+    $app['utils'] = $app->share(function() use($app) {
+        return new Utils($app);
+    });
+
+    define('LOGGER_LEVEL', Logger::INFO);
+    define('SYNCDATA_PATH', $app['utils']->sanitizePath(__DIR__));
+
+    // set the default time zone
+    if (file_exists(SYNCDATA_PATH.'/config/syncdata.json') &&
+        (false !== ($config_array = json_decode(@file_get_contents(SYNCDATA_PATH.'/config/syncdata.json'), true))) &&
+        is_array($config_array) && isset($config_array['general']['time_zone'])) {
+        // set the default timezone from the syncdata.json
+        date_default_timezone_set($config_array['general']['time_zone']);
+    }
+    else {
+        // syncdata.json does not exists, set 'Europe/Berlin' as default
+        $config_array = null;
+        date_default_timezone_set('Europe/Berlin');
+    }
+
     // check the logfile size
     $max_size = 5*1024*1024; // 5 MB
     $log_file = SYNCDATA_PATH.'/logfile/syncdata.log';
@@ -65,12 +85,6 @@ try {
     $syncdata_version = (file_exists(SYNCDATA_PATH.'/VERSION') && (false !== ($ver = file_get_contents(SYNCDATA_PATH.'/VERSION')))) ? $ver : '0.0.0';
     define('SYNCDATA_VERSION', $syncdata_version);
 
-    // initialize the utils
-    $app['utils'] = $app->share(function() use($app) {
-        return new Utils($app);
-    });
-    $app['monolog']->addInfo('SyncData Utils initialized');
-
     // check directories and create protection
     $check_directories = array('/config', '/temp', '/logfile', '/vendor');
     foreach ($check_directories as $directory) {
@@ -92,7 +106,7 @@ try {
     $initDoctrine->initDoctrine();
 
     // initialize the SyncData configuration
-    $initConfig = new Configuration($app);
+    $initConfig = new Configuration($app, $config_array);
     $initConfig->initConfiguration();
 
     // initialize the SwiftMailer
@@ -103,7 +117,8 @@ try {
     $app['monolog']->addInfo('SyncData READY');
 
     // get the SyncDataServer directory
-    $syncdata_directory = substr(SYNCDATA_PATH, strrpos(SYNCDATA_PATH, DIRECTORY_SEPARATOR)+1);
+    $syncdata_directory = dirname($_SERVER['SCRIPT_NAME']);
+
     if (!in_array($syncdata_directory, $app['config']['backup']['directories']['ignore']['directory'])) {
         // we must grant that the SyncDataServer /temp directory is always ignored (recursion!!!)
         $config = $app['config'];
@@ -115,9 +130,10 @@ try {
 
     // got the route dynamically from the real directory where SyncData reside.
     // .htaccess RewriteBase must be equal to the SyncData directory!
-    $route = substr($_SERVER['REQUEST_URI'], strlen($syncdata_directory)+1,
-        (false !== ($pos = strpos($_SERVER['REQUEST_URI'], '?'))) ? $pos-strlen($syncdata_directory)-1 : strlen($_SERVER['REQUEST_URI']));
+    $route = substr($_SERVER['REQUEST_URI'], strlen($syncdata_directory),
+        (false !== ($pos = strpos($_SERVER['REQUEST_URI'], '?'))) ? $pos-strlen($syncdata_directory) : strlen($_SERVER['REQUEST_URI']));
 
+    define('SYNCDATA_ROUTE', $route);
     define('SYNCDATA_URL', substr($app['utils']->sanitizePath($app['config']['CMS']['CMS_URL'].substr(SYNCDATA_PATH, strlen($app['config']['CMS']['CMS_PATH']))), 1));
 
     if ($initConfig->executedSetup() && $app['config']['security']['active']) {
@@ -127,6 +143,7 @@ try {
     $app_result = null;
     // init the KEY check class
     $CheckKey = new CheckKey($app);
+
     switch ($route) {
         case '/precheck.php':
         case '/info.php';
@@ -237,29 +254,21 @@ try {
             break;
     }
 
-    $execution_time = sprintf('Execution time: %s seconds (max: %s)', number_format(microtime(true) - $script_start, 2), $app['config']['general']['max_execution_time']);
+    $execution_time = sprintf('Execution time: %s seconds (max: %s)', number_format(microtime(true) - SYNCDATA_SCRIPT_START, 2), $app['config']['general']['max_execution_time']);
     $app['monolog']->addInfo($execution_time);
     $peak_usage = sprintf('Memory peak usage: %s MB (Limit: %s)', memory_get_peak_usage(true)/(1024*1024), $app['config']['general']['memory_limit']);
     $app['monolog']->addInfo($peak_usage);
 
-    if (!is_null($app_result)) {
-        // exit with formatted result
-        $exit = <<<EOD
-            $execution_time<br />
-            $peak_usage<br />
-            <br />
-            $app_result<br />
-            <br />
-            SyncData {$syncdata_version}: Ready
-EOD;
-        exit($exit);
-    } else {
-        // exit without additional information
-        exit();
-    }
+    $result = is_null($app_result) ? 'Ooops, unexpected result ...' : $app_result;
+    $result = sprintf('<div class="result"><h1>Result</h1>%s</div>', $result);
+    $Template = new Template();
+    echo $Template->parse($app, $result);
 } catch (\Exception $e) {
     if ($app->offsetExists('monolog')) {
         $app['monolog']->addError(strip_tags($e->getMessage()), array('file' => $e->getFile(), 'line' => $e->getLine()));
     }
-    exit($e->getMessage()."<br />Please check the logfile for further information!");
+    $Template = new Template();
+    $error = sprintf('<div class="error"><h1>Oooops ...</h1><div class="message">%s</div><div class="logfile">Please check the logfile for further information!</div></div>',
+        $e->getMessage());
+    echo $Template->parse($app, $error);
 }
