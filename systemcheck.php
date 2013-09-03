@@ -152,13 +152,31 @@ class SystemCheck
     }
 
     /**
+     * Return a valid version string for the MySQL client version,
+     * using mysqli_get_client_version()
+     *
+     * @return string
+     */
+    protected function getMySQLversion()
+    {
+        // for version 4.1.6 return 40106;
+        $mysqlVersion =  mysqli_get_client_version();
+        //create mysql version string to check it
+        $mainVersion = (int)($mysqlVersion/10000);
+        $a = $mysqlVersion - ($mainVersion*10000);
+        $minorVersion = (int)($a/100);
+        $subVersion = $a - ($minorVersion*100);
+        return $mainVersion.'.'.$minorVersion.'.'.$subVersion;
+    }
+
+    /**
      * Return an array with information about MySQL
      *
      * @return multitype:mixed NULL
      */
     protected function getMySQLinformation()
     {
-        self::$detected_MYSQL_VERSION = mysql_get_client_info();
+        self::$detected_MYSQL_VERSION = $this->getMySQLversion();
         if (is_null(self::$required_MYSQL_VERSION)) {
             self::$required_MYSQL_VERSION = self::$detected_MYSQL_VERSION;
         }
