@@ -170,10 +170,10 @@ class Utils
         $dash_str = '';
         while (strlen($password) > $dash_len) {
             $dash_str .= substr($password, 0, $dash_len) . '-';
-    		  $password = substr($password, $dash_len);
-    	   }
-    	   $dash_str .= $password;
-    	   return $dash_str;
+              $password = substr($password, $dash_len);
+           }
+           $dash_str .= $password;
+           return $dash_str;
     }
 
     /**
@@ -282,7 +282,9 @@ class Utils
                 }
                 // create directory in the target
                 if (!file_exists($target) && (true !== @mkdir($target, 0755, true ))) {
-                    throw new \Exception("Can't create directory $target");
+                    // get the reason why mkdir() fails
+                    $error = error_get_last();
+                    throw new \Exception("Can't create directory $target, error message: {$error['message']}");
                 }
                 // set the datetime
                 if (false === @touch($target, filemtime($source))) {
