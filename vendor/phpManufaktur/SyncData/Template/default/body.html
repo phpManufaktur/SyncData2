@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SyncData 2</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="robots" content="noindex,nofollow" />
+    <style type="text/css">
+      body {
+        font-family : Monaco, Courier, monospace;
+        font-size: 12px;
+        color: #fff;
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        font-size: 16px;
+        color: #fff;
+      }
+      a {
+        text-decoration: none;
+      }
+      a:link,
+      a:visited {
+        color: #b0c4de;
+        background-color: transparent;
+      }
+      a:hover,
+      a:active {
+        color: #eee8aa;
+        background-color: transparent;
+      }
+      .error h1 {
+        color: #ffd700;
+      }
+      .error .message {
+        color: #ffd700;
+        margin: 0 0 20px 0;
+        padding: 0;
+        word-break: break-all;
+      }
+      #container {
+        margin: 10px auto 30px auto;
+        padding: 0;
+        width: 800px;
+        height: auto;
+      }
+      #syncdata {
+        font-size: 14px;
+        margin: 10px 0 10px 0;
+        padding: 0;
+      }
+      #system {
+        font-size: 11px;
+        color: #ffdead;
+        margin: 0 0 15px 0;
+        padding: 0;
+      }
+      #content {
+        margin: 30px 0 0 0;
+        padding: 0;
+      }
+      #footer {
+        font-size: 11px;
+        margin: 40px 0 20px 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="syncdata">
+        SyncData {{ version }}
+      </div>
+      <div id="system">
+        <div class="memory">Memory peak usage: {{ memory.peak }} MB (Limit: {{ memory.limit }})</div>
+        <div class="time">Execution time: {{ time.total }} seconds (max: {{ time.max }})</div>
+        <div class="route">Executed route: {{ route }}</div>
+      </div>
+      <div id="content">
+        {{ content }}
+      </div>
+      <div id="footer">
+        <p>[ <a href="https://github.com/phpManufaktur/SyncData2/wiki" target="_blank">Wiki</a> ] [ <a href="https://support.phpmanufaktur.de" target="_blank">Support</a> ]</p>
+        <p>&copy 2011, 2013 by <a href="https://phpmanufaktur.de" target="_blank">phpManufaktur</a>, SyncData is released under <a href="http://opensource.org/licenses/MIT" target="_blank">MIT license</a>.</p>
+      </div>
+    </div>
+  </body>
+</html>
