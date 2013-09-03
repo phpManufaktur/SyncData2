@@ -37,10 +37,11 @@ class Configuration
      *
      * @param Application $app
      */
-    public function __construct(Application $app)
+    public function __construct(Application $app, $config_array=null)
     {
         $this->app = $app;
         self::$config_file = SYNCDATA_PATH.'/config/syncdata.json';
+        self::$config_array = $config_array;
     }
 
     public function executedSetup()
@@ -108,7 +109,8 @@ class Configuration
             'general' => array(
                 'client_id' => $this->app['utils']->generatePassword(9, false, 'ld'),
                 'memory_limit' => '256M',
-                'max_execution_time' => '300'
+                'max_execution_time' => '300',
+                'time_zone' => 'Europe/Berlin'
             ),
             'security' => array(
                 'active' => true,
@@ -214,7 +216,9 @@ class Configuration
             $Setup->exec();
             self::$executed_setup = true;
         }
-        elseif ((false === (self::$config_array = json_decode(@file_get_contents(self::$config_file), true))) || !is_array(self::$config_array)) {
+        elseif (is_null(self::$config_array) &&
+            (false === (self::$config_array = json_decode(@file_get_contents(self::$config_file), true))) ||
+            !is_array(self::$config_array)) {
             throw new ConfigurationException("Can't read the SyncData configuration file!");
         }
 
