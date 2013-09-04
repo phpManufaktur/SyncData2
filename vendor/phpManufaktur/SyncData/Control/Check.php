@@ -52,7 +52,7 @@ class Check
         return Check::$backup_id;
     }
 
-	  /**
+      /**
      * @param Ambigous <\phpManufaktur\SyncData\Data\Ambigous, boolean, unknown> $backup_id
      */
     public static function setBackupID ($backup_id)
@@ -60,7 +60,7 @@ class Check
         Check::$backup_id = $backup_id;
     }
 
-	  /**
+      /**
      * Check the given table for different checksums
      *
      * @param string $table without CMS_TABLE_PREFIX
@@ -151,7 +151,7 @@ class Check
                             $calculate_checksum .= $new_checksum;
                         }
                     }
-                    if (md5($calculate_checksum) !== $table_checksum) {
+                    if (md5($calculate_checksum) != $table_checksum) {
                         // we have to check for inserted records!
                         if (false === ($rows = $General->selectRowsIndexField(CMS_TABLE_PREFIX.$table['table_name'], $table['index_field']))) {
                             throw new \Exception("Got no data from table {$table['table_name']}");
@@ -199,7 +199,7 @@ class Check
                             }
                         }
                     }
-                    if (md5($calculate_checksum) === $table_checksum) {
+                    if (md5($calculate_checksum) == $table_checksum) {
                         // all is fine - update the backup master
                         $data = array(
                             'last_checksum' => $table_checksum

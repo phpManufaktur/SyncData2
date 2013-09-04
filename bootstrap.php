@@ -253,7 +253,7 @@ try {
             $app_result = '- nothing to do -';
             break;
     }
-throw new \Exception('Test');
+
     $execution_time = sprintf('Execution time: %s seconds (max: %s)', number_format(microtime(true) - SYNCDATA_SCRIPT_START, 2), $app['config']['general']['max_execution_time']);
     $app['monolog']->addInfo($execution_time);
     $peak_usage = sprintf('Memory peak usage: %s MB (Limit: %s)', memory_get_peak_usage(true)/(1024*1024), $app['config']['general']['memory_limit']);
