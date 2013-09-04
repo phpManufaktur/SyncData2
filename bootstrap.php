@@ -134,7 +134,7 @@ try {
         (false !== ($pos = strpos($_SERVER['REQUEST_URI'], '?'))) ? $pos-strlen($syncdata_directory) : strlen($_SERVER['REQUEST_URI']));
 
     define('SYNCDATA_ROUTE', $route);
-    define('SYNCDATA_URL', substr($app['utils']->sanitizePath($app['config']['CMS']['CMS_URL'].substr(SYNCDATA_PATH, strlen($app['config']['CMS']['CMS_PATH']))), 1));
+    define('SYNCDATA_URL', substr($app['config']['CMS']['CMS_URL'].substr(SYNCDATA_PATH, strlen($app['config']['CMS']['CMS_PATH'])), 0));
 
     if ($initConfig->executedSetup() && $app['config']['security']['active']) {
         // if SyncData was initialized prompt a message!
@@ -158,7 +158,7 @@ try {
         case '/systemcheck':
             // execute a systemcheck
             include SYNCDATA_PATH.'/systemcheck.php';
-            break;
+            exit();
         case '/setup':
             // force a setup
             if (!$CheckKey->check()) {
@@ -253,7 +253,7 @@ try {
             $app_result = '- nothing to do -';
             break;
     }
-
+throw new \Exception('Test');
     $execution_time = sprintf('Execution time: %s seconds (max: %s)', number_format(microtime(true) - SYNCDATA_SCRIPT_START, 2), $app['config']['general']['max_execution_time']);
     $app['monolog']->addInfo($execution_time);
     $peak_usage = sprintf('Memory peak usage: %s MB (Limit: %s)', memory_get_peak_usage(true)/(1024*1024), $app['config']['general']['memory_limit']);
