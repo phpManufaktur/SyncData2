@@ -23,12 +23,12 @@ else {
     $module_directory     = 'sync_data';
     $module_name          = 'SyncData';
     $module_function      = 'tool';
-    $module_version       = '2.0.16';
+    $module_version       = '2.0.17';
     $module_status        = 'Stable';
     $module_platform      = '2.8';
     $module_author        = 'Team phpManufaktur <team@phpmanufaktur.de>';
     $module_license       = 'MIT License (MIT)';
     $module_description   = 'Save, restore and synchronize WebsiteBaker and LEPTON CMS installations';
-    $module_home          = 'https://addons.phpmanufaktur.de/syncdata';
+    $module_home          = 'https://addons.phpmanufaktur.de/syncdata2';
     $module_guid          = '88188907-B927-432A-AF7C-311FDD91F749';
 }
