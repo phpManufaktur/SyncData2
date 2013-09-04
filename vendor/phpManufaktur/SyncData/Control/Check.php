@@ -162,7 +162,7 @@ class Check
                                 if (false === ($record = $General->getRowContent(CMS_TABLE_PREFIX.$table['table_name'], array($table['index_field'] => $row[$table['index_field']])))) {
                                     throw new \Exception(sprintf("Can't read the row content for table %s by select %s and %s", $table['table_name'], $table['index_field'], $row[$table['index_field']]));
                                 }
-                                $new_checksum = md5(str_ireplace(CMS_URL, '{{ SyncData:CMS_URL }}', implode(',', $record)));
+                                $new_checksum = $General->getRowContentChecksum(CMS_TABLE_PREFIX.$table['table_name'], array($table['index_field'] => $row[$table['index_field']]));
                                 $data = array(
                                     'backup_id' => self::$backup_id,
                                     'index_field' => $table['index_field'],
