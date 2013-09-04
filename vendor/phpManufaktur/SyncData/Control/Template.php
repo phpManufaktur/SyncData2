@@ -25,7 +25,8 @@ class Template
                 '{{ memory.limit }}',
                 '{{ time.total }}',
                 '{{ time.max }}',
-                '{{ route }}'
+                '{{ route }}',
+                '{{ syncdata_url }}'
             ), array(
                 $result,
                 SYNCDATA_VERSION,
@@ -33,7 +34,8 @@ class Template
                 $app['config']['general']['memory_limit'],
                 number_format(microtime(true) - SYNCDATA_SCRIPT_START, 2),
                 $app['config']['general']['max_execution_time'],
-                SYNCDATA_ROUTE
+                SYNCDATA_ROUTE,
+                SYNCDATA_URL
             ), $html);
 
         return $html;
