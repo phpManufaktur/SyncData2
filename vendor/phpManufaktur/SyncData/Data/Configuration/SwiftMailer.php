@@ -137,7 +137,8 @@ class SwiftMailer
             ->setTo($this->app['config']['monolog']['email']['to'])
             ->setBody('SyncData errror');
             // 400 = Logger::ERROR
-            $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, 400));
+            $level = isset($this->app['config']['monolog']['email']['level']) ? $this->app['config']['monolog']['email']['level'] : 400;
+            $this->app['monolog']->pushHandler(new SwiftMailerHandler($this->app['mailer'], $message, $level));
             $this->app['monolog']->addInfo('Monolog handler for SwiftMailer initialized',
                 array('method' => __METHOD__, 'line' => __LINE__));
         }
