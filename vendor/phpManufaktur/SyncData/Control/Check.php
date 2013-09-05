@@ -385,9 +385,20 @@ class Check
                 return $result;
             }
             $backup_tables = array();
+            $ignore_table_sub_prefix = $this->app['config']['backup']['tables']['ignore']['sub_prefix'];
             foreach ($tables as $table) {
                 // loop through the backup tables
-                if (!in_array($table['table_name'], $this->app['config']['backup']['tables']['ignore'])) {
+                if (!in_array($table['table_name'], $this->app['config']['backup']['tables']['ignore']['table'])) {
+                    // check if table match a sub_prefix to ignore
+                    if (!is_null($ignore_table_sub_prefix)) {
+                        foreach ($ignore_table_sub_prefix as $sub_prefix) {
+                            if ((false !== ($pos = strpos($table, $sub_prefix))) && ($pos == 0)) {
+                                // ignore this table
+                                $this->app['monolog']->addInfo("Ignore sub_prefix: $sub_prefix for table: $table", array('method' => __METHOD__, 'line' => __LINE__));
+                                continue 2;
+                            }
+                        }
+                    }
                     $this->app['monolog']->addInfo("Check table ".$table['table_name']." for changes",
                         array('method' => __METHOD__, 'line' => __LINE__));
                     if ($General->tableExists(CMS_TABLE_PREFIX.$table['table_name'])) {
@@ -419,8 +430,16 @@ class Check
             // check for new tables - strip table prefix!
             $tables = $General->getTables(true);
             foreach ($tables as $table) {
-                if (!in_array($table, $this->app['config']['backup']['tables']['ignore']) &&
+                if (!in_array($table, $this->app['config']['backup']['tables']['ignore']['table']) &&
                     !in_array($table, $backup_tables)) {
+                    if (!is_null($ignore_table_sub_prefix)) {
+                        foreach ($ignore_table_sub_prefix as $sub_prefix) {
+                            if ((false !== ($pos = strpos($table, $sub_prefix))) && ($pos == 0)) {
+                                // ignore this table
+                                continue 2;
+                            }
+                        }
+                    }
                     // new table detected!
                     $SQL = $General->getCreateTableSQL(CMS_TABLE_PREFIX.$table);
                     $indexField = (false === $idx = $this->getPrimaryIndexField(CMS_TABLE_PREFIX.$table)) ? 'NO_INDEX_FIELD' : $idx;

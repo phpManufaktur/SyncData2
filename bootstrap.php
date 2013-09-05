@@ -59,7 +59,6 @@ try {
         $config_array = null;
         date_default_timezone_set('Europe/Berlin');
     }
-
     // check the logfile size
     $max_size = 5*1024*1024; // 5 MB
     $log_file = SYNCDATA_PATH.'/logfile/syncdata.log';
@@ -235,8 +234,8 @@ try {
             break;
         case '#init_syncdata':
             // initialized SyncData2
-            $app_result = 'SyncData has successfull initialized and also created a security key: <b>'.
-                $app['config']['security']['key'].'</b><br />'.
+            $app_result = 'SyncData has successfull initialized and also created a security key: <span class="security_key">'.
+                $app['config']['security']['key'].'</span><br />'.
                 'Please remember this key, you will need it to execute some commands and to setup cronjobs.';
             if ($app['config']['email']['active']) {
                 // send the key also with email
@@ -264,6 +263,11 @@ try {
     $Template = new Template();
     echo $Template->parse($app, $result);
 } catch (\Exception $e) {
+    if (!isset($route)) {
+        // SyncData2 may be not complete initialized
+        throw new \Exception($e);
+    }
+    // regular Exception handling
     if ($app->offsetExists('monolog')) {
         $app['monolog']->addError(strip_tags($e->getMessage()), array('file' => $e->getFile(), 'line' => $e->getLine()));
     }

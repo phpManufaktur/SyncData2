@@ -125,7 +125,8 @@ class Configuration
                 'files' => array(
                     'ignore' => array(
                         '.buildpath',
-                        '.project'
+                        '.project',
+                        'desktop.ini'
                     )
                 ),
                 'directories' => array(
@@ -133,7 +134,8 @@ class Configuration
                         'directory' => array(
                             'temp',
                             'syncdata',
-                            'kit2'
+                            'kit2',
+                            'nbproject'
                         ),
                         'subdirectory' => array(
                             '.git'
@@ -142,14 +144,12 @@ class Configuration
                 ),
                 'tables' => array(
                     'ignore' => array(
-                        'syncdata_backup_master',
-                        'syncdata_backup_tables',
-                        'syncdata_backup_files',
-                        'syncdata_synchronize_tables',
-                        'syncdata_synchronize_master',
-                        'syncdata_synchronize_files',
-                        'syncdata_synchronize_archives',
-                        'syncdata_synchronize_client'
+                        'table' => array(
+                            ),
+                        'sub_prefix' => array(
+                            'kit2_',
+                            'syncdata_'
+                            )
                     )
                 )
             ),
@@ -162,7 +162,8 @@ class Configuration
                 'files' => array(
                     'ignore' => array(
                         '.buildpath',
-                        '.project'
+                        '.project',
+                        'desktop.ini'
                     )
                 ),
                 'directories' => array(
@@ -170,7 +171,8 @@ class Configuration
                         'directory' => array(
                             'temp',
                             'syncdata',
-                            'kit2'
+                            'kit2',
+                            'nbproject'
                         ),
                         'subdirectory' => array(
                             '.git'
@@ -179,14 +181,12 @@ class Configuration
                 ),
                 'tables' => array(
                     'ignore' => array(
-                        'syncdata_backup_master',
-                        'syncdata_backup_tables',
-                        'syncdata_backup_files',
-                        'syncdata_synchronize_tables',
-                        'syncdata_synchronize_master',
-                        'syncdata_synchronize_files',
-                        'syncdata_synchronize_archives',
-                        'syncdata_synchronize_client'
+                        'table' => array(
+                            ),
+                        'sub_prefix' => array(
+                            'kit2_',
+                            'syncdata_'
+                            )
                     )
                 )
             )

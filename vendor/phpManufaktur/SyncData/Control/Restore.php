@@ -76,7 +76,8 @@ class Restore
         $general = new General($this->app);
 
         // got the tables to ignore
-        $ignore_tables = $this->app['config']['restore']['tables']['ignore'];
+        $ignore_tables = $this->app['config']['restore']['tables']['ignore']['table'];
+        $ignore_table_sub_prefix = $this->app['config']['restore']['tables']['ignore']['sub_prefix'];
 
         try {
             // restore the tables
@@ -85,6 +86,15 @@ class Restore
                     $this->app['monolog']->addInfo("Skipped table $table because it is member of the ignore list",
                         array('method' => __METHOD__, 'line' => __LINE__));
                     continue;
+                }
+                if (!is_null($ignore_table_sub_prefix)) {
+                    foreach ($ignore_table_sub_prefix as $sub_prefix) {
+                        if ((false !== ($pos = strpos($table, $sub_prefix))) && ($pos == 0)) {
+                            // ignore this table
+                            $this->app['monolog']->addInfo("Ignore sub_prefix: $sub_prefix for table: $table", array('method' => __METHOD__, 'line' => __LINE__));
+                            continue 2;
+                        }
+                    }
                 }
 
                 if (file_exists("$source_path/$table.sql") &&

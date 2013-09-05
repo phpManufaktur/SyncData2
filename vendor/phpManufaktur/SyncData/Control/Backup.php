@@ -97,7 +97,8 @@ class Backup
             array('method' => __METHOD__, 'line' => __LINE__));
 
         // get the tables to ignore
-        $ignore_tables = $this->app['config']['backup']['tables']['ignore'];
+        $ignore_tables = $this->app['config']['backup']['tables']['ignore']['table'];
+        $ignore_table_sub_prefix = $this->app['config']['backup']['tables']['ignore']['sub_prefix'];
         $this->app['utils']->setCountTables();
         foreach ($this->tables as $table) {
             // $table contains also the table prefix!
@@ -107,7 +108,20 @@ class Backup
                 continue;
             }
             $table = substr($table, strlen(CMS_TABLE_PREFIX));
-            if (!is_null($ignore_tables) && in_array($table, $ignore_tables)) continue;
+            // ignore specified table?
+            if (!is_null($ignore_tables) && in_array($table, $ignore_tables)) {
+                $this->app['monolog']->addInfo("Ignore table: $table", array('method' => __METHOD__, 'line' => __LINE__));
+                continue;
+            }
+            if (!is_null($ignore_table_sub_prefix)) {
+                foreach ($ignore_table_sub_prefix as $sub_prefix) {
+                    if ((false !== ($pos = strpos($table, $sub_prefix))) && ($pos == 0)) {
+                        // ignore this table
+                        $this->app['monolog']->addInfo("Ignore sub_prefix: $sub_prefix for table: $table", array('method' => __METHOD__, 'line' => __LINE__));
+                        continue 2;
+                    }
+                }
+            }
             $this->app['monolog']->addInfo("Start backup table $table",
                 array('method' => __METHOD__, 'line' => __LINE__));
             $this->backupTable($table, $backup_id);
