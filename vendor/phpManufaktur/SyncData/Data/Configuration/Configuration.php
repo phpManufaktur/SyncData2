@@ -99,6 +99,7 @@ class Configuration
                 'active' => $is_WIN ? false : true
             ),
             'monolog' => array(
+                'level' => 200,
                 'email' => array(
                     'active' => $is_WIN ? false : true,
                     'level' => 400,

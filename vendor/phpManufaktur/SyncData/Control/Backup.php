@@ -178,7 +178,7 @@ class Backup
                         'action' => 'BACKUP'
                     );
                     $this->BackupTables->insert($data);
-                    $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table),
+                    $this->app['monolog']->addDebug(sprintf("Added field %s of table %s as index field to the backup tables", $row[$indexField], $table),
                         array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }

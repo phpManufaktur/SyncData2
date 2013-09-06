@@ -44,7 +44,6 @@ try {
         return new Utils($app);
     });
 
-    define('LOGGER_LEVEL', Logger::INFO);
     define('SYNCDATA_PATH', $app['utils']->sanitizePath(__DIR__));
 
     // set the default time zone
@@ -59,6 +58,10 @@ try {
         $config_array = null;
         date_default_timezone_set('Europe/Berlin');
     }
+
+    // set monolog logging level
+    define('LOGGER_LEVEL', isset($config_array['monolog']['level']) ? $config_array['monolog']['level'] : Logger::INFO);
+
     // check the logfile size
     $max_size = 5*1024*1024; // 5 MB
     $log_file = SYNCDATA_PATH.'/logfile/syncdata.log';
