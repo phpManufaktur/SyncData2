@@ -199,19 +199,13 @@ class Check
                             }
                         }
                     }
-                    if (md5($calculate_checksum) == $table_checksum) {
-                        // all is fine - update the backup master
-                        $data = array(
-                            'last_checksum' => $table_checksum
-                        );
-                        $BackupMaster->update($table['id'], $data);
-                        $this->app['monolog']->addInfo("Updated the checksum for the backup master table {$table['table_name']}",
-                        array('method' => __METHOD__, 'line' => __LINE__));
-                    }
-                    else {
-                        // big problem - the checksum should be equal!
-                        throw new \Exception("Problem: all steps done, but the calculated checksum differs from the real checksum for the table {$table['table_name']}!");
-                    }
+                    // update checksum
+                    $data = array(
+                        'last_checksum' => $table_checksum
+                    );
+                    $BackupMaster->update($table['id'], $data);
+                    $this->app['monolog']->addInfo("Updated the checksum for the backup master table {$table['table_name']}",
+                    array('method' => __METHOD__, 'line' => __LINE__));
                 }
             }
         } catch (\Exception $e) {
@@ -392,7 +386,7 @@ class Check
                     // check if table match a sub_prefix to ignore
                     if (!is_null($ignore_table_sub_prefix)) {
                         foreach ($ignore_table_sub_prefix as $sub_prefix) {
-                            if ((false !== ($pos = strpos($table, $sub_prefix))) && ($pos == 0)) {
+                            if ((false !== ($pos = strpos($table['table_name'], $sub_prefix))) && ($pos == 0)) {
                                 // ignore this table
                                 $this->app['monolog']->addInfo("Ignore sub_prefix: $sub_prefix for table: $table", array('method' => __METHOD__, 'line' => __LINE__));
                                 continue 2;
