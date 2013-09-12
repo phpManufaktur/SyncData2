@@ -1,3 +1,8 @@
+# if your server is running Apache >= 2.2.16 you can use:
+#
+# FallbackResource /syncdata/bootstrap.php
+#
+# instead of the following block! (http://yals.de/15XHIiv)
 <IfModule mod_rewrite.c>
     Options -MultiViews
     RewriteEngine On
