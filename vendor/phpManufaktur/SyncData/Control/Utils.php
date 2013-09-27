@@ -402,4 +402,61 @@ class Utils
         return $text;
     }
 
+    /**
+     * Scan the given $locale_path for language files and add them to the global
+     * translator resource
+     *
+     * @param string $locale_path
+     * @throws \Exception
+     */
+    function addLanguageFiles($locale_path)
+    {
+        // scan the /Locale directory and add all available languages
+        try {
+            if (false === ($lang_files = scandir($locale_path)))
+                throw new \Exception(sprintf("Can't read the /Locale directory %s!", $locale_path));
+            $ignore = array('.', '..', 'index.php', 'README.md');
+            foreach ($lang_files as $lang_file) {
+                if (!is_file($locale_path.'/'.$lang_file)) continue;
+                if (in_array($lang_file, $ignore) || (pathinfo($locale_path.'/'.$lang_file, PATHINFO_EXTENSION) != 'php')) continue;
+                $lang_name = pathinfo($locale_path.'/'.$lang_file, PATHINFO_FILENAME);
+                // get the array from the desired file
+                $lang_array = include_once $locale_path.'/'.$lang_file;
+                // add the locale resource file
+                $this->app['translator'] = $this->app->share($this->app->extend('translator', function ($translator) use ($lang_array, $lang_name) {
+                    $translator->addResource('array', $lang_array, $lang_name);
+                    return $translator;
+                }));
+                $this->app['monolog']->addInfo('Added language file: '.substr($locale_path, strlen(SYNCDATA_PATH)).'/'.$lang_file);
+            }
+        }
+        catch (\Exception $e) {
+            throw new \Exception(sprintf('Error scanning the /Locale directory %s.', $locale_path));
+        }
+    } // addLanguageFiles()
+
+    /**
+     * Generate a globally unique identifier (GUID)
+     * Uses COM extension under Windows otherwise
+     * create a random GUID in the same style
+     *
+     * @return string $guid
+     */
+    public static function createGUID ()
+    {
+        if (function_exists('com_create_guid')) {
+            $guid = com_create_guid();
+            $guid = strtolower($guid);
+            if (strpos($guid, '{') == 0) {
+                $guid = substr($guid, 1);
+            }
+            if (strpos($guid, '}') == strlen($guid) - 1) {
+                $guid = substr($guid, 0, strlen($guid) - 2);
+            }
+            return $guid;
+        } else {
+            return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+        }
+    } // createGUID()
+
 }

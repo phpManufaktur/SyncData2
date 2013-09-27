@@ -1,0 +1,54 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+
+<div id="confirmation">
+  <a name="confirmation"></a>
+  {% if form.css.active %}
+    <script type="text/javascript">
+      var fileref = document.createElement("link");
+      fileref.setAttribute("rel", "stylesheet");
+      fileref.setAttribute("type", "text/css");
+      fileref.setAttribute("href", '{{ form.css.url }}');
+      document.getElementsByTagName("head")[0].appendChild(fileref);
+    </script>          
+  {% endif %}
+  <form name="confirmation" method="post" action="{{ form.action }}#confirmation">
+    <input type="hidden" name="start_stamp" value="{{ form.start_stamp }}" />
+    <div class="message">
+      {% if message|length > 0 %}
+        {{ message }}
+      {% else %}
+        <div class="message item">{{ 'Please confirm that you have read the full text above.'|trans }}</div>
+      {% endif %}
+    </div>
+    {% if form.name.active %}
+      <div class="item">
+        <label for="{{ form.name.name }}" class="required">{{ 'Your name'|trans }}</label>
+        <input id="{{ form.name.name }}" type="text" name="{{ form.name.name }}" value="{{ form.name.value }}" required="required" />
+      </div>
+    {% endif %}
+    {% if form.email.active %}
+      <div class="item">
+        <label for="{{ form.email.name }}" class="required">{{ 'Your email'|trans }}</label>
+        <input id="{{ form.email.name }}" type="email" name="{{ form.email.name }}" value="{{ form.email.value }}" required="required" />
+      </div>
+    {% endif %}
+    {% if form.confirm.active %}
+      <div class="item">
+        <label>&nbsp;</label>
+        <input id="{{ form.confirm.name }}" type="checkbox" name="{{ form.confirm.name }}" value="{{ form.confirm.value }}" required="required" />
+        <label for="{{ form.confirm.name }}" class="after required">{{ 'I have read the full text above'|trans }}</label>        
+      </div>
+    {% endif %}
+    <div class="item submit">
+      <label>&nbsp;</label>  
+      <input type="submit" value="{{ 'Confirm'|trans }}" />
+    </div>
+  </form>
+</div>

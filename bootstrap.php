@@ -26,6 +26,14 @@ use phpManufaktur\SyncData\Control\CreateSynchronizeArchive;
 use phpManufaktur\SyncData\Control\SynchronizeClient;
 use phpManufaktur\SyncData\Control\CheckKey;
 use phpManufaktur\SyncData\Control\Template;
+use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\MessageSelector;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Bridge\Twig\Extension\TranslationExtension;
+use phpManufaktur\ConfirmationLog\Data\Setup\Setup as confirmationSetup;
+
+require_once __DIR__.'/vendor/Twig/Autoloader.php';
+\Twig_Autoloader::register();
 
 require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
@@ -45,6 +53,7 @@ try {
     });
 
     define('SYNCDATA_PATH', $app['utils']->sanitizePath(__DIR__));
+    define('MANUFAKTUR_PATH', SYNCDATA_PATH.'/vendor/phpManufaktur');
 
     // set the default time zone
     if (file_exists(SYNCDATA_PATH.'/config/syncdata.json') &&
@@ -82,13 +91,14 @@ try {
     $app['monolog']->pushHandler(new StreamHandler($log_file, LOGGER_LEVEL));
     $app['monolog']->addInfo('Monolog initialized');
 
-    // get the version number
 
+
+    // get the version number
     $syncdata_version = (file_exists(SYNCDATA_PATH.'/VERSION') && (false !== ($ver = file_get_contents(SYNCDATA_PATH.'/VERSION')))) ? $ver : '0.0.0';
     define('SYNCDATA_VERSION', $syncdata_version);
 
     // check directories and create protection
-    $check_directories = array('/config', '/temp', '/logfile', '/vendor');
+    $check_directories = array('/config', '/temp', '/temp/cache', '/logfile', '/vendor');
     foreach ($check_directories as $directory) {
         if (!file_exists(SYNCDATA_PATH.$directory.'/.htaccess') || !file_exists(SYNCDATA_PATH.$directory.'/.htpasswd')) {
             $app['utils']->createDirectoryProtection(SYNCDATA_PATH.$directory);
@@ -102,6 +112,51 @@ try {
             throw new \Exception("Can' create the directory ".SYNCDATA_PATH.$directory);
         }
     }
+
+    // initialize the translation service
+    $app['translator'] = $app->share(function() {
+        // default language
+        $locale = 'en';
+        // quick and dirty ... try to detect the favorised language - to be improved!
+        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            $langs = array();
+            // break up string into pieces (languages and q factors)
+            preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang_parse);
+            if (count($lang_parse[1]) > 0) {
+                foreach ($lang_parse[1] as $lang) {
+                    if (false === (strpos($lang, '-'))) {
+                        // only the country sign like 'de'
+                        $locale = strtolower($lang);
+                    } else {
+                        // perhaps something like 'de-DE'
+                        $locale = strtolower(substr($lang, 0, strpos($lang, '-')));
+                    }
+                    break;
+                }
+            }
+        }
+        $translator = new Translator($locale, new MessageSelector());
+        $translator->setFallbackLocale('en');
+        $translator->addLoader('array', new ArrayLoader());
+        return $translator;
+    });
+
+    // load the /SyncData language files
+    $app['utils']->addLanguageFiles(SYNCDATA_PATH.'/vendor/phpManufaktur/SyncData/Data/Locale');
+    // load the /SyncData/Basic language files
+    $app['utils']->addLanguageFiles(SYNCDATA_PATH.'/vendor/phpManufaktur/SyncData/Data/Locale/Custom');
+
+    // initialize the Twig template engine
+    $app['twig'] = $app->share(function() use($app) {
+        $loader = new \Twig_Loader_Filesystem(MANUFAKTUR_PATH);
+        $twig = new \Twig_Environment($loader, array(
+            'cache' => SYNCDATA_PATH.'/temp/cache',
+        ));
+        if (isset($app['translator'])) {
+            $twig->addExtension(new TranslationExtension($app['translator']));
+        }
+        return $twig;
+    });
 
     // initialize Doctrine
     $initDoctrine = new Doctrine($app);
@@ -140,6 +195,8 @@ try {
 
     if ($initConfig->executedSetup() && $app['config']['security']['active']) {
         // if SyncData was initialized prompt a message!
+        $initConfirmation = new confirmationSetup();
+        $initConfirmation->exec($app);
         $route = '#init_syncdata';
     }
     $app_result = null;
@@ -169,6 +226,8 @@ try {
             }
             $setup = new Setup($app);
             $app_result = $setup->exec();
+            $initConfirmation = new confirmationSetup();
+            $app_result = $initConfirmation->exec($app);
             break;
         case '/update':
             if (!$CheckKey->check()) {
