@@ -459,4 +459,125 @@ class Utils
         }
     } // createGUID()
 
+    /**
+     * Read the specified configuration file in JSON format and return array
+     *
+     * @param string $file path to JSON file
+     * @throws \Exception
+     * @return array configuration items
+     */
+    public function readConfiguration($file)
+    {
+        if (file_exists($file)) {
+            if (null === ($config = json_decode(file_get_contents($file), true))) {
+                $code = json_last_error();
+                // get JSON error message from last error code
+                switch ($code) :
+                case JSON_ERROR_NONE:
+                    $error = 'No errors';
+                break;
+                case JSON_ERROR_DEPTH:
+                    $error = 'Maximum stack depth exceeded';
+                    break;
+                case JSON_ERROR_STATE_MISMATCH:
+                    $error = 'Underflow or the modes mismatch';
+                    break;
+                case JSON_ERROR_CTRL_CHAR:
+                    $error = 'Unexpected control character found';
+                    break;
+                case JSON_ERROR_SYNTAX:
+                    $error = 'Syntax error, malformed JSON';
+                    break;
+                case JSON_ERROR_UTF8:
+                    $error = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                    break;
+                default:
+                    $error = 'Unknown error';
+                    break;
+                    endswitch;
+
+                    // throw Exception
+                    throw new \Exception(sprintf('Error decoding JSON file %s, returned error code: %d - %s',
+                        substr($file, strlen(SYNCDATA_PATH)), $code, $error));
+            }
+        } else {
+            throw new \Exception(sprintf('Missing the configuration file: %s!', $file));
+        }
+        // return the configuration array
+        return $config;
+    } // readConfiguration()
+
+    /**
+     * Alias for readConfiguration()
+     *
+     * @see readConfiguration()
+     * @param string $file path to JSON file
+     * @return Ambigous <multitype:, mixed>
+     */
+    public function readJSON($file)
+    {
+        return $this->readConfiguration($file);
+    }
+
+    /**
+     * Return a valid path to the desired template, depending on the namespace,
+     * the preconfigured Framework template names and/or the preferred template
+     *
+     * @param string $template_namespace the Twig namespace to use
+     * @param string $template_file the file to load, you can use leading directories
+     * @param string $preferred_template optional specifiy a preferred template
+     * @param boolean $return_path return the path instead of the Twig namespace
+     * @throws \Exception
+     * @return string
+     */
+    public function getTemplateFile($template_namespace, $template_file, $preferred_template='', $return_path=false)
+    {
+        $TEMPLATE_NAMESPACES = array(
+            'phpManufaktur' => MANUFAKTUR_PATH,
+        );
+
+        if ($template_namespace[0] != '@') {
+            throw new \Exception('Namespace expected in variable $template_namespace but path found!');
+        }
+        // no trailing slash!
+        if (strrpos($template_namespace, '/') == strlen($template_namespace) - 1)
+            $template_namespace = substr($template_namespace, 0, strlen($template_namespace) - 1);
+        // separate the namespace
+        if (false === strpos($template_namespace, '/')) {
+            // only namespace - no subdirectory!
+            $namespace = substr($template_namespace, 1);
+            $directory = '';
+        } else {
+            $namespace = substr($template_namespace, 1, strpos($template_namespace, '/') - 1);
+            $directory = substr($template_namespace, strpos($template_namespace, '/'));
+        }
+
+        // no leading slash for the template file
+        if ($template_file[0] == '/')
+            $template_file = substr($template_file, 1);
+        // explode the template names
+        $template_names = explode(',', SYNCDATA_TEMPLATES);
+        if (!empty($preferred_template)) {
+            array_unshift($template_names, $preferred_template);
+        }
+
+        // walk through the template names
+        foreach ($template_names as $name) {
+            $file = $TEMPLATE_NAMESPACES[$namespace] . $directory . '/' . $name . '/' . $template_file;
+            if (file_exists($file)) {
+                if ($return_path) {
+                    // return the PATH
+                    return $file;
+                }
+                else {
+                    // success - build the namespace path for Twig
+                    return $template_namespace . '/' . $name . '/' . $template_file;
+                }
+            }
+        }
+        // Uuups - no template found!
+        throw new \Exception(sprintf('Template file %s not found within the namespace %s!', $template_file, $template_namespace));
+    }
+
+
 }
