@@ -31,6 +31,10 @@ use Symfony\Component\Translation\MessageSelector;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use phpManufaktur\ConfirmationLog\Data\Setup\Setup as confirmationSetup;
+use phpManufaktur\ConfirmationLog\Data\Setup\Update as confirmationUpdate;
+use phpManufaktur\ConfirmationLog\Data\Setup\Uninstall as confirmationUninstall;
+use phpManufaktur\ConfirmationLog\Data\Setup\SetupTool;
+use phpManufaktur\ConfirmationLog\Data\Import\ImportOldLog;
 
 require_once __DIR__.'/vendor/Twig/Autoloader.php';
 \Twig_Autoloader::register();
@@ -234,7 +238,24 @@ try {
                 $app_result = $CheckKey->getKeyHint();
                 break;
             }
-            $app_result = 'Update is not implemented';
+            $ConfirmationUpdate = new confirmationUpdate();
+            $app_result = $ConfirmationUpdate->exec($app);
+            break;
+        case '/uninstall':
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $ConfirmationUninstall = new confirmationUninstall();
+            $app_result = $ConfirmationUninstall->exec($app);
+            break;
+        case '/import_log':
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $ImportLog = new ImportOldLog();
+            $app_result = $ImportLog->exec($app);
             break;
         case '/backup':
             // create a backup
@@ -293,6 +314,11 @@ try {
             }
             $synchronizeClient = new SynchronizeClient($app);
             $app_result = $synchronizeClient->exec();
+            break;
+        case '/test':
+            $setup = new SetupTool();
+            $setup->exec($app);
+            $app_result = 'ok';
             break;
         case '#init_syncdata':
             // initialized SyncData2
