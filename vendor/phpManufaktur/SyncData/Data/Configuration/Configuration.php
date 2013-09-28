@@ -111,7 +111,11 @@ class Configuration
                 'client_id' => $this->app['utils']->generatePassword(9, false, 'ld'),
                 'memory_limit' => '256M',
                 'max_execution_time' => '300',
-                'time_zone' => 'Europe/Berlin'
+                'time_zone' => 'Europe/Berlin',
+                'debug' => false,
+                'templates' => array(
+                    'default'
+                )
             ),
             'security' => array(
                 'active' => true,
@@ -233,6 +237,8 @@ class Configuration
         define('CMS_SERVER_EMAIL', self::$config_array['CMS']['CMS_SERVER_EMAIL']);
         define('CMS_SERVER_NAME', self::$config_array['CMS']['CMS_SERVER_NAME']);
         define('TEMP_PATH', SYNCDATA_PATH.'/temp');
+        define('SYNCDATA_DEBUG', isset(self::$config_array['general']['debug']) ? self::$config_array['general']['debug'] : false);
+        define('SYNCDATA_TEMPLATES', isset(self::$config_array['general']['templates']) ? implode(',', self::$config_array['general']['templates']) : 'default');
 
         if (false === ini_set('memory_limit', self::$config_array['general']['memory_limit'])) {
             throw new ConfigurationException(sprintf("Can't set the memory limit to %s", self::$config_array['general']['memory_limit']));
