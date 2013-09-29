@@ -11,35 +11,21 @@
 
 include_once __DIR__.'/vendor/autoloader.php';
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use phpManufaktur\SyncData\Control\Backup;
 use phpManufaktur\SyncData\Control\Utils;
 use phpManufaktur\SyncData\Control\Application;
 use phpManufaktur\SyncData\Control\Restore;
 use phpManufaktur\SyncData\Control\Check;
-use phpManufaktur\SyncData\Data\Configuration\Configuration;
-use phpManufaktur\SyncData\Data\Configuration\Doctrine;
-use phpManufaktur\SyncData\Data\Configuration\SwiftMailer;
 use phpManufaktur\SyncData\Data\Setup\Setup;
 use phpManufaktur\SyncData\Control\CreateSynchronizeArchive;
 use phpManufaktur\SyncData\Control\SynchronizeClient;
 use phpManufaktur\SyncData\Control\CheckKey;
 use phpManufaktur\SyncData\Control\Template;
-use Symfony\Component\Translation\Translator;
-use Symfony\Component\Translation\MessageSelector;
-use Symfony\Component\Translation\Loader\ArrayLoader;
-use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use phpManufaktur\ConfirmationLog\Data\Setup\Setup as confirmationSetup;
 use phpManufaktur\ConfirmationLog\Data\Setup\Update as confirmationUpdate;
 use phpManufaktur\ConfirmationLog\Data\Setup\Uninstall as confirmationUninstall;
 use phpManufaktur\ConfirmationLog\Data\Setup\SetupTool;
 use phpManufaktur\ConfirmationLog\Data\Import\ImportOldLog;
-
-require_once __DIR__.'/vendor/Twig/Autoloader.php';
-\Twig_Autoloader::register();
-
-require_once __DIR__.'/vendor/SwiftMailer/lib/swift_required.php';
 
 // set the error handling
 ini_set('display_errors', 1);
@@ -59,123 +45,7 @@ try {
     define('SYNCDATA_PATH', $app['utils']->sanitizePath(__DIR__));
     define('MANUFAKTUR_PATH', SYNCDATA_PATH.'/vendor/phpManufaktur');
 
-    // set the default time zone
-    if (file_exists(SYNCDATA_PATH.'/config/syncdata.json') &&
-        (false !== ($config_array = json_decode(@file_get_contents(SYNCDATA_PATH.'/config/syncdata.json'), true))) &&
-        is_array($config_array) && isset($config_array['general']['time_zone'])) {
-        // set the default timezone from the syncdata.json
-        date_default_timezone_set($config_array['general']['time_zone']);
-    }
-    else {
-        // syncdata.json does not exists, set 'Europe/Berlin' as default
-        $config_array = null;
-        date_default_timezone_set('Europe/Berlin');
-    }
-
-    // set monolog logging level
-    define('LOGGER_LEVEL', isset($config_array['monolog']['level']) ? $config_array['monolog']['level'] : Logger::INFO);
-
-    // check the logfile size
-    $max_size = 5*1024*1024; // 5 MB
-    $log_file = SYNCDATA_PATH.'/logfile/syncdata.log';
-    if (file_exists($log_file) && (filesize($log_file) > $max_size)) {
-        // delete existing backup file
-        @unlink(SYNCDATA_PATH.'/logfile/syncdata.bak');
-        // rename the logfile to *.bak
-        @rename($log_file, SYNCDATA_PATH.'/logfile/syncdata.bak');
-    }
-    elseif (!file_exists(SYNCDATA_PATH.'/logfile') && (true !== @mkdir(SYNCDATA_PATH.'/logfile'))) {
-        throw new \Exception("Can not create the directory for the logfiles!");
-    }
-
-    // initialize the logger
-    $app['monolog'] = $app->share(function($app) {
-        return new Logger('SyncData');
-    });
-    $app['monolog']->pushHandler(new StreamHandler($log_file, LOGGER_LEVEL));
-    $app['monolog']->addInfo('Monolog initialized');
-
-
-
-    // get the version number
-    $syncdata_version = (file_exists(SYNCDATA_PATH.'/VERSION') && (false !== ($ver = file_get_contents(SYNCDATA_PATH.'/VERSION')))) ? $ver : '0.0.0';
-    define('SYNCDATA_VERSION', $syncdata_version);
-
-    // check directories and create protection
-    $check_directories = array('/config', '/temp', '/temp/cache', '/logfile', '/vendor');
-    foreach ($check_directories as $directory) {
-        if (!file_exists(SYNCDATA_PATH.$directory.'/.htaccess') || !file_exists(SYNCDATA_PATH.$directory.'/.htpasswd')) {
-            $app['utils']->createDirectoryProtection(SYNCDATA_PATH.$directory);
-        }
-    }
-
-    // check if the /inbox and /outbox exists
-    $check_directories = array('/inbox', '/outbox');
-    foreach ($check_directories as $directory) {
-        if (!file_exists(SYNCDATA_PATH.$directory) && !@mkdir(SYNCDATA_PATH.$directory)) {
-            throw new \Exception("Can' create the directory ".SYNCDATA_PATH.$directory);
-        }
-    }
-
-    // initialize the translation service
-    $app['translator'] = $app->share(function() {
-        // default language
-        $locale = 'en';
-        // quick and dirty ... try to detect the favorised language - to be improved!
-        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $langs = array();
-            // break up string into pieces (languages and q factors)
-            preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang_parse);
-            if (count($lang_parse[1]) > 0) {
-                foreach ($lang_parse[1] as $lang) {
-                    if (false === (strpos($lang, '-'))) {
-                        // only the country sign like 'de'
-                        $locale = strtolower($lang);
-                    } else {
-                        // perhaps something like 'de-DE'
-                        $locale = strtolower(substr($lang, 0, strpos($lang, '-')));
-                    }
-                    break;
-                }
-            }
-        }
-        $translator = new Translator($locale, new MessageSelector());
-        $translator->setFallbackLocale('en');
-        $translator->addLoader('array', new ArrayLoader());
-        return $translator;
-    });
-
-    // load the /SyncData language files
-    $app['utils']->addLanguageFiles(SYNCDATA_PATH.'/vendor/phpManufaktur/SyncData/Data/Locale');
-    // load the /SyncData/Basic language files
-    $app['utils']->addLanguageFiles(SYNCDATA_PATH.'/vendor/phpManufaktur/SyncData/Data/Locale/Custom');
-
-    // initialize the Twig template engine
-    $app['twig'] = $app->share(function() use($app) {
-        $loader = new \Twig_Loader_Filesystem(MANUFAKTUR_PATH);
-        $twig = new \Twig_Environment($loader, array(
-            'cache' => SYNCDATA_PATH.'/temp/cache',
-        ));
-        if (isset($app['translator'])) {
-            $twig->addExtension(new TranslationExtension($app['translator']));
-        }
-        return $twig;
-    });
-
-    // initialize Doctrine
-    $initDoctrine = new Doctrine($app);
-    $initDoctrine->initDoctrine();
-
-    // initialize the SyncData configuration
-    $initConfig = new Configuration($app, $config_array);
-    $initConfig->initConfiguration();
-
-    // initialize the SwiftMailer
-    $initSwiftMailer = new SwiftMailer($app);
-    $initSwiftMailer->initSwiftMailer();
-
-    // configuration is finished
-    $app['monolog']->addInfo('SyncData READY');
+    include SYNCDATA_PATH.'/bootstrap.inc';
 
     // get the SyncDataServer directory
     $syncdata_directory = dirname($_SERVER['SCRIPT_NAME']);
@@ -315,10 +185,10 @@ try {
             $synchronizeClient = new SynchronizeClient($app);
             $app_result = $synchronizeClient->exec();
             break;
-        case '/test':
+        case '/setup_tool':
             $setup = new SetupTool();
             $setup->exec($app);
-            $app_result = 'ok';
+            $app_result = $app['translator']->trans('The admin-tool for the ConfirmationLog has successfull installed.');
             break;
         case '#init_syncdata':
             // initialized SyncData2

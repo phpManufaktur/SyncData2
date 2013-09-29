@@ -14,7 +14,7 @@
       var fileref = document.createElement("link");
       fileref.setAttribute("rel", "stylesheet");
       fileref.setAttribute("type", "text/css");
-      fileref.setAttribute("href", '{{ form.css.url }}');
+      fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/droplet/confirmation.css' }}');
       document.getElementsByTagName("head")[0].appendChild(fileref);
     </script>          
   {% endif %}

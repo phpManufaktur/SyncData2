@@ -1,0 +1,73 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @link https://github.com/phpManufaktur/kitFramework/wiki
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+{% if usage|lower == 'framework' %}
+  {% set template_namespace = '@phpManufaktur/Basic/Template' %}
+  {% set template_file = 'framework/body.twig' %}
+{% elseif usage|lower == 'syncdata' %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/syncdata.body.twig' %}
+{% else %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/body.twig' %}
+{% endif %}
+{% extends getTemplateFile(template_namespace, template_file) %}
+
+{% block content %}
+  
+  {% if (message|length > 0) %}
+    <div class="message">
+      <div class="message item">
+        {{ message }}
+      </div>    
+    </div>  
+  {% endif %}
+
+  {% if confirmation.id is defined %}
+    <div class="detail_label">{{ 'id'|trans }}</div>
+    <div class="detail_value">{{ '%06d'|format(confirmation.id) }}</div>
+    <div class="detail_label">{{ 'page_id'|trans }}</div>
+    <div class="detail_value">{{ confirmation.page_id }}</div>
+    <div class="detail_label">{{ 'page_type'|trans }}</div>
+    <div class="detail_value">{{ confirmation.page_type|trans }}</div>
+    <div class="detail_label">{{ 'second_id'|trans }}</div>
+    <div class="detail_value">{{ confirmation.second_id }}</div>
+    <div class="detail_label">{{ 'installation_name'|trans }}</div>
+    <div class="detail_value">{{ confirmation.installation_name }}</div>
+    <div class="detail_label">{{ 'user_name'|trans }}</div>
+    <div class="detail_value">{{ confirmation.user_name }}</div>
+    <div class="detail_label">{{ 'user_email'|trans }}</div>
+    <div class="detail_value">{{ confirmation.user_email }}</div>
+    <div class="detail_label">{{ 'page_title'|trans }}</div>
+    <div class="detail_value">{{ confirmation.page_title }}</div>
+    <div class="detail_label">{{ 'page_url'|trans }}</div>
+    <div class="detail_value">{{ confirmation.page_url }}</div>
+    <div class="detail_label">{{ 'typed_name'|trans }}</div>
+    <div class="detail_value">{{ confirmation.typed_name }}</div>
+    <div class="detail_label">{{ 'typed_email'|trans }}</div>
+    <div class="detail_value">{{ confirmation.typed_email }}</div>
+    <div class="detail_label">{{ 'confirmed_at'|trans }}</div>
+    <div class="detail_value">{{ confirmation.confirmed_at }}</div>
+    <div class="detail_label">{{ 'received_at'|trans }}</div>
+    <div class="detail_value">{{ confirmation.received_at }}</div>
+    <div class="detail_label">{{ 'time_on_page'|trans }}</div>
+    <div class="detail_value">{{ confirmation.time_on_page }}</div>
+    <div class="detail_label">{{ 'checksum'|trans }}</div>
+    <div class="detail_value">{{ confirmation.checksum }}</div>
+    <div class="detail_label">{{ 'transmitted_at'|trans }}</div>
+    <div class="detail_value">{{ confirmation.transmitted_at }}</div>
+    <div class="detail_label">{{ 'status'|trans }}</div>
+    <div class="detail_value">{{ confirmation.status|trans }}</div>
+    <div class="detail_label">{{ 'timestamp'|trans }}</div>
+    <div class="detail_value">{{ confirmation.timestamp }}</div>
+    <div class="clear"></div>
+  {% endif %}
+  <p><a href="{{ link_list }}">{{ 'Back to the overview'|trans }}</a></p>
+{% endblock content %}
+

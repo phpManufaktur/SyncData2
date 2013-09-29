@@ -1,0 +1,128 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @link https://github.com/phpManufaktur/kitFramework/wiki
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+{% if usage|lower == 'framework' %}
+  {% set template_namespace = '@phpManufaktur/Basic/Template' %}
+  {% set template_file = 'framework/body.twig' %}
+{% elseif usage|lower == 'syncdata' %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/syncdata.body.twig' %}
+{% else %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/body.twig' %}
+{% endif %}
+{% extends getTemplateFile(template_namespace, template_file) %}
+
+{% block content %}
+  
+  {% if message|length > 0 %}
+    <div class="message">{{ message }}</div>
+  {% endif %}
+
+  {% if confirmations|length > 0 %}
+    {#
+      The pagination serve a automatic 1 2 3 ... 17 18 19 pagination and
+      navigation for the table if it contain more rows than specified in:
+      /Contact/Template/default/backend/simple/list.contact.json
+      Changes here must be also done at the footer of the table !!!
+     #}
+    {% include '@phpManufaktur/ConfirmationLog/Template/default/backend/pagination.twig' with {
+       currentPage: current_page,
+       paginationPath: route.pagination|replace({'{order}':order_by|join(','), '{direction}':order_direction}),
+       lastPage: last_page,
+       showAlwaysFirstAndLast: true
+    } only %}
+
+    <table>
+      <thead>
+        <tr>
+          {#
+              Enable an automatic ordering of the table by the columns, just
+              clicking at the head of the column. Default order is specified in:
+              /Contact/Template/default/backend/simple/list.contact.json
+           #}
+          {% set order_by_str = order_by|join(',') %}
+          {% for head in confirmations.0|keys %}
+            {% if head in columns %}
+              {% set head_order = order_direction %}
+              {% set head_class = head %}
+              {% if (head == order_by_str) %}
+                {% if (head_order == 'asc') %}
+                  {% set head_order = 'desc' %}
+                  {% set head_class = head_class ~ ' active asc' %}
+                {% else %}
+                  {% set head_order = 'asc' %}
+                  {% set head_class = head_class ~ ' active desc' %}
+                {% endif %}
+              {% endif %}
+              <th class="{{ head_class }}">
+                {% if 'active asc' in head_class %}
+                  <i class="icon-caret-down icon-padding"></i>
+                {% elseif 'active desc' in head_class %}
+                  <i class="icon-caret-up icon-padding"></i>
+                {% endif %}
+                <a href="{{ route.pagination|replace({'{page}':current_page, '{order}':head, '{direction}':head_order}) }}" title="{% if head_order == 'asc' %}{{ 'Click to sort column ascending'|trans }}{% else %}{{ 'Click to sort column descending'|trans }}{% endif %}">{{ head|trans }}</a>
+              </th>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% set i = 0 %}
+        {% for confirmation in confirmations %}
+          <tr class="{{ cycle(['flop','flip'], i) }}">
+            {% for column, value in confirmation %}
+              {% if column in columns %}
+                {% if column == 'id' %}
+                  <td class="{{ column }}">
+                    <a href="{{ route.edit|replace({'{confirmation_id}':value}) }}">{{ '%06d'|format(value) }}</a>
+                  </td>
+                {% elseif ((column == 'confirmed_at') or (column == 'received_at') or (column == 'transmitted_at') or (column == 'timestamp')) %}
+                  {# formatting date and time #}
+                  <td class="{{ column }}">{{ value|date('d.m.Y - H:i') }}</td>                  
+                {% elseif (column == 'status') %}
+                  {# translate this column value #}
+                  <td class="{{ column }}">{{ value|trans }}</td>
+                {% elseif (column == 'time_on_page') %}
+                  <td class="{{ column }}">
+                    {% if value < 1 %}
+                      {{ 'not available'|trans }}
+                    {% else %}
+                      {{ value }}&nbsp;{{ 'Seconds'|trans }}
+                    {% endif %}
+                  </td>
+                {% else %}
+                  <td class="{{ column }}">{{ value }}</td>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </tr>
+          {% set i = i+1 %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {#
+      See top of the table for more information!
+     #}
+    {% include '@phpManufaktur/ConfirmationLog/Template/default/backend/pagination.twig' with {
+      currentPage: current_page,
+      paginationPath: route.pagination|replace({'{order}':order_by|join(','), '{direction}':order_direction}),
+      lastPage: last_page,
+      showAlwaysFirstAndLast: true
+    } only %}
+  {% else %}
+    <div class="message">
+      <div class="message item">
+        {{ 'Actual there exists no confirmations!'|trans }}
+      </div>
+    </div>
+  {% endif %}
+{% endblock content %}
+

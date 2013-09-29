@@ -149,14 +149,6 @@ class Confirmation extends Control
         $this->initialize($app);
         $this->app['translator']->setLocale(strtolower(LANGUAGE));
 
-        $css_url = '';
-        if ($parameter['css']['active'] && file_exists(MANUFAKTUR_PATH.'/ConfirmationLog/Template/default/droplet/confirmation.css')) {
-            // copy the CSS file to temporary directory of the CMS
-            if (@copy(MANUFAKTUR_PATH.'/ConfirmationLog/Template/default/droplet/confirmation.css', WB_PATH.'/temp/confirmation.css')) {
-                $css_url = WB_URL.'/temp/confirmation.css';
-            }
-        }
-
         if (isset($_POST['start_stamp'])) {
             if ($this->checkConfirmation($parameter)) {
                 // confirm the submission and unset all POST variables
@@ -193,8 +185,7 @@ class Confirmation extends Control
                     'value' => 1
                 ),
                 'css' => array(
-                    'active' => ($parameter['css']['active'] && !empty($css_url)),
-                    'url' => $css_url
+                    'active' => $parameter['css']['active']
                 ),
                 'start_stamp' => $start_stamp
             )

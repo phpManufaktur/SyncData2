@@ -1,0 +1,22 @@
+{% spaceless %}
+  <div id="confirmation_container">
+    {#
+    <script type="text/javascript">
+      var fileref = document.createElement("link");
+      fileref.setAttribute("rel", "stylesheet");
+      fileref.setAttribute("type", "text/css");
+      fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/backend/css/syncdata.backend.css' }}');
+      document.getElementsByTagName("head")[0].appendChild(fileref);
+    </script> 
+    #}
+    <ul id="toolbar">
+      {% for item in toolbar %}
+        <li{% if item.active %} class="active"{% endif %}><a href="{{ item.link }}" title="{{ item.hint|trans }}">{{ item.text|trans }}</a></li>
+      {% endfor %}
+    </ul>
+    <div id="confirmation_content">
+      {% block content %}
+      {% endblock content %}
+    </div>
+  </div>  
+{% endspaceless %}

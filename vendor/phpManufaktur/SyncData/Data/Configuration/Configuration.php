@@ -93,6 +93,8 @@ class Configuration
                 'CMS_PAGES_DIRECTORY' => $cms_settings['pages_directory'],
                 'CMS_URL' => WB_URL,
                 'CMS_PATH' => WB_PATH,
+                'CMS_ADMIN_URL' => (isset($cms_settings['lepton_version'])) ? WB_URL.'/admins' : WB_URL.'/admin',
+                'CMS_ADMIN_PATH' => (isset($cms_settings['lepton_version'])) ? WB_PATH.'/admins' : WB_PATH.'/admin',
                 'INSTALLATION_NAME' => defined('INSTALLATION_NAME') ? INSTALLATION_NAME : ''
             ),
             'email' => array(
@@ -231,6 +233,8 @@ class Configuration
         define('CMS_URL', self::$config_array['CMS']['CMS_URL']);
         define('CMS_PATH', self::$config_array['CMS']['CMS_PATH']);
         define('CMS_TYPE', self::$config_array['CMS']['CMS_TYPE']);
+        define('CMS_ADMIN_PATH', isset(self::$config_array['CMS']['CMS_ADMIN_PATH']) ? self::$config_array['CMS']['CMS_ADMIN_PATH'] : (CMS_TYPE == 'LEPTON') ? CMS_PATH.'/admins' : CMS_PATH.'/admin');
+        define('CMS_ADMIN_URL', isset(self::$config_array['CMS']['CMS_ADMIN_URL']) ? self::$config_array['CMS']['CMS_ADMIN_URL'] : (CMS_TYPE == 'LEPTON') ? CMS_URL.'/admins' : CMS_URL.'/admin');
         define('CMS_VERSION', self::$config_array['CMS']['CMS_VERSION']);
         define('CMS_MEDIA_DIRECTORY', self::$config_array['CMS']['CMS_MEDIA_DIRECTORY']);
         define('CMS_PAGES_DIRECTORY', self::$config_array['CMS']['CMS_PAGES_DIRECTORY']);

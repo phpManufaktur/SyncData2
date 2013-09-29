@@ -1,0 +1,43 @@
+{
+  "name":"ConfirmationLog",
+  "guid":"9CDF6A24-9731-43C5-8ED2-BAD2C9B4482D",
+  "category":"extension",
+  "group":"phpManufaktur",
+  "vendor":"phpManufaktur",
+  "type":"framework",
+  "path":"\/extension\/phpmanufaktur\/phpManufaktur\/ConfirmationLog",
+  "namespace":"phpManufaktur\\Basic",
+  "release":{
+    "number":"0.11",
+    "date":"2013-09-29",
+    "status":"beta"
+  },
+  "description": {
+    "en":{
+      "title":"ConfirmationLog",
+      "short":"Confirmation Logfile",
+      "long":"Confirmation Logfile",
+      "url":"https:\/\/kit2.phpmanufaktur.de"
+    }
+  },
+  "require":{
+    "framework": {
+      "release":"0.26"
+    }
+  },
+  "setup":{
+    "install":"\/admin\/confirmationlog\/setup",
+    "update":"\/admin\/confirmationlog\/update",
+    "uninstall":"\/admin\/confirmationlog\/uninstall"
+  },
+  "license":"MIT License",
+  "download": {
+    "availability":"public",
+    "agreement":"free",
+    "github":{
+      "organization":"phpManufaktur",
+      "repository":"kfConfirmationLog"
+    },
+    "url":"https:\/\/github.com\/phpManufaktur\/kfConfirmationLog"
+  }
+}

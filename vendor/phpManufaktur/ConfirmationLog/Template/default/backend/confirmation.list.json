@@ -1,0 +1,25 @@
+{
+  "columns":[
+    "id",
+    "page_title",
+    "installation_name",
+    "typed_name",
+    "confirmed_at",
+    "time_on_page",
+    "received_at",
+    "status"
+  ],
+  "list":{
+    "rows_per_page":40,
+    "select_status":[
+      "PENDING",
+      "SUBMITTED"
+    ],
+    "order":{
+      "by":[
+        "confirmed_at"
+      ],
+      "direction":"DESC"
+    }
+  }
+}

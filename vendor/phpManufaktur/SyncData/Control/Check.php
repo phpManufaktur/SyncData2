@@ -177,7 +177,7 @@ class Check
                                 $sync_id = -1;
                                 $SynchronizeTables->insert($data, $sync_id);
                                 $this->app['monolog']->addInfo(sprintf("Add INSERT %s for index field %s => %s with the ID %d",
-                                    $table['table_name'], $backupRow['index_field'], $backupRow['index_id'], $sync_id),
+                                    $table['table_name'], $row['index_field'], $row['index_id'], $sync_id),
                                     array('method' => __METHOD__, 'line' => __LINE__));
 
                                 // update the backup tables ???

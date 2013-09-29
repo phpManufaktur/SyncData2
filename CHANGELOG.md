@@ -3,6 +3,10 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.21** - 2013-09-29
+
+* added admin-tool for viewing and checking the confirmations
+
 **2.0.20** - 2013-09-27
 
 * added confirmation log and Droplet `syncdata_confirmation` for the CMS

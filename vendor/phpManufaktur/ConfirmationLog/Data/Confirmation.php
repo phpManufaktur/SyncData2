@@ -50,6 +50,7 @@ class Confirmation
         `typed_name` VARCHAR(255) NOT NULL DEFAULT '',
         `typed_email` VARCHAR(255) NOT NULL DEFAULT '',
         `confirmed_at` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+        `received_at` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         `time_on_page` INT(11) NOT NULL DEFAULT '0',
         `checksum` VARCHAR(32) NOT NULL DEFAULT '',
         `transmitted_at` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -93,6 +94,71 @@ EOD;
         }
     }
 
+    /**
+     * Return the column names of the table
+     *
+     * @throws \Exception
+     * @return multitype:unknown
+     */
+    public function getColumns()
+    {
+        try {
+            $result = $this->app['db']->fetchAll("SHOW COLUMNS FROM `".self::$table_name."`");
+            $columns = array();
+            foreach ($result as $column) {
+                $columns[] = $column['Field'];
+            }
+            return $columns;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Count the records in the table
+     *
+     * @param array $status flags, i.e. array('ACTIVE','LOCKED')
+     * @throws \Exception
+     * @return integer number of records
+     */
+    public function count($status=null)
+    {
+        try {
+            $SQL = "SELECT COUNT(*) FROM `".self::$table_name."`";
+            if (is_array($status) && !empty($status)) {
+                $SQL .= " WHERE ";
+                $use_status = false;
+                if (is_array($status) && !empty($status)) {
+                    $use_status = true;
+                    $SQL .= '(';
+                    $start = true;
+                    foreach ($status as $stat) {
+                        if (!$start) {
+                            $SQL .= " OR ";
+                        }
+                        else {
+                            $start = false;
+                        }
+                        $SQL .= "`status`='$stat'";
+                    }
+                    $SQL .= ')';
+                }
+            }
+            return $this->app['db']->fetchColumn($SQL);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+
+    /**
+     * Calculate the checksum for the given data record
+     *
+     * @param array $data
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     * @return string
+     */
     public function calculateChecksum($data)
     {
         if (!is_array($data)) {
@@ -105,8 +171,14 @@ EOD;
                 'installation_name, page_url, typed_name, typed_email, confirmed_at and time_on_page '.
                 'must be set, missing one or more fields!');
         }
-        $check = implode('#', $data);
-        return md5($check);
+        $check = array();
+        foreach ($data as $key => $value) {
+            if (in_array($key, array('page_id', 'page_type', 'second_id', 'installation_name',
+                'page_url', 'typed_name', 'typed_email', 'confirmed_at', 'time_on_page'))) {
+                $check[$key] = $value;
+            }
+        }
+        return md5(json_encode($check));
     }
 
     /**
@@ -129,6 +201,144 @@ EOD;
             // insert the record
             $this->app['db']->insert(self::$table_name, $insert);
             $confirmation_id = $this->app['db']->lastInsertId();
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Check if a Checksum exists in table. Return the ID or FALSE
+     *
+     * @param string $checksum
+     * @throws \Exception
+     * @return Ambigous <boolean, integer>
+     */
+    public function existsChecksum($checksum, $ignore_id=null)
+    {
+        try {
+            if (!is_null($ignore_id)) {
+                $SQL = "SELECT `id` FROM `".self::$table_name."` WHERE `checksum`='$checksum' AND `id`!='$ignore_id'";
+            }
+            else {
+                $SQL = "SELECT `id` FROM `".self::$table_name."` WHERE `checksum`='$checksum'";
+            }
+            return (($id = $this->app['db']->fetchColumn($SQL)) > 0) ? $id : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Get the checksum from table for the given ID
+     *
+     * @param integer $id
+     * @throws \Exception
+     * @return Ambigous <boolean, unknown>
+     */
+    public function getChecksum($id)
+    {
+        try {
+            $SQL = "SELECT `checksum` FROM `".self::$table_name."` WHERE `id`='$id'";
+            $checksum = $this->app['db']->fetchColumn($SQL);
+            return (!empty($checksum)) ? $checksum : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Select the record with the given ID
+     *
+     * @param integer $id
+     * @throws \Exception
+     * @return multitype:unknown |boolean
+     */
+    public function select($id)
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `id`='$id'";
+            $result = $this->app['db']->fetchAssoc($SQL);
+            if (is_array($result) && isset($result['id'])) {
+                $confirmation = array();
+                foreach ($result as $key => $value) {
+                    $confirmation[$key] = is_string($value) ? $this->app['utils']->unsanitizeText($value) : $value;
+                }
+                return $confirmation;
+            }
+            else {
+                return false;
+            }
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Delete the record with the given ID physically
+     *
+     * @param integer $id
+     * @throws \Exception
+     */
+    public function delete($id)
+    {
+        try {
+            $this->app['db']->delete(self::$table_name, array('id' => $id));
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Select a list from table ConfirmationLog in paging view
+     *
+     * @param integer $limit_from start selection at position
+     * @param integer $rows_per_page select max. rows per page
+     * @param array $select_status tags, i.e. array('PENDING','SUBMITTED')
+     * @param array $order_by fields to order by
+     * @param string $order_direction 'ASC' (default) or 'DESC'
+     * @throws \Exception
+     * @return array selected records
+     */
+    public function selectList($limit_from, $rows_per_page, $select_status=null, $order_by=null, $order_direction='ASC')
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."`";
+            if (is_array($select_status) && !empty($select_status)) {
+                $SQL .= " WHERE (";
+                $use_status = false;
+                if (is_array($select_status) && !empty($select_status)) {
+                    $use_status = true;
+                    $SQL .= '(';
+                    $start = true;
+                    foreach ($select_status as $stat) {
+                        if (!$start) {
+                            $SQL .= " OR ";
+                        }
+                        else {
+                            $start = false;
+                        }
+                        $SQL .= "`status`='$stat'";
+                    }
+                    $SQL .= ')';
+                }
+                $SQL .= ")";
+            }
+            if (is_array($order_by) && !empty($order_by)) {
+                $SQL .= " ORDER BY ";
+                $start = true;
+                foreach ($order_by as $by) {
+                    if (!$start) {
+                        $SQL .= ", ";
+                    }
+                    else {
+                        $start = false;
+                    }
+                    $SQL .= "`$by`";
+                }
+                $SQL .= " $order_direction";
+            }
+            $SQL .= " LIMIT $limit_from, $rows_per_page";
+            return $this->app['db']->fetchAll($SQL);
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw new \Exception($e);
         }

@@ -13,26 +13,28 @@ namespace phpManufaktur\ConfirmationLog\Data\Setup;
 
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
 
-class Setup
+class Uninstall
 {
+
     public function exec($app)
     {
+        // uninstall the confirmation log table
         $Confirmation = new Confirmation($app);
-        $Confirmation->createTable();
+        $Confirmation->dropTable();
 
         if (defined('SYNCDATA_PATH')) {
-            // this is a SyncData installation and we need droplets
+            // this is a SyncData installation remove droplet
             $Droplet = new Droplet($app);
             $Droplet->setDropletInfo(
                 'syncdata_confirmation',
                 MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation.php',
                 'Get a confirmation from the user that he has read a page or article',
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
-                );
-            $Droplet->install();
+            );
+            $Droplet->uninstall();
         }
 
-        return $app['translator']->trans('Successfull installed the extension %extension%.',
+        return $app['translator']->trans('Successfull uninstalled the extension %extension%.',
             array('%extension%' => 'ConfirmationLog'));
     }
 }
