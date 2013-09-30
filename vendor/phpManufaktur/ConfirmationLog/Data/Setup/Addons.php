@@ -109,4 +109,15 @@ class Addons
         }
     }
 
+    public function select($directory)
+    {
+        try {
+            $SQL = "SELECT * FROM `".CMS_TABLE_PREFIX."addons` WHERE `directory`='$directory'";
+            $result = $this->app['db']->fetchAssoc($SQL);
+            return (isset($result['addon_id'])) ? $result : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
 }

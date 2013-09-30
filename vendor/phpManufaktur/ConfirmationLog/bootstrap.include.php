@@ -18,4 +18,10 @@ $app['utils']->addLanguageFiles(MANUFAKTUR_PATH.'/ConfirmationLog/Data/Locale');
 $app['utils']->addLanguageFiles(MANUFAKTUR_PATH.'/ConfirmationLog/Data/Locale/Custom');
 
 $command->post('/confirmation',
+    'phpManufaktur\ConfirmationLog\Control\kitCommand\Confirmation::controllerCreateIFrame');
+
+$app->get('/confirmationlog/dialog',
     'phpManufaktur\ConfirmationLog\Control\kitCommand\Confirmation::controllerDialog');
+$app->post('/confirmationlog/dialog/check',
+    'phpManufaktur\ConfirmationLog\Control\kitcommand\Confirmation::controllerCheckConfirmation');
+

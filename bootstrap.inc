@@ -82,6 +82,10 @@ foreach ($check_directories as $directory) {
     }
 }
 
+// initialize Doctrine
+$initDoctrine = new Doctrine($app);
+$initDoctrine->initDoctrine();
+
 // initialize the SyncData configuration
 $initConfig = new Configuration($app, $config_array);
 $initConfig->initConfiguration();
@@ -144,10 +148,6 @@ $app['twig'] = $app->share(function() use($app) {
         return $twig;
 });
 $app['monolog']->addInfo('Initialized the Twig Template engine', array(__FILE__, __LINE__));
-
-// initialize Doctrine
-$initDoctrine = new Doctrine($app);
-$initDoctrine->initDoctrine();
 
 // initialize the SwiftMailer
 $initSwiftMailer = new SwiftMailer($app);

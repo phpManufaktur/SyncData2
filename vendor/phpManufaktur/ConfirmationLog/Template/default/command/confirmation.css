@@ -1,0 +1,56 @@
+.clear {
+  clear: both;
+  width: 0;
+  height: 0;
+}
+
+#confirmation {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+#confirmation label {
+  clear: both;
+  float: left;
+  width: 30%;
+  text-align: right;
+  margin: 0 0 10px 0;
+  padding: 3px 5px 0 0;
+}
+#confirmation label.required:after {
+  content: '*';
+  color: #da251d;
+  background-color: transparent;
+  font-weight: bold;
+}
+
+#confirmation input {
+  float: left;
+  width: 60%;
+  margin: 0 0 10px 0;
+}
+
+#confirmation input[type=submit] {
+  width: 150px;
+}
+
+#form_confirm {
+  float: left;
+  width: 300px;
+}
+#form_confirm input {
+  clear: left;
+  float:left;
+  width: 15px;
+  margin: 5px 10px 0 0;
+  padding: 0;
+}
+#form_confirm label {
+  clear: none;
+  float: left;
+  width: 250px;
+  text-align: left;
+}
+#form_confirm label.required:after {
+  content: none;
+}

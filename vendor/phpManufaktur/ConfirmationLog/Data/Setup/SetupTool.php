@@ -43,7 +43,7 @@ class SetupTool
 
             $data = array(
                 'name' => $extension['name'],
-                'directory' => 'kit_framework_'.strtolower(trim($extension['name'])),
+                'directory' => 'syncdata_'.strtolower(trim($extension['name'])),
                 'guid' => isset($extension['guid']) ? $extension['guid'] : '',
                 'description' => $extension['description']['en']['short'],
                 'version' => $extension['release']['number'],
@@ -58,6 +58,26 @@ class SetupTool
                 unset($data['guid']);
             }
             $addon = new Addons($this->app);
+
+            // check for the first version ...
+            if (false !== ($check = $addon->existsDirectory('kit_framework_confirmationlog'))) {
+                $check = $addon->select('kit_framework_confirmationlog');
+                if (($check['version'] == '0.10') ||($check['version'] == '0.11')) {
+                    // this was the "alpha" of the ConfirmationLog, remove it and install the new one
+                    $addon->delete('kit_framework_confirmationlog');
+                    $this->app['utils']->rrmdir(CMS_PATH.'/modules/kit_framework_confirmationlog');
+                    $this->app['monolog']->addInfo('Removed "alpha" version of the ConfirmationLog, previous installed by SyncData.',
+                        array(__METHOD__, __LINE__));
+                }
+                else {
+                    // using the kitFramework - no need to install the tool twice!
+                    $this->app['db']->commit();
+                    $message = 'The ConfirmationLog is already installed by the kitFramework, installation cancelled.';
+                    $this->app['monolog']->addInfo($message, array(__METHOD__, __LINE__));
+                    return $this->app['translator']->trans($message);
+                }
+            }
+
 
             if ($addon->existsDirectory($data['directory'])) {
                 // update the existing record
@@ -113,6 +133,11 @@ class SetupTool
 
             // commit the transaction
             $this->app['db']->commit();
+
+            // return the result
+            $message = 'The admin-tool for the ConfirmationLog has successfull installed.';
+            $this->app['monolog']->addInfo($message, array(__METHOD__, __LINE__));
+            return $this->app['translator']->trans($message);
         }
         catch (\Exception $e) {
             // roolback the transaction
@@ -125,6 +150,6 @@ class SetupTool
     {
         $this->app = $app;
 
-        $this->installTool();
+        return $this->installTool();
     }
 }

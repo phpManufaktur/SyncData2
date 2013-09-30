@@ -185,10 +185,15 @@ try {
             $synchronizeClient = new SynchronizeClient($app);
             $app_result = $synchronizeClient->exec();
             break;
+        case '/update_tool':
         case '/setup_tool':
-            $setup = new SetupTool();
-            $setup->exec($app);
-            $app_result = $app['translator']->trans('The admin-tool for the ConfirmationLog has successfull installed.');
+            // install the admin-tool for the ConfirmationLog
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $SetupTool = new SetupTool();
+            $app_result = $SetupTool->exec($app);
             break;
         case '#init_syncdata':
             // initialized SyncData2

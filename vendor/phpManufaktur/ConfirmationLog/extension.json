@@ -8,8 +8,8 @@
   "path":"\/extension\/phpmanufaktur\/phpManufaktur\/ConfirmationLog",
   "namespace":"phpManufaktur\\Basic",
   "release":{
-    "number":"0.11",
-    "date":"2013-09-29",
+    "number":"0.12",
+    "date":"2013-09-30",
     "status":"beta"
   },
   "description": {
