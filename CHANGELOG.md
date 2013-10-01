@@ -3,6 +3,10 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.23** - 2013-10-01
+
+* updated to ConfirmationLog 0.13
+
 **2.0.22** - 2013-09-30
 
 * fixed: SyncData initialized the setup in wrong order
