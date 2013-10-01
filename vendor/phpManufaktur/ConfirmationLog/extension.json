@@ -8,16 +8,22 @@
   "path":"\/extension\/phpmanufaktur\/phpManufaktur\/ConfirmationLog",
   "namespace":"phpManufaktur\\Basic",
   "release":{
-    "number":"0.12",
-    "date":"2013-09-30",
+    "number":"0.13",
+    "date":"2013-10-01",
     "status":"beta"
   },
   "description": {
     "en":{
       "title":"ConfirmationLog",
-      "short":"Confirmation Logfile",
-      "long":"Confirmation Logfile",
+      "short":"User can confirm that they have viewed a page or read an article.",
+      "long":"Use the Droplet or the kitCommand to enable users to confirm that they have viewed a page or read an article. The Admin-Tool let you view and and browse through the confirmations",
       "url":"https:\/\/kit2.phpmanufaktur.de"
+    },
+    "de":{
+        "title":"ConfirmationLog",
+        "short":"Anwender können bestätigen, dass sie eine Seite gesehen oder einen Artikel gelesen haben.",
+        "long":"Verwenden Sie ein Droplet oder ein kitCommand um Anwender eine Lesebestätigung für bestimmte Artikel erteilen zu lassen. Mit Hilfe des Admin-Tools können Sie die Lesebestätigungen - auch von mehreren unterschiedlichen Installationen - kontrollieren und auswerten.",
+        "url":"https:\/\/kit2.phpmanufaktur.de"
     }
   },
   "require":{

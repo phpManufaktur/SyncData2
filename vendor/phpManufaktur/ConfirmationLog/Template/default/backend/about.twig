@@ -20,6 +20,21 @@
 {% extends getTemplateFile(template_namespace, template_file) %}
 
 {% block content %}
-  xx
+  <div class="about_container">
+    <div class="logo_container">
+      <img src="{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/backend/image/confirmationlog.jpg' }}" width="200" height="200" alt="ConfirmationLog" />
+    </div>
+    <div class="extension">
+      <div class="item name">{{ extension.name }}</div>
+      <div class="item release">Release {{ extension.release.number }} - <i>{{ extension.release.date|date('d.m.Y') }}</i></div>
+      {% if (locale == 'de') and (extension.description.de.long is defined) %}
+        <div class="item description">{{ extension.description.de.long }}</div>
+      {% else %}
+        <div class="item description">{{ extension.description.en.long }}</div>
+      {% endif %}
+        <div class="item copyright">Copyright &copy; {{ extension.release.date|date('Y') }} by {{ extension.vendor }}</div>
+    </div>
+    <div class="clear"></div>
+  </div>
 {% endblock content %}
 

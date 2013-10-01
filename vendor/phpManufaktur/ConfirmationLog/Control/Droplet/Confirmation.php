@@ -133,7 +133,6 @@ class Confirmation extends Control
         );
 
         $ConfirmationData = new ConfirmationData($this->app);
-        $ConfirmationData->createTable();
         $ConfirmationData->insert($data);
 
         return true;

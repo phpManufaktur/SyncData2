@@ -1,0 +1,223 @@
+/*
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @link https://github.com/phpManufaktur/kitFramework/wiki
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+*/
+
+#confirmation_container {
+  margin: 0;
+  padding: 0;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  font-size: 12px;
+  color: #363636;
+  background-color: #fff;
+  width: 100%;
+  height: auto;
+}
+
+#toolbar
+{
+  padding: 3px 0 3px 10px;
+  margin: 15px 0;
+  border-bottom: 1px solid #dddddd;
+  list-style-type: none;
+  text-align: left; /*set to left, center, or right to align the menu as desired*/
+}
+#toolbar li
+{
+  display: inline;
+  margin: 0;
+}
+#toolbar li a
+{
+  text-decoration: none;
+  padding: 3px 7px;
+  margin-right: 3px;
+  border: 1px solid #dddddd;
+  border-bottom: none;
+  background-color: #E8E8E8;
+}
+#toolbar li a:link,
+#toolbar li a:visited
+{
+  color: #AFAFAF;
+  background-color: #e8e8e8;
+}
+#toolbar li.extra_tab a {
+  color:#003366;
+  background-color: #e8e8e8;
+}
+#toolbar li a:hover,
+#toolbar li a:active
+{
+  background-color: #FFFFCC;
+  color: #000;
+}
+#toolbar li.active a
+{ /*selected tab effect*/
+  position: relative;
+  top: 1px;
+  padding-top: 4px;
+  color: #000;
+  background-color: #fff;
+  font-weight: bold;
+}
+#confirmation_content {
+  width: 99%;
+  padding: 0.5%;
+  margin: 0;
+}
+#confirmation_content a {
+  text-decoration: none;
+}
+#confirmation_content a:link,
+#confirmation_content a:visited {
+  color: #da251d;
+  background-color: transparent;
+  text-decoration: none;
+}
+#confirmation_content a:hover,
+#confirmation_content a:active {
+  color: #da251d;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+.clear {
+  clear: both;
+  width: 0;
+  height: 0;
+}
+
+.message
+{
+  border: 1px solid #ccc;
+  color: #000;
+  background-color: #fff8dc;
+  margin: 0 0 10px 0;
+  padding: 10px;
+  font-size: 13px;
+  text-align: left;
+}
+.message .item {
+  border: none;
+  padding: 0;
+  margin: 5px 0 5px 0;
+}
+
+table {
+    width: 100%;
+}
+th {
+    text-align: left;
+    font-size: 11px;
+    color: #000;
+    background-color: #f4a460;
+    font-weight: normal;
+}
+th.active {
+  font-weight: bold;
+}
+td {
+    text-align: left;
+    font-size: 11px;
+}
+tr.flip {
+    color: #000;
+    background-color: #ffdead;
+}
+tr.flop {
+    color: #000;
+    background-color: #fff;
+}
+
+fieldset {
+  clear: both;
+  margin: 10px 0 10px 0;
+  padding: 10px;
+  width: 80%;
+}
+
+.pagination-container {
+  width: 100%;
+  text-align: right;
+}
+.pagination {
+  width: auto;
+  font-size: 11px;
+}
+.pagination ul {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  width: auto;
+}
+.pagination li {
+  display: inline-block;
+  text-align: center;
+  float: left;
+  list-style : none;
+  margin: 0;
+  padding: 0 3px 0 3px;
+  font-weight: normal;
+}
+.pagination li.active {
+  font-weight: bold;
+}
+.icon-padding {
+  padding: 0 3px 0 3px;
+}
+
+.detail_label {
+  clear: left;
+  float: left;
+  font-weight: bold;
+  width: 200px;
+  padding: 0 10px 0 0;
+  margin: 0;
+  text-align: right;
+}
+.detail_value {
+  float: left;
+  font-weight: normal;
+  font-style: italic;
+  text-align: left;
+}
+.about_container {
+  margin: 30px 0 0 0;
+  padding: 0;
+}
+.about_container .logo_container {
+  float: left;
+  width: 250px;
+  height: auto;
+  text-align: left;
+}
+.about_container .extension {
+  float: left;
+  width: 400px;
+  height: auto;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+.extension .item.name {
+  font-size: 20px;
+  color: #363636;
+  margin: 0 0 10px 0;
+}
+.extension .item.release {
+  font-size: 10px;
+  margin: 0 0 10px 0;
+}
+.extension .item.description {
+  font-size: 11px;
+  font-style: italic;
+  margin: 0 0 10px 0;
+  padding: 0;
+}

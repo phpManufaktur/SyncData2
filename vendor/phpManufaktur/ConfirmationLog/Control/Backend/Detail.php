@@ -29,7 +29,7 @@ class Detail extends Backend
                 'toolbar' => $this->getToolbar('list'),
                 'confirmation' => $confirmation,
                 'message' => $this->getMessage(),
-                'link_list' => self::$link.'&action=list&usage='.self::$usage
+                'link_list' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=list&usage='.self::$usage)
             ));
     }
 }

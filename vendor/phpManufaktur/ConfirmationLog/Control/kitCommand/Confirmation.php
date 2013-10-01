@@ -13,6 +13,8 @@ namespace phpManufaktur\ConfirmationLog\Control\kitCommand;
 
 use Silex\Application;
 use phpManufaktur\Basic\Control\kitCommand\Basic;
+use phpManufaktur\Basic\Data\CMS\Page;
+use phpManufaktur\ConfirmationLog\Data\Confirmation as ConfirmationData;
 
 class Confirmation extends Basic
 {
@@ -107,21 +109,58 @@ class Confirmation extends Basic
                     '@phpManufaktur/ConfirmationLog/Template', 'command/confirmation.twig', $this->getPreferredTemplateStyle()),
                     array(
                         'basic' => $this->getBasicSettings(),
-                        'message' => $this->getMessage(),
                         'form' => $form->createView()
                     ));
             }
 
             // save the data
+            $special = $this->getCMSinfoArray();
 
+            $page_id = $this->getCMSpageID();
 
-            print_r($confirmation);
+            $topic_id = !is_null($special['special']['topic_id']) ? $special['special']['topic_id'] : null;
+            $post_id = !is_null($special['special']['post_id']) ? $special['special']['post_id'] : null;
 
-            $cms = $this->getCMSinfoArray();
+            $Page = new Page($app);
+            $page_title = $Page->getTitle($page_id, array('topic_id' => $topic_id, 'post_id' => $post_id));
 
-            print_r($cms);
+            // check for an installation name
+            $config_file = file_get_contents(CMS_PATH.'/config.php');
+            $installation_name = '';
+            if (false !== ($start = stripos($config_file, 'INSTALLATION_NAME'))) {
+                // it exists an installation name
+                $installation_name = substr($config_file, $start+strlen('INSTALLATION_NAME'));
+                $installation_name = substr($installation_name, 0, stripos($installation_name, ')'));
+                $installation_name = trim(str_replace(array('"',"'",','), '', $installation_name));
+            }
 
-            return 'ok';
+            $data = array(
+                'page_id' => $page_id,
+                'page_type' => (!is_null($topic_id) || !is_null($post_id)) ? (!is_null($topic_id)) ? 'TOPICS' : 'NEWS' : 'PAGE',
+                'second_id' => (!is_null($topic_id) || !is_null($post_id)) ? (!is_null($topic_id)) ? $topic_id : $post_id : 0,
+                'installation_name' => $installation_name,
+                'user_name' => $this->getCMSuserName(),
+                'user_email' => $this->getCMSuserEMail(),
+                'page_title' => $page_title,
+                'page_url' => $this->getCMSpageURL(),
+                'typed_name' => isset($confirmation['name']) ? $confirmation['name'] : '',
+                'typed_email' => isset($confirmation['email']) ? strtolower($confirmation['email']) : '',
+                'confirmed_at' => date('Y-m-d H:i:s'),
+                'time_on_page' => time() - $confirmation['start_stamp'],
+                'status' => 'PENDING'
+            );
+
+            $ConfirmationData = new ConfirmationData($app);
+            $ConfirmationData->insert($data);
+
+            $this->setMessage('Thank you for the confirmation!');
+
+            return $this->app['twig']->render($this->app['utils']->getTemplateFile(
+                '@phpManufaktur/ConfirmationLog/Template', 'command/received.twig', $this->getPreferredTemplateStyle()),
+                array(
+                    'basic' => $this->getBasicSettings(),
+                    'form' => $form->createView()
+                ));
         }
         else {
             // invalid form submission
@@ -131,7 +170,6 @@ class Confirmation extends Basic
                 '@phpManufaktur/ConfirmationLog/Template', 'command/confirmation.twig', $this->getPreferredTemplateStyle()),
                 array(
                     'basic' => $this->getBasicSettings(),
-                    'message' => $this->getMessage(),
                     'form' => $form->createView()
                 ));
         }
@@ -155,7 +193,6 @@ class Confirmation extends Basic
             '@phpManufaktur/ConfirmationLog/Template', 'command/confirmation.twig', $this->getPreferredTemplateStyle()),
             array(
                 'basic' => $this->getBasicSettings(),
-                'message' => $this->getMessage(),
                 'form' => $form->createView()
             ));
     }

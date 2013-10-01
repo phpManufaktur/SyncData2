@@ -8,5 +8,11 @@
   @license MIT License (MIT) http://www.opensource.org/licenses/MIT
 */
 
-@import 'backend.css';
-@import '//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css';
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  font-size: 12px;
+  color: #363636;
+  background-color: #fff;
+}

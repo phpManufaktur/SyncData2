@@ -11,16 +11,27 @@
 
 namespace phpManufaktur\ConfirmationLog\Control\Backend;
 
+use Silex\Application;
+
 class About extends Backend
 {
     public function controllerAbout($app)
     {
         $this->initialize($app);
 
+        $extension = $app['utils']->readJSON(MANUFAKTUR_PATH.'/ConfirmationLog/extension.json');
+
         return $this->app['twig']->render($this->app['utils']->getTemplateFile('@phpManufaktur/ConfirmationLog/Template', 'backend/about.twig'),
             array(
+                'locale' => $app['translator']->getLocale(),
+                'extension' => $extension,
                 'usage' => self::$usage,
                 'toolbar' => $this->getToolbar('about')
             ));
+    }
+
+    public function controllerAppAbout(Application $app)
+    {
+        return $this->controllerAbout($app);
     }
 }

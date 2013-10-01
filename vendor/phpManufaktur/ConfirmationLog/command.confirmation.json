@@ -1,0 +1,39 @@
+{
+  "command":"Confirmation",
+  "vendor": {
+    "name":"phpManufaktur",
+    "url":"https://phpmanufaktur.de"
+    },
+  "name": {
+    "en":"Read confirmation",
+    "de":"Lesebestätigung"
+  },
+  "description": {
+    "en":"Get read confirmations / delivery receipts from the users",
+    "de":"Erhalten Sie Lesebestätigungen von den Anwendern Ihrer Website"
+  },
+  "info": {
+    "en": {
+      "link":"https://kit2.phpmanufaktur.de"
+    }
+  },
+  "help": {
+    "en": {
+      "link":"https://gist.github.com/6772693.git",
+      "gist_id":"6772693",
+      "file": {
+        "help":"kitcommand_confirmation_en.md"
+      }
+    }
+  },
+  "issues": {
+    "en": {
+      "link":"https://github.com/phpManufaktur/kfConfirmationLog/issues"
+    }
+  },
+  "support": {
+    "en": {
+      "link":"https://support.phpmanufaktur.de"
+    }
+  }
+}

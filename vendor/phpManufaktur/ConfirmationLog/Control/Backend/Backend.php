@@ -43,7 +43,7 @@ class Backend {
             // executed from SyncData installation
             self::$usage = 'SyncData';
             $app['translator']->setLocale(strtolower(LANGUAGE));
-            self::$link = CMS_ADMIN_URL.'/admintools/tool.php?tool=kit_framework_confirmationlog';
+            self::$link = CMS_ADMIN_URL.'/admintools/tool.php?tool=syncdata_confirmationlog';
         }
         else {
             // executed from kitFramework installation
@@ -52,7 +52,7 @@ class Backend {
             if (self::$usage != 'framework') {
                 $app['translator']->setLocale($this->app['session']->get('CMS_LOCALE', 'en'));
             }
-            self::$link = null;
+            self::$link = FRAMEWORK_URL.'/admin/confirmationlog/control';
         }
 
         // init Confirmation Data
@@ -71,19 +71,19 @@ class Backend {
             'list' => array(
                 'text' => 'List',
                 'hint' => 'List of confirmations',
-                'link' => self::$link.'&action=list&usage='.self::$usage,
+                'link' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=list&usage='.self::$usage),
                 'active' => ($active == 'list')
             ),
             'import' => array(
                 'text' => 'Import',
                 'hint' => 'Import of data records',
-                'link' => self::$link.'&action=import&usage='.self::$usage,
+                'link' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=import&usage='.self::$usage),
                 'active' => ($active == 'import')
             ),
             'about' => array(
                 'text' => 'About',
                 'hint' => 'About the ConfirmationLog',
-                'link' => self::$link.'&action=about&usage='.self::$usage,
+                'link' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', '&action=about&usage='.self::$usage),
                 'active' => ($active == 'about')
             )
         );
@@ -145,7 +145,7 @@ class Backend {
             unset($_GET[$parameter_name]);
         }
         else {
-            $this->app['request']->remove($parameter_name);
+            $this->app['request']->query->remove($parameter_name);
         }
     }
  }

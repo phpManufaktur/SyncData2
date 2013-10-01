@@ -57,7 +57,7 @@ class Import extends Backend
                 'usage' => self::$usage,
                 'toolbar' => $this->getToolbar('import'),
                 'message' => $this->getMessage(),
-                'link_previous' => self::$link.'&action=import&import=previous&usage='.self::$usage
+                'link_previous' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=import&import=previous&usage='.self::$usage)
             ));
     }
 }

@@ -1,0 +1,56 @@
+{# 
+  Event
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @link https://github.com/phpManufaktur/kitFramework/wiki  
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+{% spaceless %}
+<!DOCTYPE html>
+<html>
+  <head>
+    {% block head %}
+      <title>{% block title %}{% endblock %}</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <meta name="robots" content="noindex,nofollow" />
+      <meta name="description" content="{% block description %}{% endblock %}" />
+      <meta name="keywords" content="{% block keywords %}{% endblock %}" />
+      {% block stylesheet %}
+        <link rel="stylesheet" type="text/css" href="{{ MANUFAKTUR_URL }}/ConfirmationLog/Template/default/backend/css/body.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="{{ MANUFAKTUR_URL }}/ConfirmationLog/Template/default/backend/css/backend.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" media="screen, projection" />
+      {% endblock stylesheet %}
+      {% block jquery %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        
+      {% endblock jquery %} 
+    {% endblock head %}
+  </head>
+  <body>
+    <div id="content">
+      <ul id="toolbar">
+        {% for item in toolbar %}
+          <li{% if item.active %} class="active"{% endif %}><a href="{{ item.link }}" title="{{ item.hint|trans }}">{{ item.text|trans }}</a></li>
+        {% endfor %}
+      </ul>
+      <div id="confirmation_content">
+        {% block content %}
+        {% endblock content %}
+      </div>
+    </div> 
+    {% block footer %}
+      <script type="text/javascript">
+        if (typeof 'jQuery' !== 'undefined') {
+          $(document).ready(function() {
+            {# setting the iFrame height dynamically by the height of the inbounded document #}
+            var content_height = $('#content').height() + {{ iframe_add_height|default(30) }} + "px";
+            parent.document.getElementById("kitframework_iframe").style.height = content_height;            
+          });
+        }
+      </script>
+    {% endblock footer %}
+  </body>
+</html>      
+{% endspaceless %}

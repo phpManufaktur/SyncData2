@@ -47,8 +47,8 @@ class ShowList extends Backend
         }
         self::$current_page = 1;
         self::$route =  array(
-            'pagination' => self::$link.'&action=list&page={page}&order={order}&direction={direction}&usage='.self::$usage,
-            'edit' => self::$link.'&action=detail&id={confirmation_id}&usage='.self::$usage
+            'pagination' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=list&page={page}&order={order}&direction={direction}&usage='.self::$usage),
+            'edit' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=detail&id={confirmation_id}&usage='.self::$usage)
         );
     }
 

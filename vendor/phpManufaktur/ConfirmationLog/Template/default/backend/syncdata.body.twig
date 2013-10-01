@@ -1,14 +1,15 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+
+  /css/syncdata.backend.css for this template will be loaded by the CMS!
+#}
 {% spaceless %}
   <div id="confirmation_container">
-    {#
-    <script type="text/javascript">
-      var fileref = document.createElement("link");
-      fileref.setAttribute("rel", "stylesheet");
-      fileref.setAttribute("type", "text/css");
-      fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/backend/css/syncdata.backend.css' }}');
-      document.getElementsByTagName("head")[0].appendChild(fileref);
-    </script> 
-    #}
     <ul id="toolbar">
       {% for item in toolbar %}
         <li{% if item.active %} class="active"{% endif %}><a href="{{ item.link }}" title="{{ item.hint|trans }}">{{ item.text|trans }}</a></li>
