@@ -142,10 +142,13 @@ $app['twig'] = $app->share(function() use($app) {
     $twig->addFunction(new Twig_SimpleFunction('getTemplateFile',
         function($template_namespace, $template_file, $preferred_template='') use ($app) {
             return $app['utils']->getTemplateFile($template_namespace, $template_file, $preferred_template);
-        }));
-        $twig->addGlobal('SYNCDATA_URL', SYNCDATA_URL);
-        $twig->addGlobal('MANUFAKTUR_URL', MANUFAKTUR_URL);
-        return $twig;
+    }));
+    $twig->addGlobal('SYNCDATA_URL', SYNCDATA_URL);
+    $twig->addGlobal('MANUFAKTUR_URL', MANUFAKTUR_URL);
+    if (SYNCDATA_DEBUG) {
+        $twig->addExtension(new Twig_Extension_Debug());
+    }
+    return $twig;
 });
 $app['monolog']->addInfo('Initialized the Twig Template engine', array(__FILE__, __LINE__));
 
