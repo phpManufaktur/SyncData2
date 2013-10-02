@@ -137,4 +137,37 @@ class Droplet
         $this->uninstall();
         $this->install();
     }
+
+    /**
+     * Check if the old droplet [[confirmation_log]] exists and rewrite it with
+     * the actual code (compatibility)
+     *
+     * @throws \UnexpectedValueException
+     * @throws \Exception
+     */
+    public function checkOldConfirmationLogDroplet()
+    {
+        try {
+            if (is_null(self::$droplet) || !isset(self::$droplet['name']) || !isset(self::$droplet['path']) ||
+                !isset(self::$droplet['description']) || !isset(self::$droplet['comments'])) {
+                // info record must be set and valid
+                throw new \UnexpectedValueException('The Droplet Info record must be set!');
+            }
+
+            $SQL = "SELECT `id` FROM `".CMS_TABLE_PREFIX."mod_droplets` WHERE `name`='confirmation_log'";
+            $id = $this->app['db']->fetchColumn($SQL);
+            if ($id > 0) {
+                // the droplet exists - remove the old version !!!
+                $this->app['db']->delete(CMS_TABLE_PREFIX."mod_droplets", array('id' => $id));
+                $this->app['monolog']->addInfo('The Droplet `confirmation_log` has removed.');
+                // adapt the settings to old droplet name
+                self::$droplet['name'] = 'confirmation_log';
+                // install the old droplet with the actual code
+                $this->install();
+            }
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
 }

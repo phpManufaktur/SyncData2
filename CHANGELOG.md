@@ -3,6 +3,12 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.24** - 2013-10-02
+
+* if the old droplet `[[confirmation_log]]` exists, rewrite it to the new code, so it can be also used (compatibility) with SyncData
+* added JSONFormat() to `$app['utils']`
+* updated to ConfirmationLog 0.14 - introduce reports and add droplet `[[syncdata_confirmation_report]]`
+
 **2.0.23** - 2013-10-01
 
 * updated to ConfirmationLog 0.13
@@ -17,11 +23,11 @@ MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
 **2.0.20** - 2013-09-27
 
-* added confirmation log and Droplet `syncdata_confirmation` for the CMS
+* added confirmation log and Droplet `[[syncdata_confirmation]]` for the CMS
 
 **2.0.19** - 2013-09-12
 
-* fixed a problem with create synchronize archives, the checksum validation fails and a string comparison used the wrong parameter
+* fixed a problem with creation of synchronized archives, the checksum validation fails and a string comparison used the wrong parameter
 
 **2.0.18** - 2013-09-05
 

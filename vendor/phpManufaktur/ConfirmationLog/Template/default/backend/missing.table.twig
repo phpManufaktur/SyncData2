@@ -1,0 +1,31 @@
+{% if missing|length > 0 %}
+  <div class="intro">
+    {{ 'For the following installations are missing one or more confirmations.'|trans }}
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>{% if group_by == 'title' %}{{ 'title'|trans }}{% else %}{{ 'installation_name'|trans }}{% endif %}</th>
+        <th>{% if group_by == 'title' %}{{ 'installation_name'|trans }}{% else %}{{ 'title'|trans }}{% endif %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set i = 0 %}
+      {% for item in missing %}
+        <tr class="{{ cycle(['flop','flip'], i) }}">
+          <td>{% if group_by == 'title' %}{{ item.0.page_title }}{% else %}{{ item.0.installation_name }}{% endif %}</td>
+          <td>
+            {% for detail in item %}
+              {% if group_by == 'title' %}
+                {{ detail.installation_name }}<br />
+              {% else %}
+                {{ detail.page_title }}<br />
+              {% endif %}
+            {% endfor %}
+          </td>
+        </tr>
+        {% set i = i+1 %}
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

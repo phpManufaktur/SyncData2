@@ -93,6 +93,7 @@
   height: 0;
 }
 
+.intro,
 .message
 {
   border: 1px solid #ccc;
@@ -125,6 +126,7 @@ th.active {
 td {
     text-align: left;
     font-size: 11px;
+    vertical-align: top;
 }
 tr.flip {
     color: #000;

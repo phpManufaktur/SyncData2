@@ -1,0 +1,19 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+
+<div id="report">
+  <script type="text/javascript">
+    var fileref = document.createElement("link");
+    fileref.setAttribute("rel", "stylesheet");
+    fileref.setAttribute("type", "text/css");
+    fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/droplet/report.css' }}');
+    document.getElementsByTagName("head")[0].appendChild(fileref);
+  </script>          
+  {% include 'ConfirmationLog/Template/default/backend/missing.table.twig' %}
+</div>

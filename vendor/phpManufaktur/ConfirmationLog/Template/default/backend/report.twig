@@ -1,0 +1,44 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @link https://github.com/phpManufaktur/kitFramework/wiki
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+{% if usage|lower == 'framework' %}
+  {% set template_namespace = '@phpManufaktur/Basic/Template' %}
+  {% set template_file = 'framework/body.twig' %}
+{% elseif usage|lower == 'syncdata' %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/syncdata.body.twig' %}
+{% else %}
+  {% set template_namespace = '@phpManufaktur/ConfirmationLog/Template' %}
+  {% set template_file = 'backend/body.twig' %}
+{% endif %}
+{% extends getTemplateFile(template_namespace, template_file) %}
+
+{% block content %}
+  {% if (message|length > 0) %}
+    <div class="message">
+      <div class="message item">
+        {{ message }}
+      </div>    
+    </div>  
+  {% endif %}
+
+  <div class="report_container">
+    <form action="" method="post">
+      <select name="filter">
+        {% for filter in select_filter %}
+          <option value="{{ filter.value }}" {% if filter.selected %}selected="selected"{% endif %}>{{ filter.title }}</option>
+        {% endfor %}
+      </select>
+      <input type="submit" value="{{ 'Select'|trans }}" />
+    </form>
+    <p>&nbsp;</p>
+    {% include 'missing.table.twig' %}
+  </div>
+{% endblock content %}
+

@@ -24,6 +24,9 @@ class SyncDataControl extends Backend
             case 'about':
                 $About = new About();
                 return $About->controllerAbout($app);
+            case 'report':
+                $Report = new Report();
+                return $Report->controllerReport($app);
             case 'import':
                 $Import = new Import();
                 return $Import->controllerImport($app);

@@ -67,6 +67,8 @@ class Update
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
             );
             $Droplet->update();
+            // change the old droplet to the actual code
+            $Droplet->checkOldConfirmationLogDroplet();
         }
 
         return $app['translator']->trans('Successfull updated the extension %extension%.',

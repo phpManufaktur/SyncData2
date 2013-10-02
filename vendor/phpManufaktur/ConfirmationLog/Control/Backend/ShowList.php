@@ -95,11 +95,6 @@ class ShowList extends Backend
 
         $confirmations = $this->getList(self::$current_page, self::$rows_per_page, self::$select_status, self::$max_pages, $order_by, $order_direction);
 
-/*
-        echo "<pre>";
-        print_r($confirmations);
-        echo "</pre>";
-*/
         return $this->app['twig']->render($this->app['utils']->getTemplateFile('@phpManufaktur/ConfirmationLog/Template', 'backend/confirmation.list.twig'),
             array(
                 'usage' => self::$usage,

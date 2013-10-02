@@ -134,6 +134,17 @@ class SetupTool
             // commit the transaction
             $this->app['db']->commit();
 
+            // install the droplet for the fronten usage of the reports
+            $Droplet = new Droplet($this->app);
+            $Droplet->setDropletInfo(
+                'syncdata_confirmation_report',
+                MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation_report.php',
+                'Show reports to the confirmations in the frontend',
+                'Please visit https://addons.phpmanufaktur.de/syncdata'
+            );
+            // install the droplet
+            $Droplet->install();
+
             // return the result
             $message = 'The admin-tool for the ConfirmationLog has successfull installed.';
             $this->app['monolog']->addInfo($message, array(__METHOD__, __LINE__));

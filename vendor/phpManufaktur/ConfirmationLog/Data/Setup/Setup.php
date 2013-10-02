@@ -38,7 +38,10 @@ class Setup
                 'Get a confirmation from the user that he has read a page or article',
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
                 );
+            // install the droplet
             $Droplet->install();
+            // change the old droplet to the actual code
+            $Droplet->checkOldConfirmationLogDroplet();
         }
         else {
             // this is the kitFramework installation

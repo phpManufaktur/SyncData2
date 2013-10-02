@@ -344,4 +344,38 @@ EOD;
         }
     }
 
+    /**
+     * Get the page titles of all submissions
+     *
+     * @param string $order_by
+     * @param string $direction
+     * @throws \Exception
+     * @return Ambigous <boolean, multitype:NULL >
+     */
+    public function getAllTitles($order_by='received_at', $direction='DESC')
+    {
+        try {
+            $SQL = "SELECT DISTINCT `page_title` FROM `".self::$table_name."` ORDER BY `$order_by` $direction";
+            $results = $this->app['db']->fetchAll($SQL);
+            $titles = array();
+            foreach ($results as $result) {
+                $titles[] = $this->app['utils']->unsanitizeText($result['page_title']);
+            }
+            return (!empty($titles)) ? $titles : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    public function hasInstallationNameConfirmedTitle($page_title, $installation_name)
+    {
+        try {
+            $SQL = "SELECT DISTINCT `installation_name` FROM `".self::$table_name."` WHERE `page_title`='$page_title' AND `installation_name`='$installation_name'";
+            $result = $this->app['db']->fetchColumn($SQL);
+            return ($result == $installation_name);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
 }

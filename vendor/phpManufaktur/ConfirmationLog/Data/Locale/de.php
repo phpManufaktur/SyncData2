@@ -15,12 +15,17 @@ if ('á' != "\xc3\xa1") {
 }
 
 return array(
+    '- no selection -'
+        => '- nichts ausgewählt -',
+
     'About'
         => '?',
     'Actual there exists no confirmations!'
         => 'Aktuell liegen keine Lesebestätigungen vor.',
+
     'Back to the overview'
         => 'Zurück zur Übersicht',
+
     'checksum'
         => 'Prüfsumme',
     'Click to sort column ascending'
@@ -31,20 +36,38 @@ return array(
         => 'Bestätigen',
     'confirmed_at'
         => 'Bestätigt am',
+
+    'For the following installations are missing one or more confirmations.'
+        => 'Zu den aufgeführten Installationen fehlen eine oder mehrere Lesebestätigungen.',
+
+    'Group: %group_name%, group by: %order_by%'
+        => 'Gruppe: %group_name%, Gruppieren nach: %order_by%',
+
     'I have read the full text above'
         => 'Ich habe den obigen Text gelesen',
     'id'
         => 'ID',
     'installation_name'
         => 'Installation',
+    'installation_names'
+        => 'Installationen',
     'Imported %added_records% records, skipped %skipped_records% records which already exists. Please check the logfile for further information.'
         => 'Es wurden %added_records% Datensätze importiert, %skipped_records% bereits vorhandene Datensätze wurden übersprungen.<br />Bitte kontrollieren Sie die Protokolldatei für detailierte Informationen.',
     'Import from table `mod_confirmation_log` (previous version)'
         => 'Import von Tabelle `mod_confirmation_log` (Vorgänger)',
+
     'List'
         => 'Übersicht',
+
+    'name'
+        => 'Bezeichnung',
+    'No results for filter ID %filter_id%.'
+        => 'Keine Ergebnisse für den Filter mit der ID %filter_id%!',
+    'No results for the group %group%!'
+        => 'Keine Ergebnisse für die Gruppe %group%!',
     'not available'
         => 'nicht verfügbar',
+
     'page_id'
         => 'PAGE ID',
     'page_title'
@@ -59,14 +82,19 @@ return array(
         => 'Bitte bestätigen Sie, dass Sie den obigen Text gelesen haben.',
     'Please select the import you wish to perform.'
         => 'Bitte wählen Sie den gewünschten Import aus, der durchgeführt werden soll.',
+
     'received_at'
         => 'Erhaltem am',
+
     'second_id'
         => 'Sekundäre ID',
+    'Select'
+        => 'Auswählen',
     'status'
         => 'Status',
     'SUBMITTED'
         => 'Übermittelt',
+
     'Thank you for the confirmation!'
         => 'Vielen Dank für die Lesebestätigung!',
     'The confirmation box must be checked!'
@@ -79,20 +107,28 @@ return array(
         => 'Der eingegebene Name muss mindestens drei Zeichen lang sein.',
     'The table `mod_confirmation_log` does not exists, import aborted.'
         => 'Die Tabelle `mod_confirmation_log` existiert nicht, ein Import kann daher nicht durchgeführt werden.',
+    'There exists no installation names in the records which can be used for the reports!'
+        => 'Es existieren keine Installationsnamen in den Datensätzen, die für eine Auswertung verwendet werden können!',
+    'There exists no page titles which can be checked for a report!'
+        => 'Es sind keine Seitentitel erfasst, für die ein Bericht erstellt werden kann.',
     'time_on_page'
         => 'Gemessene Zeit',
     'timestamp'
         => 'Zeitstempel',
+    'title'
+        => 'Seitentitel',
     'transmitted_at'
         => 'Übermittelt am',
     'typed_email'
         => 'Angegebene E-Mail',
     'typed_name'
         => 'Angegebener Name',
+
     'user_email'
         => 'Login E-Mail',
     'user_name'
         => 'Login Name',
+
     'Your email'
         => 'Ihre E-Mail',
     'Your name'

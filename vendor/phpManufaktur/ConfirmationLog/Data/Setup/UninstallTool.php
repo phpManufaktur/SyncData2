@@ -27,6 +27,16 @@ class UninstallTool
 
         $this->app['utils']->rrmdir(CMS_PATH.'/modules/syncdata_confirmationlog');
 
+        // this is a SyncData installation remove the droplet
+        $Droplet = new Droplet($app);
+        $Droplet->setDropletInfo(
+            'syncdata_confirmation_report',
+            MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation_report.php',
+            'Show reports to the confirmations in the frontend',
+            'Please visit https://addons.phpmanufaktur.de/syncdata'
+        );
+        $Droplet->uninstall();
+
         $message = 'Successfull removed the SyncData Admin-Tool for the ConfirmationLog.';
         $app['monolog']->addInfo($message, array(__METHOD__, __LINE__));
         return $app['translator']->trans($message);

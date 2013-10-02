@@ -17,22 +17,12 @@ if (!file_exists(WB_PATH.'/syncdata/vendor/phpManufaktur/ConfirmationLog/bootstr
 
 require_once WB_PATH.'/syncdata/vendor/phpManufaktur/ConfirmationLog/bootstrap.droplet.php';
 
-use phpManufaktur\ConfirmationLog\Control\Droplet\Confirmation;
+use phpManufaktur\ConfirmationLog\Control\Droplet\Report;
 
 $parameter = array(
-    'email' => array(
-        'active' => (isset($email) && (strtolower($email) == 'false')) ? false : true
-    ),
-    'name' => array(
-        'active' => (isset($name) && (strtolower($name) == 'false')) ? false : true
-    ),
-    'confirm' => array(
-        'active' => (isset($confirm) && (strtolower($confirm) == 'false')) ? false : true
-    ),
-    'css' => array(
-        'active' => (isset($css) && (strtolower($css) == 'false')) ? false : true
-    )
+    'group' => isset($group) ? strtolower($group) : 'installation_names',
+    'group_by' => isset($group_by) ? strtolower($group_by) : 'title'
 );
 
-$Confirmation = new Confirmation();
-return $Confirmation->exec($app, $parameter);
+$Report = new Report();
+return $Report->exec($app, $parameter);

@@ -74,6 +74,12 @@ class Backend {
                 'link' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=list&usage='.self::$usage),
                 'active' => ($active == 'list')
             ),
+            'report' => array(
+                'text' => 'Report',
+                'hint' => 'Different reports to the confirmations',
+                'link' => sprintf('%s%s%s', self::$link, strpos(self::$link, '?') ? '&' : '?', 'action=report&usage='.self::$usage),
+                'active' => ($active == 'report')
+            ),
             'import' => array(
                 'text' => 'Import',
                 'hint' => 'Import of data records',
