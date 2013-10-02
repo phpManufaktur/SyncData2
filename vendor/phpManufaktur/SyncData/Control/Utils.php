@@ -11,6 +11,8 @@
 
 namespace phpManufaktur\SyncData\Control;
 
+use phpManufaktur\SyncData\Control\JSON\JSONFormat;
+
 /**
  * Utils and help functions for SyncData
  *
@@ -579,5 +581,17 @@ class Utils
         throw new \Exception(sprintf('Template file %s not found within the namespace %s!', $template_file, $template_namespace));
     }
 
+    /**
+     * Like json_encode but format the JSON in a human friendly way
+     *
+     * @param array $chunk the array to save as JSON
+     * @param string $already_json set true if $chunk is already JSON and should be formatted
+     * @return string
+     */
+    public function JSONFormat($chunk, $already_json = false)
+    {
+        $JSONFormat = new JSONFormat();
+        return $JSONFormat->format($chunk, $already_json);
+    }
 
 }
