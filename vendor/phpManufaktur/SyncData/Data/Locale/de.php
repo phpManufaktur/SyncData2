@@ -15,6 +15,6 @@ if ('á' != "\xc3\xa1") {
 }
 
 return array(
-    'hello'
-        => 'Hallo Ralf!',
+    'No pending confirmations available for sending.'
+        => 'Es liegen keine Lesebestätigungen zur Übermittlung vor.',
     );

@@ -26,6 +26,7 @@ use phpManufaktur\ConfirmationLog\Data\Setup\Update as confirmationUpdate;
 use phpManufaktur\ConfirmationLog\Data\Setup\Uninstall as confirmationUninstall;
 use phpManufaktur\ConfirmationLog\Data\Setup\SetupTool;
 use phpManufaktur\ConfirmationLog\Data\Import\ImportOldLog;
+use phpManufaktur\SyncData\Control\Confirmations;
 
 // set the error handling
 ini_set('display_errors', 1);
@@ -194,6 +195,24 @@ try {
             }
             $SetupTool = new SetupTool();
             $app_result = $SetupTool->exec($app);
+            break;
+        case '/send_confirmations':
+            // send confirmations to the outbox
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $Confirmations = new Confirmations($app);
+            $app_result = $Confirmations->sendConfirmations();
+            break;
+        case '/get_confirmations':
+            // send confirmations to the outbox
+            if (!$CheckKey->check()) {
+                $app_result = $CheckKey->getKeyHint();
+                break;
+            }
+            $Confirmations = new Confirmations($app);
+            $app_result = $Confirmations->getConfirmations();
             break;
         case '#init_syncdata':
             // initialized SyncData2
