@@ -18,6 +18,13 @@ use phpManufaktur\ConfirmationLog\Data\Config;
 class Report extends Control
 {
 
+    /**
+     * Execute the droplet [[syncdata_confirmation_report]]
+     *
+     * @param Application $app
+     * @param array $parameter
+     * @return string rendered table with results
+     */
     public function exec($app, $parameter)
     {
         if (isset($_SESSION['DROPLET_EXECUTED_BY_DROPLETS_EXTENSION'])) {
@@ -30,14 +37,16 @@ class Report extends Control
 
         $ConfigData = new Config($app);
         $config = $ConfigData->getConfiguration();
+        $missing = array();
 
         if (!isset($config['groups'][$parameter['group']])) {
-            return $app['translator']->trans('The group with the name %group% does not exists!',
+            $this->setMessage('The group with the name %group% does not exists!',
                 array('%group%' => $parameter['group']));
         }
-
-        $MissingConfirmation = new MissingConfirmation($app);
-        $missing = $MissingConfirmation->missingGroups($config['groups'][$parameter['group']], $parameter['group_by']);
+        else {
+            $MissingConfirmation = new MissingConfirmation($app);
+            $missing = $MissingConfirmation->missingGroups($config['groups'][$parameter['group']], $parameter['group_by']);
+        }
 
         return $app['twig']->render('ConfirmationLog/Template/default/droplet/report.twig', array(
             'TEMPLATE_URL' => WB_URL.'/ConfirmationLog/Template/default/droplet',
@@ -46,7 +55,6 @@ class Report extends Control
             'missing' => $missing,
             'group_by' => $parameter['group_by']
             ));
-
     }
 
 

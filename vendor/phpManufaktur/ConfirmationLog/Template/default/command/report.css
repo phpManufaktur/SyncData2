@@ -1,0 +1,49 @@
+#report {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+#report .intro,
+#report .message
+{
+  border: 1px solid #ccc;
+  color: #000;
+  background-color: #fff8dc;
+  margin: 0 0 10px 0;
+  padding: 10px;
+  font-size: 13px;
+  text-align: left;
+}
+#report .message .item {
+  border: none;
+  padding: 0;
+  margin: 5px 0 5px 0;
+}
+
+#report table {
+    width: 100%;
+}
+#report th {
+    text-align: left;
+    font-size: 11px;
+    color: #000;
+    background-color: #f4a460;
+    font-weight: normal;
+}
+#report th.active {
+  font-weight: bold;
+}
+#report td {
+    text-align: left;
+    font-size: 11px;
+    vertical-align: top;
+}
+#report tr.flip {
+    color: #000;
+    background-color: #ffdead;
+}
+#report tr.flop {
+    color: #000;
+    background-color: #fff;
+}
+

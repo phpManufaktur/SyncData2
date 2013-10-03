@@ -34,6 +34,12 @@ class ImportOldLog
         }
     }
 
+    /**
+     * Process the import, get all data from the previous confirmation table
+     * mod_confirmation_log
+     *
+     * @throws \Exception
+     */
     protected function import()
     {
         try {
@@ -86,6 +92,11 @@ class ImportOldLog
         }
     }
 
+    /**
+     * Execute the import process and return the result
+     *
+     * @param Application $app
+     */
     public function exec($app)
     {
         $this->app = $app;

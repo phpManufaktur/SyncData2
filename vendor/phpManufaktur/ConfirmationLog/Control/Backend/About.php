@@ -15,6 +15,10 @@ use Silex\Application;
 
 class About extends Backend
 {
+    /**
+     *
+     * @param unknown $app
+     */
     public function controllerAbout($app)
     {
         $this->initialize($app);

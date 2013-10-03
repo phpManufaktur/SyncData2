@@ -53,7 +53,7 @@ class Config
             throw new \Exception('`self::$config` must be of type array!');
         }
 
-        file_put_contents(MANUFAKTUR_PATH.'/ConfirmationLog/config.configuration.json',
+        file_put_contents(MANUFAKTUR_PATH.'/ConfirmationLog/config.confirmation.json',
             $this->app['utils']->JSONFormat(self::$config));
     }
 
@@ -64,12 +64,12 @@ class Config
      */
     public function loadConfiguration()
     {
-        if (!file_exists(MANUFAKTUR_PATH.'/ConfirmationLog/config.configuration.json')) {
+        if (!file_exists(MANUFAKTUR_PATH.'/ConfirmationLog/config.confirmation.json')) {
             $this->setDefaultValues();
             $this->saveConfiguration();
         }
 
-        self::$config = $this->app['utils']->readJSON(MANUFAKTUR_PATH.'/ConfirmationLog/config.configuration.json');
+        self::$config = $this->app['utils']->readJSON(MANUFAKTUR_PATH.'/ConfirmationLog/config.confirmation.json');
     }
 
     /**

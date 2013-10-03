@@ -14,6 +14,11 @@
     fileref.setAttribute("type", "text/css");
     fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/droplet/report.css' }}');
     document.getElementsByTagName("head")[0].appendChild(fileref);
-  </script>          
-  {% include 'ConfirmationLog/Template/default/backend/missing.table.twig' %}
+  </script>  
+  {% if message|length > 0 %}
+    <div class="message">
+      {{ message }}
+    </div>
+  {% endif %}
+  {% include '@phpManufaktur/ConfirmationLog/Template/default/backend/missing.table.twig' %}
 </div>

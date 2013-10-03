@@ -109,6 +109,13 @@ class Addons
         }
     }
 
+    /**
+     * Select a addon by the given installation directory
+     *
+     * @param string $directory
+     * @throws \Exception
+     * @return Ambigous <boolean, array> false or record
+     */
     public function select($directory)
     {
         try {

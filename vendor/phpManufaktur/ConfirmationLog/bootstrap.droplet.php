@@ -8,12 +8,7 @@ include_once __DIR__.'/../../autoloader.php';
 
 use phpManufaktur\SyncData\Control\Utils;
 use phpManufaktur\SyncData\Control\Application;
-/*
-require_once __DIR__.'/../../Twig/Autoloader.php';
-\Twig_Autoloader::register();
 
-require_once __DIR__.'/../../SwiftMailer/lib/swift_required.php';
-*/
 // set the error handling
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -32,7 +27,6 @@ try {
     define('MANUFAKTUR_URL', SYNCDATA_URL.'/vendor/phpManufaktur');
 
     include_once SYNCDATA_PATH.'/bootstrap.inc';
-
 }
 catch (\Exception $e) {
     throw $e;

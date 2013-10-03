@@ -17,6 +17,11 @@ class SetupTool
 {
     protected $app = null;
 
+    /**
+     * Install the Admin-Tool for the ConfirmationLog
+     *
+     * @throws \Exception
+     */
     protected function installTool()
     {
         $extension = $this->app['utils']->readJSON(MANUFAKTUR_PATH.'/ConfirmationLog/extension.json');
@@ -157,6 +162,11 @@ class SetupTool
         }
     }
 
+    /**
+     * Execute the installation
+     *
+     * @param Application $app
+     */
     public function exec($app)
     {
         $this->app = $app;

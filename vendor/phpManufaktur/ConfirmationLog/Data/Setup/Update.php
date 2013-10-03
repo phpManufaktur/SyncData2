@@ -11,8 +11,7 @@
 
 namespace phpManufaktur\ConfirmationLog\Data\Setup;
 
-use phpManufaktur\ConfirmationLog\Data\Confirmation;
-
+use Silex\Application;
 class Update
 {
     protected $app = null;
@@ -50,6 +49,11 @@ class Update
         }
     }
 
+    /**
+     * Execute the update
+     *
+     * @param Application $app
+     */
     public function exec($app)
     {
         $this->app = $app;
@@ -73,5 +77,15 @@ class Update
 
         return $app['translator']->trans('Successfull updated the extension %extension%.',
             array('%extension%' => 'ConfirmationLog'));
+    }
+
+    /**
+     * Controller for the kitFramework update
+     *
+     * @param Application $app
+     */
+    public function controllerUpdate(Application $app)
+    {
+        return $this->exec($app);
     }
 }

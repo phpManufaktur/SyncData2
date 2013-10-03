@@ -76,6 +76,12 @@ class Confirmation extends Basic
         return $form;
     }
 
+    /**
+     * Controller to check the confirmation. Insert a new record on success.
+     *
+     * @param Application $app
+     * @return string result message
+     */
     public function controllerCheckConfirmation(Application $app)
     {
         $this->initParameters($app);

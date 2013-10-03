@@ -17,7 +17,12 @@ class UninstallTool
 {
     protected $app = null;
 
-
+    /**
+     * Uninstall the Admin-Tool for the ConfirmationLog and the droplet
+     * [[syncdata_confirmation_report]]
+     *
+     * @param Application $app
+     */
     public function exec($app)
     {
         $this->app = $app;

@@ -16,6 +16,11 @@ class Control
     protected $app = null;
     protected static $message = '';
 
+    /**
+     * Initialize the Controll class
+     *
+     * @param Application $app
+     */
     protected function initialize($app)
     {
         $this->app = $app;

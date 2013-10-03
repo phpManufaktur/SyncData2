@@ -16,12 +16,24 @@ class Installations
     protected $app = null;
     protected static $table_name = null;
 
+    /**
+     * Constructor
+     *
+     * @param Application $app
+     */
     public function __construct($app)
     {
         $this->app = $app;
         self::$table_name = CMS_TABLE_PREFIX.'kit2_confirmation_log';
     }
 
+    /**
+     * Return a array containing all installation names used in the submitted
+     * confirmation records. Empty installation names will be ignored.
+     *
+     * @throws \Exception
+     * @return Ambigous <boolean, array> false if no installation names exists or array
+     */
     public function getAllNamedInstallations()
     {
         try {

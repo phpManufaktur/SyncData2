@@ -20,7 +20,7 @@ class Control extends Backend
     {
         $this->initialize($app);
 
-        $action = isset($_GET['action']) ? $_GET['action'] : 'list';
+        $action = $app['request']->get('action', 'list');
 
         switch ($action) {
             case 'about':

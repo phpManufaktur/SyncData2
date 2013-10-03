@@ -3,6 +3,15 @@
 (c) 2012, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**0.16** - 2013-10-03
+
+* added support for SyncData, submission of confirmations
+
+**0.15** - 2013-10-03
+
+* added kitCommand `~~ ConfirmationReport ~~` 
+* added missing comments, cleanup code
+
 **0.14** - 2013-10-02
 
 * if the old droplet `[[confirmation_log]]` exists, rewrite it to the new code, so it can be also used (compatibility)

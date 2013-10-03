@@ -367,12 +367,61 @@ EOD;
         }
     }
 
+    /**
+     * Check wether the given installation name has confirmed the page or article title
+     *
+     * @param string $page_title
+     * @param string $installation_name
+     * @throws \Exception
+     * @return boolean
+     */
     public function hasInstallationNameConfirmedTitle($page_title, $installation_name)
     {
         try {
             $SQL = "SELECT DISTINCT `installation_name` FROM `".self::$table_name."` WHERE `page_title`='$page_title' AND `installation_name`='$installation_name'";
             $result = $this->app['db']->fetchColumn($SQL);
             return ($result == $installation_name);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Select all records with the status 'PENDING'
+     *
+     * @throws \Exception
+     * @return multitype:unknown
+     */
+    public function selectPendings()
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `status`='PENDING'";
+            $results = $this->app['db']->fetchAll($SQL);
+            $pendings = array();
+            foreach ($results as $key => $value) {
+                $pendings[$key] = (is_string($value)) ? $this->app['utils']->unsanitizeText($value) : $value;
+            }
+            return $pendings;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Update a confirmation record
+     * @param integer $id
+     * @param array $data
+     * @throws \Exception
+     */
+    public function update($id, $data)
+    {
+        try {
+            $update = array();
+            foreach ($data as $key => $value) {
+                if (($key == 'id') || ($key == 'timestamp')) continue;
+                $update[$key] = (is_string($value)) ? $this->app['utils']->sanitizeText($value) : $value;
+            }
+            $this->app['db']->update(self::$table_name, $update, array('id' => $id));
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw new \Exception($e);
         }

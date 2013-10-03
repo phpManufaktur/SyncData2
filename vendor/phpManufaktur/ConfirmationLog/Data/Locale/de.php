@@ -40,8 +40,8 @@ return array(
     'For the following installations are missing one or more confirmations.'
         => 'Zu den aufgeführten Installationen fehlen eine oder mehrere Lesebestätigungen.',
 
-    'Group: %group_name%, group by: %order_by%'
-        => 'Gruppe: %group_name%, Gruppieren nach: %order_by%',
+    'Group: %group_name%, group by: %group_by%'
+        => 'Gruppe: %group_name%, Gruppieren nach: %group_by%',
 
     'I have read the full text above'
         => 'Ich habe den obigen Text gelesen',
@@ -55,9 +55,6 @@ return array(
         => 'Es wurden %added_records% Datensätze importiert, %skipped_records% bereits vorhandene Datensätze wurden übersprungen.<br />Bitte kontrollieren Sie die Protokolldatei für detailierte Informationen.',
     'Import from table `mod_confirmation_log` (previous version)'
         => 'Import von Tabelle `mod_confirmation_log` (Vorgänger)',
-
-    'List'
-        => 'Übersicht',
 
     'name'
         => 'Bezeichnung',
@@ -103,6 +100,8 @@ return array(
         => 'Die Bestätigung mit der ID %id% existiert nicht!',
     'The email address %email% is not valid!'
         => 'Die E-Mail Adresse %email% ist nicht gültig, bitte prüfen Sie Ihre Eingabe!',
+    'The group with the name %group% does not exists!'
+        => 'Die Gruppe mit dem Bezeichner "%group%" existiert nicht!',
     'The name must contain at minimum 3 characters.'
         => 'Der eingegebene Name muss mindestens drei Zeichen lang sein.',
     'The table `mod_confirmation_log` does not exists, import aborted.'

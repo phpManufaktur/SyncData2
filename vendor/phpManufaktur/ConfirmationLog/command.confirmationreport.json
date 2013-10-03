@@ -1,0 +1,39 @@
+{
+  "command":"ConfirmationReport",
+  "vendor": {
+    "name":"phpManufaktur",
+    "url":"https://phpmanufaktur.de"
+    },
+  "name": {
+    "en":"Report for Confirmations",
+    "de":"Bericht zu Lesebestätigungen"
+  },
+  "description": {
+    "en":"Report of missing Confirmations",
+    "de":"Auswertung von Lesebestätigungen"
+  },
+  "info": {
+    "en": {
+      "link":"https://kit2.phpmanufaktur.de"
+    }
+  },
+  "help": {
+    "en": {
+      "link":"https://gist.github.com/6805407.git",
+      "gist_id":"6805407",
+      "file": {
+        "help":"kitcommand_confirmation_report_en.md"
+      }
+    }
+  },
+  "issues": {
+    "en": {
+      "link":"https://github.com/phpManufaktur/kfConfirmationLog/issues"
+    }
+  },
+  "support": {
+    "en": {
+      "link":"https://support.phpmanufaktur.de"
+    }
+  }
+}

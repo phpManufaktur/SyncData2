@@ -12,10 +12,17 @@
 namespace phpManufaktur\ConfirmationLog\Data\Setup;
 
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
+use Silex\Application;
+use phpManufaktur\Basic\Control\CMS\UninstallAdminTool;
 
 class Uninstall
 {
 
+    /**
+     * Uninstall the ConfirmationLog table and the droplet [[syncdata_confirmation]]
+     *
+     * @param Application $app
+     */
     public function exec($app)
     {
         // uninstall the confirmation log table
@@ -33,8 +40,23 @@ class Uninstall
             );
             $Droplet->uninstall();
         }
+        else {
+            // this is a kitFramework installation, also remove the admin tool
+            $AdminTool = new UninstallAdminTool($app);
+            $AdminTool->exec(MANUFAKTUR_PATH.'/ConfirmationLog/extension.json');
+        }
 
         return $app['translator']->trans('Successfull uninstalled the extension %extension%.',
             array('%extension%' => 'ConfirmationLog'));
+    }
+
+    /**
+     * Controller for the kitFramework
+     *
+     * @param Application $app
+     */
+    public function controllerUninstall(Application $app)
+    {
+        return $this->exec($app);
     }
 }

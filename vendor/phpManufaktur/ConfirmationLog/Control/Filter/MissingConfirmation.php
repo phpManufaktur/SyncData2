@@ -62,7 +62,16 @@ class MissingConfirmation
         return !empty(self::$message);
     }
 
-
+    /**
+     * Execute a filter for missing confirmations for the given group array and
+     * return a result array with page or article titles which are not confirmed
+     * by the specified group member.
+     * Set a message and return false if the filter fails
+     *
+     * @param array $group of installation names
+     * @param string $group_by 'title' or 'name'
+     * @return boolean|array
+     */
     public function missingGroups($group, $group_by='title')
     {
         if (false ===($titles = $this->ConfirmationData->getAllTitles())) {

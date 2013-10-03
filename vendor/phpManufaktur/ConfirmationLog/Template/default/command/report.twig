@@ -1,0 +1,21 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+
+{% extends getTemplateFile('@phpManufaktur/Basic/Template', 'kitcommand/iframe.body.twig') %}
+{% block stylesheet %}
+  {{ parent() }}
+  <link rel="stylesheet" type="text/css" href="{{ MANUFAKTUR_URL }}/ConfirmationLog/Template/default/command/report.css" media="screen, projection" />
+{% endblock stylesheet %}
+{% block content %}
+  <div id="report">
+    {{ parent() }}
+    {% include '@phpManufaktur/ConfirmationLog/Template/default/backend/missing.table.twig' %}
+  </div>
+{% endblock %}  
+  

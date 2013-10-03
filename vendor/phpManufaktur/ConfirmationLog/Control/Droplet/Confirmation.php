@@ -78,7 +78,13 @@ class Confirmation extends Control
     }
 
 
-
+    /**
+     * Check the submitted confirmation and insert it as new record.
+     * Set a message and return false if the check fails.
+     *
+     * @param array $parameter
+     * @return boolean
+     */
     protected function checkConfirmation($parameter)
     {
         $checked = true;
@@ -138,6 +144,13 @@ class Confirmation extends Control
         return true;
     }
 
+    /**
+     * Execute the droplet [[syncdata_confirmation]]
+     *
+     * @param Application $app
+     * @param parameter $parameter
+     * @return string rendered confirmation form
+     */
     public function exec($app, $parameter)
     {
         if (isset($_SESSION['DROPLET_EXECUTED_BY_DROPLETS_EXTENSION'])) {
