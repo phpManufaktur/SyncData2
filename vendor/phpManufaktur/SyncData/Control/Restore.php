@@ -315,68 +315,70 @@ class Restore
                     array('method' => __METHOD__, 'line' => __LINE__));
                 continue;
             }
-            // process the restore file
-            if (!file_exists(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
-                $result = "Missing the MD5 checksum file for the backup archive!";
-                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
-                return $result;
-            }
-            // get the origin checksum of the backup archive
-            if (false === ($md5_origin = @file_get_contents(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
-                $result = "Can't read the MD5 checksum file for the backup archive!";
-                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
-                return $result;
-            }
-            // compare the checksums
-            $md5 = md5_file($file);
-            if ($md5 !== $md5_origin) {
-                $result = "The checksum of the backup archive is not equal to the MD5 checksum file value!";
-                $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
-                return $result;
-            }
-            $this->app['monolog']->addInfo("The MD5 checksum of the backup archive is valid ($md5).",
-                array('method' => __METHOD__, 'line' => __LINE__));
-
-            // processing the archive file
-            $this->processArchive($file);
-
-            // very important: set the archive ID!
-            if (false === ($syncdata = json_decode(@file_get_contents(TEMP_PATH."/restore/backup/syncdata.json"), true))) {
-                throw new \Exception("Can't read the syncdata.json for the backup archive!");
-            }
-            $archive_id = (isset($syncdata['archive']['last_id'])) ? $syncdata['archive']['last_id'] : 0;
-            // @todo data record for SynchronizeClient is not complete! Missing some information from the archive!
-            $data = array(
-                'backup_id' => (isset($syncdata['backup']['id'])) ? $syncdata['backup']['id'] : '',
-                'backup_date' => (isset($syncdata['backup']['date'])) ? $syncdata['backup']['date'] : '0000-00-00 00:00:00',
-                'archive_id' => $archive_id,
-                'archive_date' => date('Y-m-d H:i:s'),
-                'archive_name' => '',
-                'sync_files' => '',
-                'sync_master' => '',
-                'sync_tables' => '',
-                'action' => 'INIT'
-            );
-            $SynchronizeClient = new SynchronizeClient($this->app);
-            $SynchronizeClient->insert($data);
-            $this->app['monolog']->addInfo("Added informations for the Synchronize Client",
-                array('method' => __METHOD__, 'line' => __LINE__));
-
-            // move the backup archive to /data/backup
-            if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
-                $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
-            }
-            if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
-                $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!",
+            if (false !== ($pos = strpos($fileinfo['filename'], 'syncdata_backup_')) && ($pos == 0)) {
+                // process the restore file
+                if (!file_exists(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5')) {
+                    $result = "Missing the MD5 checksum file for the backup archive!";
+                    $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
+                    return $result;
+                }
+                // get the origin checksum of the backup archive
+                if (false === ($md5_origin = @file_get_contents(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5'))) {
+                    $result = "Can't read the MD5 checksum file for the backup archive!";
+                    $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
+                    return $result;
+                }
+                // compare the checksums
+                $md5 = md5_file($file);
+                if ($md5 !== $md5_origin) {
+                    $result = "The checksum of the backup archive is not equal to the MD5 checksum file value!";
+                    $this->app['monolog']->addError($result, array('method' => __METHOD__, 'line' => __LINE__));
+                    return $result;
+                }
+                $this->app['monolog']->addInfo("The MD5 checksum of the backup archive is valid ($md5).",
                     array('method' => __METHOD__, 'line' => __LINE__));
-            }
-            if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
-                $this->app['monolog']->addError("Can't save the backup archive in /data/backup!",
-                    array('method' => __METHOD__, 'line' => __LINE__));
-            }
 
-            // and leave the loop
-            break;
+                // processing the archive file
+                $this->processArchive($file);
+
+                // very important: set the archive ID!
+                if (false === ($syncdata = json_decode(@file_get_contents(TEMP_PATH."/restore/backup/syncdata.json"), true))) {
+                    throw new \Exception("Can't read the syncdata.json for the backup archive!");
+                }
+                $archive_id = (isset($syncdata['archive']['last_id'])) ? $syncdata['archive']['last_id'] : 0;
+                // @todo data record for SynchronizeClient is not complete! Missing some information from the archive!
+                $data = array(
+                    'backup_id' => (isset($syncdata['backup']['id'])) ? $syncdata['backup']['id'] : '',
+                    'backup_date' => (isset($syncdata['backup']['date'])) ? $syncdata['backup']['date'] : '0000-00-00 00:00:00',
+                    'archive_id' => $archive_id,
+                    'archive_date' => date('Y-m-d H:i:s'),
+                    'archive_name' => '',
+                    'sync_files' => '',
+                    'sync_master' => '',
+                    'sync_tables' => '',
+                    'action' => 'INIT'
+                );
+                $SynchronizeClient = new SynchronizeClient($this->app);
+                $SynchronizeClient->insert($data);
+                $this->app['monolog']->addInfo("Added informations for the Synchronize Client",
+                    array('method' => __METHOD__, 'line' => __LINE__));
+
+                // move the backup archive to /data/backup
+                if (!file_exists(SYNCDATA_PATH.'/data/backup/.htaccess') || !file_exists(SYNCDATA_PATH.'/data/backup/.htpasswd')) {
+                    $this->app['utils']->createDirectoryProtection(SYNCDATA_PATH.'/data/backup');
+                }
+                if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.md5', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.md5')) {
+                    $this->app['monolog']->addError("Can't save the MD5 checksum file in /data/backup!",
+                        array('method' => __METHOD__, 'line' => __LINE__));
+                }
+                if (!@rename(SYNCDATA_PATH.'/inbox/'.$fileinfo['filename'].'.zip', SYNCDATA_PATH.'/data/backup/'.$fileinfo['filename'].'.zip')) {
+                    $this->app['monolog']->addError("Can't save the backup archive in /data/backup!",
+                        array('method' => __METHOD__, 'line' => __LINE__));
+                }
+
+                // and leave the loop
+                break;
+            }
         }
 
 
