@@ -3,6 +3,11 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.25** - 2013-10-03
+
+* updated to ConfirmationLog 0.16
+* added submission of pending confirmations
+
 **2.0.24** - 2013-10-02
 
 * if the old droplet `[[confirmation_log]]` exists, rewrite it to the new code, so it can be also used (compatibility) with SyncData
