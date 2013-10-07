@@ -177,7 +177,7 @@ class Check
                                 $sync_id = -1;
                                 $SynchronizeTables->insert($data, $sync_id);
                                 $this->app['monolog']->addInfo(sprintf("Add INSERT %s for index field %s => %s with the ID %d",
-                                    $table['table_name'], $row['index_field'], $row['index_id'], $sync_id),
+                                    $table['table_name'], $table['index_field'], $row[$table['index_field']], $sync_id),
                                     array('method' => __METHOD__, 'line' => __LINE__));
 
                                 // update the backup tables ???
@@ -191,7 +191,8 @@ class Check
                                     'action' => 'SYNCHRONIZE'
                                 );
                                 $BackupTables->insert($data);
-                                $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables", $table['index_field'], $table['table_name']),
+                                $this->app['monolog']->addInfo(sprintf("Added field %s of table %s as index field to the backup tables",
+                                    $table['index_field'], $table['table_name']),
                                     array('method' => __METHOD__, 'line' => __LINE__));
 
                                 // add the new checksum to the calculated checksum!
