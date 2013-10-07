@@ -3,6 +3,14 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.26**
+
+* updated to ConfirmationLog 0.17
+* fixed: compatibility problem with old droplet code `[[confirmation_log]]`
+* fixed: problem to detect the correct URL of a NEWS article
+* fixed: access to undefined indexes while adding new records in SYNC mode
+* added: SYNC copy now new archives directly to /outbox for further processing
+
 **2.0.25** - 2013-10-03
 
 * updated to ConfirmationLog 0.16
