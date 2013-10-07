@@ -162,6 +162,7 @@ class CreateSynchronizeArchive
                 @unlink(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip");
             }
 
+            // create the archive and the MD5 file
             $zip = new Zip($this->app);
             $zip->zipDir(TEMP_PATH.'/synchronize', SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip");
 
@@ -170,7 +171,15 @@ class CreateSynchronizeArchive
                 throw new \Exception("Can't write the MD5 checksum file for the synchronize archive!");
             }
 
-
+            // copy archive and MD5 to /outbox
+            if (!@copy(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".zip",
+                SYNCDATA_PATH."/outbox/".self::$archive_name.".zip")) {
+                throw new \Exception("Can't copy the archive ".self::$archive_name.".zip to the outbox!");
+            }
+            if (!@copy(SYNCDATA_PATH."/data/synchronize/".self::$archive_name.".md5",
+                SYNCDATA_PATH."/outbox/".self::$archive_name.".md5")) {
+                throw new \Exception("Can't copy the MD5 file ".self::$archive_name.".md5 to the outbox!");
+            }
 
             // ok - all done, now update the sync tables
             $sync_master = array();
