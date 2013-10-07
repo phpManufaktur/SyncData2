@@ -35,7 +35,8 @@ $parameter = array(
         'active' => (isset($use_name) && (strtolower($use_name) == 'false')) ? false : true
     ),
     'confirm' => array(
-        'active' => (isset($confirm) && (strtolower($confirm) == 'false')) ? false : true
+        // the confirmation checkbox does not exists in the old droplet
+        'active' => false
     ),
     'css' => array(
         'active' => (isset($css) && (strtolower($css) == 'false')) ? false : true

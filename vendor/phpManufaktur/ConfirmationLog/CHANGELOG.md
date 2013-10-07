@@ -3,6 +3,10 @@
 (c) 2012, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**0.17** - 2013-10-07
+
+* Setup and Update does not change the old compatibility droplet `[[confirmation_log]]` in the expected way, so some parameters does not work as expected
+
 **0.16** - 2013-10-03
 
 * added support for SyncData, submission of confirmations

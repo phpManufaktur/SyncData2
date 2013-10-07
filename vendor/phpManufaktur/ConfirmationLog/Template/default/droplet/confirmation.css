@@ -7,6 +7,11 @@
   @license MIT License (MIT) http://www.opensource.org/licenses/MIT
 */
 
+.clear {
+  clear: both;
+  margin: 0;
+  padding: 0;
+}
 #confirmation {
   font-family: "Lucida Sans Unicode", "Lucida Grande", Verdana, sans-serif;
   font-size: 13px;

@@ -25,6 +25,7 @@ class Confirmation extends Control
      */
     protected function getPageURL()
     {
+        global $post_id;
         try {
             if (defined('TOPIC_ID')) {
                 // this is a TOPICS page
@@ -35,9 +36,10 @@ class Confirmation extends Control
                 include_once WB_PATH . '/modules/topics/module_settings.php';
                 return WB_URL . $topics_directory . $link . PAGE_EXTENSION;
             }
-            elseif (defined('POST_ID')) {
+            elseif (!is_null($post_id) || defined('POST_ID')) {
                 // this is a NEWS page
-                $SQL = "SELECT `link` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='".POST_ID."'";
+                $id = (defined('POST_ID')) ? POST_ID : $post_id;
+                $SQL = "SELECT `link` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='$id'";
                 $link = $this->app['db']->fetchColumn($SQL);
                 return WB_URL.PAGES_DIRECTORY.$link.PAGE_EXTENSION;
             }
@@ -58,14 +60,17 @@ class Confirmation extends Control
      * @return string page title
      */
     protected function getPageTitle() {
+        global $post_id;
+
         try {
             if (defined('TOPIC_ID')) {
                 // get title from TOPICS
                 $SQL = "SELECT `title` FROM ".TABLE_PREFIX."mod_topics WHERE `topic_id`='".TOPIC_ID."'";
             }
-            elseif (defined('POST_ID')) {
+            elseif (!is_null($post_id) || defined('POST_ID')) {
                 // get title from NEWS
-                $SQL = "SELECT `title` FROM ".TABLE_PREFIX."mod_news_posts WHERE `post_id`='".POST_ID."'";
+                $id = (defined('POST_ID')) ? POST_ID : $post_id;
+                $SQL = "SELECT `title` FROM ".TABLE_PREFIX."mod_news_posts WHERE `post_id`='$id'";
             }
             else {
                 // get regular page title
@@ -87,6 +92,8 @@ class Confirmation extends Control
      */
     protected function checkConfirmation($parameter)
     {
+        global $post_id;
+
         $checked = true;
         if ($parameter['email']['active'] && (!isset($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))) {
             // invalid email address
@@ -113,8 +120,8 @@ class Confirmation extends Control
             $second_id = TOPIC_ID;
             $page_type = 'TOPICS';
         }
-        elseif (defined('POST_ID')) {
-            $second_id = POST_ID;
+        elseif (!is_null($post_id) || defined('POST_ID')) {
+            $second_id = (defined('POST_ID')) ? POST_ID : $post_id;
             $page_type = 'NEWS';
         }
         else {

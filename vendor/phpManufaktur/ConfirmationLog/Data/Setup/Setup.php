@@ -40,7 +40,14 @@ class Setup
                 );
             // install the droplet
             $Droplet->install();
+
             // change the old droplet to the actual code
+            $Droplet->setDropletInfo(
+                'confirmation_log',
+                MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/confirmation_log.php',
+                'Get a confirmation from the user that he has read a page or article',
+                'Please visit https://addons.phpmanufaktur.de/syncdata'
+                );
             $Droplet->checkOldConfirmationLogDroplet();
         }
         else {
