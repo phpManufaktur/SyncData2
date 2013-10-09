@@ -14,6 +14,7 @@ namespace phpManufaktur\ConfirmationLog\Control\Droplet;
 use phpManufaktur\ConfirmationLog\Control\Control;
 use phpManufaktur\ConfirmationLog\Control\Filter\MissingConfirmation;
 use phpManufaktur\ConfirmationLog\Data\Config;
+use phpManufaktur\ConfirmationLog\Data\Filter\Persons;
 
 class Report extends Control
 {
@@ -39,13 +40,40 @@ class Report extends Control
         $config = $ConfigData->getConfiguration();
         $missing = array();
 
-        if (!isset($config['groups'][$parameter['group']])) {
-            $this->setMessage('The group with the name %group% does not exists!',
-                array('%group%' => $parameter['group']));
+        if ($parameter['filter'] == 'persons') {
+            // filter for confirmations of PERSONS
+            $Persons = new Persons($app);
+
+            if (empty($parameter['group'])) {
+                $this->setMessage('Please define a group!');
+            }
+            elseif (false === ($group = $Persons->getGroupByName($parameter['group']))) {
+                $this->setMessage('The user group with the name %group% does not exists!',
+                    array('%group%' => $parameter['group']));
+            }
+            else {
+                $MissingConfirmation = new MissingConfirmation($app);
+                $missing = $MissingConfirmation->missingPersons($group['group_id'], $parameter['group_by'], $parameter['identifier']);
+            }
+        }
+        elseif ($parameter['filter'] == 'installations') {
+            // filter for confirmations of INSTALLATIONS
+            if (empty($parameter['group'])) {
+                $this->setMessage('Please define a group!');
+            }
+            elseif (!isset($config['filter']['installations']['groups'][$parameter['group']])) {
+                $this->setMessage('The group with the name %group% does not exists!',
+                    array('%group%' => $parameter['group']));
+            }
+            else {
+                $MissingConfirmation = new MissingConfirmation($app);
+                $missing = $MissingConfirmation->missingGroups($config['filter']['installations']['groups'][$parameter['group']], $parameter['group_by']);
+            }
         }
         else {
-            $MissingConfirmation = new MissingConfirmation($app);
-            $missing = $MissingConfirmation->missingGroups($config['groups'][$parameter['group']], $parameter['group_by']);
+            // filter group does not exists!
+            $this->setMessage('The filter group with the name %filter% is not defined!',
+                array('%filter%' => $parameter['filter']));
         }
 
         return $app['twig']->render('ConfirmationLog/Template/default/droplet/report.twig', array(
@@ -53,7 +81,8 @@ class Report extends Control
             'locale' => $app['translator']->getLocale(),
             'message' => $this->getMessage(),
             'missing' => $missing,
-            'group_by' => $parameter['group_by']
+            'group_by' => $parameter['group_by'],
+            'filter' => $parameter['filter']
             ));
     }
 

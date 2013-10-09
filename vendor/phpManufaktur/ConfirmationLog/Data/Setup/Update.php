@@ -12,9 +12,11 @@
 namespace phpManufaktur\ConfirmationLog\Data\Setup;
 
 use Silex\Application;
+
 class Update
 {
     protected $app = null;
+    protected static $version = null;
 
     /**
      * Check if the give column exists in the table
@@ -58,6 +60,10 @@ class Update
     {
         $this->app = $app;
 
+        // get the VERSION of this release
+        self::$version = trim(file_get_contents(MANUFAKTUR_PATH.'/ConfirmationLog/VERSION'));
+
+        // Release 0.11
         $this->release_011();
 
         // Always update the droplet at SyncData installations
@@ -80,6 +86,11 @@ class Update
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
                 );
             $Droplet->checkOldConfirmationLogDroplet();
+        }
+
+        if (self::$version == '0.18') {
+            // must delete the configuration file because it was restructured, will be restored automatically
+            @unlink(MANUFAKTUR_PATH.'/ConfirmationLog/config.confirmation.json');
         }
 
         return $app['translator']->trans('Successfull updated the extension %extension%.',

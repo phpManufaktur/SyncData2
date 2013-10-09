@@ -5,8 +5,28 @@
   <table>
     <thead>
       <tr>
-        <th>{% if group_by == 'title' %}{{ 'title'|trans }}{% else %}{{ 'installation_name'|trans }}{% endif %}</th>
-        <th>{% if group_by == 'title' %}{{ 'installation_name'|trans }}{% else %}{{ 'title'|trans }}{% endif %}</th>
+        <th>
+          {% if group_by == 'title' %}
+            {{ 'title'|trans }}
+          {% else %}
+            {%if filter == 'persons' %}
+              {{ 'person_name'|trans }}
+            {% else %}
+              {{ 'installation_name'|trans }}
+            {% endif %}
+          {% endif %}
+        </th>
+        <th>
+          {% if group_by == 'title' %}
+            {%if filter == 'persons' %}
+              {{ 'person_name'|trans }}
+            {% else %}
+              {{ 'installation_name'|trans }}
+            {% endif %}
+          {% else %}
+            {{ 'title'|trans }}
+          {% endif %}
+        </th>
       </tr>
     </thead>
     <tbody>

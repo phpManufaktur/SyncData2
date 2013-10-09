@@ -134,7 +134,7 @@ class Confirmation extends Control
             'page_type' => $page_type,
             'second_id' => $second_id,
             'installation_name' => defined('INSTALLATION_NAME') ? INSTALLATION_NAME : '',
-            'user_name' => (isset($_SESSION['DISPLAY_NAME'])) ? $_SESSION['DISPLAY_NAME'] : '',
+            'user_name' => (isset($_SESSION['USERNAME'])) ? $_SESSION['USERNAME'] : '',
             'user_email' => (isset($_SESSION['EMAIL'])) ? $_SESSION['EMAIL'] : '',
             'page_title' => $this->getPageTitle(),
             'page_url' => $this->getPageURL(),

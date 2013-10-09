@@ -386,6 +386,28 @@ EOD;
         }
     }
 
+    public function hasUserEMailConfirmedTitle($page_title, $user_email)
+    {
+        try {
+            $SQL = "SELECT DISTINCT `user_email` FROM `".self::$table_name."` WHERE `page_title`='$page_title' AND `user_email`='$user_email'";
+            $result = $this->app['db']->fetchColumn($SQL);
+            return ($result == $user_email);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    public function hasUserNameConfirmedTitle($page_title, $user_name)
+    {
+        try {
+            $SQL = "SELECT DISTINCT `user_name` FROM `".self::$table_name."` WHERE `page_title`='$page_title' AND `user_name`='$user_name'";
+            $result = $this->app['db']->fetchColumn($SQL);
+            return ($result == $user_name);
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
     /**
      * Select all records with the status 'PENDING'
      *

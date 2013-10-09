@@ -3,6 +3,11 @@
 (c) 2012, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**0.18** - 2013-10-09
+
+* fixed: droplet `[[syncdata_confirmation]]` used displayname instead of username
+* added report filter to check which users belonging to a specified usergroup have not submitted confirmations for the articles
+
 **0.17** - 2013-10-07
 
 * Setup and Update does not change the old compatibility droplet `[[confirmation_log]]` in the expected way, so some parameters does not work as expected

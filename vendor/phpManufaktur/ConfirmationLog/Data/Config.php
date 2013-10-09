@@ -34,9 +34,25 @@ class Config
     protected function setDefaultValues()
     {
         self::$config = array(
-            'groups' => array(
-                'installation_names' => array(
+            'filter' => array(
+                'installations' => array(
+                    // uses the INSTALLATION_NAMES defined in the config.php of the CLIENTS
+                    'active' => true,
+                    'groups' => array(
+                        'installation_names' => array(
 
+                        )
+                    )
+                ),
+                'persons' => array(
+                    // uses the group definitions of the CMS (where this config file is placed)
+                    'active' => true,
+                    'cms' => array(
+                        'identifier' => 'USERNAME', // alternate: EMAIL -> table: cms_users
+                        'ignore_groups' => array(
+                            'Administrators'
+                        )
+                    )
                 )
             )
         );

@@ -75,8 +75,14 @@ return array(
         => 'Seiten URL',
     'PENDING'
         => 'Ausstehend',
+    'person_name'
+        => 'Name',
+    'Persons: %group_name%, group by: %group_by%'
+        => 'Personen Gruppe: %group_name%, Gruppieren nach: %group_by%',
     'Please confirm that you have read the full text above.'
         => 'Bitte bestätigen Sie, dass Sie den obigen Text gelesen haben.',
+    'Please define a group!'
+        => "Bitte legen Sie mit dem Parameter 'group' eine Gruppe fest!",
     'Please select the import you wish to perform.'
         => 'Bitte wählen Sie den gewünschten Import aus, der durchgeführt werden soll.',
 
@@ -106,6 +112,8 @@ return array(
         => 'Der eingegebene Name muss mindestens drei Zeichen lang sein.',
     'The table `mod_confirmation_log` does not exists, import aborted.'
         => 'Die Tabelle `mod_confirmation_log` existiert nicht, ein Import kann daher nicht durchgeführt werden.',
+    'The user group with the name %group% does not exists!'
+        => 'Die Benutzergruppe mit der Bezeichnung <b>%group%</b> existiert nicht, bitte prüfen Sie Ihre Eingabe!',
     'There exists no installation names in the records which can be used for the reports!'
         => 'Es existieren keine Installationsnamen in den Datensätzen, die für eine Auswertung verwendet werden können!',
     'There exists no page titles which can be checked for a report!'

@@ -20,8 +20,10 @@ require_once WB_PATH.'/syncdata/vendor/phpManufaktur/ConfirmationLog/bootstrap.d
 use phpManufaktur\ConfirmationLog\Control\Droplet\Report;
 
 $parameter = array(
-    'group' => isset($group) ? strtolower($group) : 'installation_names',
-    'group_by' => isset($group_by) ? strtolower($group_by) : 'title'
+    'filter' => isset($filter) ? strtolower($filter) : 'persons',
+    'group' => isset($group) ? strtolower($group) : '',
+    'group_by' => isset($group_by) ? strtolower($group_by) : 'title',
+    'identifier' => isset($identifier) ? strtoupper($identifier) : 'USERNAME'
 );
 
 $Report = new Report();

@@ -13,6 +13,7 @@ namespace phpManufaktur\ConfirmationLog\Control\Filter;
 
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
 use phpManufaktur\ConfirmationLog\Data\Config;
+use phpManufaktur\ConfirmationLog\Data\Filter\Persons;
 
 class MissingConfirmation
 {
@@ -20,6 +21,7 @@ class MissingConfirmation
     protected $ConfirmationData = null;
     protected static $config = null;
     private static $message = '';
+    protected $Persons = null;
 
     public function __construct($app)
     {
@@ -28,6 +30,8 @@ class MissingConfirmation
 
         $Config = new Config($app);
         self::$config = $Config->getConfiguration();
+
+        $this->Persons = new Persons($app);
     }
 
     /**
@@ -74,7 +78,7 @@ class MissingConfirmation
      */
     public function missingGroups($group, $group_by='title')
     {
-        if (false ===($titles = $this->ConfirmationData->getAllTitles())) {
+        if (false === ($titles = $this->ConfirmationData->getAllTitles())) {
             $this->setMessage('There exists no page titles which can be checked for a report!');
             return false;
         }
@@ -95,5 +99,51 @@ class MissingConfirmation
         return (!empty($missing)) ? $missing : false;
     }
 
+    /**
+     * Execute a filter for missing confirmations for the given CMS USERGROUP ID and
+     * return a result with page or article titles which are not confirmed
+     * by the specific member of the usergroup
+     *
+     * @param integer $group_id
+     * @param string $group_by default 'title' alternate 'name'
+     * @param string $identifier default 'EMAIL', alternate 'USERNAME'
+     * @return boolean|array FALSE if no user is missing
+     */
+    public function missingPersons($group_id, $group_by='title', $identifier='EMAIL')
+    {
+        if (false === ($titles = $this->ConfirmationData->getAllTitles())) {
+            $this->setMessage('There exists no page titles which can be checked for a report!');
+            return false;
+        }
 
+        // get all persons which belong to the group with the given ID
+        $persons = $this->Persons->getPersonsByGroupID($group_id);
+
+        // loop through the titles and check for missing confirmations
+        $missing = array();
+        foreach ($titles as $title) {
+            foreach ($persons as $person) {
+                if ($identifier == 'EMAIL') {
+                    // identify user by email
+                    if (!$this->ConfirmationData->hasUserEMailConfirmedTitle($title, $person['email'])) {
+                        $missing[($group_by == 'title') ? $title : $person['display_name']][] = array(
+                            'page_title' => $title,
+                            'installation_name' => $person['display_name']
+                        );
+                    }
+                }
+                else {
+                    // identify user by username
+                    if (!$this->ConfirmationData->hasUserNameConfirmedTitle($title, $person['username'])) {
+                        $missing[($group_by == 'title') ? $title : $person['display_name']][] = array(
+                            'page_title' => $title,
+                            'installation_name' => $person['display_name']
+                        );
+                    }
+                }
+            }
+        }
+
+        return (!empty($missing)) ? $missing : false;
+    }
 }
