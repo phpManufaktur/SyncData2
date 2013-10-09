@@ -3,7 +3,13 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
-**2.0.26**
+**2.0.27** - 2013-10-09
+
+* updated to ConfirmationLog 0.18
+* added: report filter for usergroup/persons
+* fixed: droplet `[[syncdata_confirmation]]` used displayname instead of username 
+
+**2.0.26** - 2013-10-07
 
 * updated to ConfirmationLog 0.17
 * fixed: compatibility problem with old droplet code `[[confirmation_log]]`
