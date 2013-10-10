@@ -23,7 +23,7 @@ else {
     $module_directory     = 'sync_data';
     $module_name          = 'SyncData';
     $module_function      = 'tool';
-    $module_version       = '2.0.27';
+    $module_version       = '2.0.28';
     $module_status        = 'Stable';
     $module_platform      = '2.8';
     $module_author        = 'Team phpManufaktur <team@phpmanufaktur.de>';

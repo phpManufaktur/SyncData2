@@ -3,6 +3,11 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.28** - 2013-10-10
+
+* added missing INSTALLATION_NAME definition
+* updated to ConfirmationLog 0.19 with extended report functions
+
 **2.0.27** - 2013-10-09
 
 * updated to ConfirmationLog 0.18
