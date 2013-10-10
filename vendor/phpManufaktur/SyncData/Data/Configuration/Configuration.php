@@ -243,6 +243,9 @@ class Configuration
         define('TEMP_PATH', SYNCDATA_PATH.'/temp');
         define('SYNCDATA_DEBUG', isset(self::$config_array['general']['debug']) ? self::$config_array['general']['debug'] : false);
         define('SYNCDATA_TEMPLATES', isset(self::$config_array['general']['templates']) ? implode(',', self::$config_array['general']['templates']) : 'default');
+        if (!defined('INSTALLATION_NAME')) {
+            define('INSTALLATION_NAME', self::$config_array['CMS']['INSTALLATION_NAME']);
+        }
 
         if (false === ini_set('memory_limit', self::$config_array['general']['memory_limit'])) {
             throw new ConfigurationException(sprintf("Can't set the memory limit to %s", self::$config_array['general']['memory_limit']));
