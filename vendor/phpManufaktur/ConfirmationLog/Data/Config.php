@@ -34,6 +34,10 @@ class Config
     protected function setDefaultValues()
     {
         self::$config = array(
+            'confirmation' => array(
+                'only_once' => true,
+                'identifier' => 'USERNAME'
+            ),
             'filter' => array(
                 'installations' => array(
                     // uses the INSTALLATION_NAMES defined in the config.php of the CLIENTS

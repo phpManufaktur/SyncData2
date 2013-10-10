@@ -136,6 +136,8 @@ return array(
     'user_name'
         => 'Login Name',
 
+    'You have already confirmed this article at %date%.'
+        => 'Sie haben diesen Artikel am %date% Uhr bestätigt.',
     'Your email'
         => 'Ihre E-Mail',
     'Your name'

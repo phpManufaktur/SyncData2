@@ -1,0 +1,29 @@
+{#
+  ConfirmationLog
+
+  @author Team phpManufaktur <team@phpmanufaktur.de>
+  @link https://kit2.phpmanufaktur.de
+  @copyright 2013 Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+  @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+#}
+
+<div id="confirmation">
+  <a name="confirmation"></a>
+  {% if form.css.active %}
+    <script type="text/javascript">
+      var fileref = document.createElement("link");
+      fileref.setAttribute("rel", "stylesheet");
+      fileref.setAttribute("type", "text/css");
+      fileref.setAttribute("href", '{{ MANUFAKTUR_URL ~ '/ConfirmationLog/Template/default/droplet/confirmation.css' }}');
+      document.getElementsByTagName("head")[0].appendChild(fileref);
+    </script>          
+  {% endif %}
+  
+  <div class="message">
+    {% if message|length > 0 %}
+      {{ message }}
+    {% else %}
+      <div class="message item">{{ 'You have already confirmed this article at %date%.'|trans({'%date%':confirmation.confirmed_at|date('d.m.Y - H:i')}) }}</div>
+    {% endif %}
+  </div>
+</div>

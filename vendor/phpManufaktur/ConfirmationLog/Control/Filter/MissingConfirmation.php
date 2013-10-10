@@ -14,6 +14,7 @@ namespace phpManufaktur\ConfirmationLog\Control\Filter;
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
 use phpManufaktur\ConfirmationLog\Data\Config;
 use phpManufaktur\ConfirmationLog\Data\Filter\Persons;
+use phpManufaktur\ConfirmationLog\Data\Documents;
 
 class MissingConfirmation
 {
@@ -22,6 +23,7 @@ class MissingConfirmation
     protected static $config = null;
     private static $message = '';
     protected $Persons = null;
+    protected $Documents = null;
 
     public function __construct($app)
     {
@@ -32,6 +34,12 @@ class MissingConfirmation
         self::$config = $Config->getConfiguration();
 
         $this->Persons = new Persons($app);
+
+        $this->Documents = new Documents($app);
+        if ($this->Documents->checkIfDocumentsNeedUpdate()) {
+            $this->Documents->parseForNeededConfirmations();
+        }
+
     }
 
     /**
@@ -111,7 +119,14 @@ class MissingConfirmation
      */
     public function missingPersons($group_id, $group_by='title', $identifier='EMAIL')
     {
+        /*
         if (false === ($titles = $this->ConfirmationData->getAllTitles())) {
+            $this->setMessage('There exists no page titles which can be checked for a report!');
+            return false;
+        }
+        */
+
+        if (false === ($titles = $this->Documents->getAllTitles())) {
             $this->setMessage('There exists no page titles which can be checked for a report!');
             return false;
         }

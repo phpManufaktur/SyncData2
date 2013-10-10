@@ -16,6 +16,7 @@ use phpManufaktur\ConfirmationLog\Data\Filter\Installations;
 use phpManufaktur\ConfirmationLog\Data\Config;
 use phpManufaktur\ConfirmationLog\Control\Filter\MissingConfirmation;
 use phpManufaktur\ConfirmationLog\Data\Filter\Persons;
+use phpManufaktur\ConfirmationLog\Data\Documents;
 
 class Report extends Backend
 {

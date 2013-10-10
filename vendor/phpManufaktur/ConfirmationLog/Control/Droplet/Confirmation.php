@@ -13,6 +13,7 @@ namespace phpManufaktur\ConfirmationLog\Control\Droplet;
 
 use phpManufaktur\ConfirmationLog\Control\Control;
 use phpManufaktur\ConfirmationLog\Data\Confirmation as ConfirmationData;
+use phpManufaktur\ConfirmationLog\Data\Config;
 
 class Confirmation extends Control
 {
@@ -138,11 +139,11 @@ class Confirmation extends Control
             'user_email' => (isset($_SESSION['EMAIL'])) ? $_SESSION['EMAIL'] : '',
             'page_title' => $this->getPageTitle(),
             'page_url' => $this->getPageURL(),
-            'typed_name' => trim($_POST['name']),
-            'typed_email' => strtolower(trim($_POST['email'])),
+            'typed_name' => isset($_POST['name']) ? trim($_POST['name']) : '',
+            'typed_email' => isset($_POST['email']) ? strtolower(trim($_POST['email'])) : '',
             'confirmed_at' => date('Y-m-d H:i:s'),
             'time_on_page' => time() - $_POST['start_stamp'],
-            'status' => 'PENDING'
+            'status' => (defined('INSTALLATION_NAME') && (INSTALLATION_NAME == 'SERVER')) ? 'SUBMITTED' : 'PENDING'
         );
 
         $ConfirmationData = new ConfirmationData($this->app);
@@ -160,6 +161,8 @@ class Confirmation extends Control
      */
     public function exec($app, $parameter)
     {
+        global $post_id;
+
         if (isset($_SESSION['DROPLET_EXECUTED_BY_DROPLETS_EXTENSION'])) {
             // ignore the scan function of the DropletsExtension
             return null;
@@ -167,6 +170,42 @@ class Confirmation extends Control
 
         $this->initialize($app);
         $this->app['translator']->setLocale(strtolower(LANGUAGE));
+
+        $Cfg = new Config($app);
+        $config = $Cfg->getConfiguration();
+        $only_once = (isset($config['confirmation']['only_once'])) ? $config['confirmation']['only_once'] : true;
+        $identifier = (isset($config['confirmation']['identifier'])) ? $config['confirmation']['identifier'] : 'USERNAME';
+
+        if ($only_once && isset($_SESSION['USERNAME']) && isset($_SESSION['EMAIL'])) {
+            if (defined('TOPIC_ID')) {
+                $second_id = TOPIC_ID;
+                $page_type = 'TOPICS';
+            }
+            elseif (!is_null($post_id) || defined('POST_ID')) {
+                $second_id = (defined('POST_ID')) ? POST_ID : $post_id;
+                $page_type = 'NEWS';
+            }
+            else {
+                $second_id = 0;
+                $page_type = 'PAGE';
+            }
+            $ConfirmationData = new ConfirmationData($app);
+            $identifier_name = ($identifier == 'USERNAME') ? $_SESSION['USERNAME'] : $_SESSION['EMAIL'];
+            $confirmation = array();
+            if ($ConfirmationData->hasAlreadyConfirmed($identifier, $identifier_name, $page_type, PAGE_ID, $second_id, $confirmation)) {
+                // the user has already confirmed this article
+                return $app['twig']->render('ConfirmationLog/Template/default/droplet/ok.confirmation.twig', array(
+                    'locale' => $app['translator']->getLocale(),
+                    'message' => $this->getMessage(),
+                    'confirmation' => $confirmation,
+                    'form' => array(
+                        'css' => array(
+                            'active' => $parameter['css']['active']
+                        )
+                    )
+                ));
+            }
+        }
 
         if (isset($_POST['start_stamp'])) {
             if ($this->checkConfirmation($parameter)) {
@@ -183,7 +222,6 @@ class Confirmation extends Control
         $start_stamp = (isset($_POST['start_stamp'])) ? $_POST['start_stamp'] : time();
 
         return $app['twig']->render('ConfirmationLog/Template/default/droplet/confirmation.twig', array(
-            'TEMPLATE_URL' => WB_URL.'/ConfirmationLog/Template/default/droplet',
             'locale' => $app['translator']->getLocale(),
             'message' => $this->getMessage(),
             'form' => array(

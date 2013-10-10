@@ -12,6 +12,7 @@
 namespace phpManufaktur\ConfirmationLog\Data\Setup;
 
 use Silex\Application;
+use phpManufaktur\ConfirmationLog\Data\Documents;
 
 class Update
 {
@@ -39,6 +40,23 @@ class Update
     }
 
     /**
+     * Check if the given $table exists
+     *
+     * @param string $table
+     * @throws \Exception
+     * @return boolean
+     */
+    protected function tableExists($table)
+    {
+        try {
+            $query = $this->app['db']->query("SHOW TABLES LIKE '$table'");
+            return (false !== ($row = $query->fetch())) ? true : false;
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
      * Update for Release 0.11
      */
     protected function release_011()
@@ -48,6 +66,18 @@ class Update
             $SQL = "ALTER TABLE `".CMS_TABLE_PREFIX."kit2_confirmation_log` ADD `received_at` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `confirmed_at`";
             $this->app['db']->query($SQL);
             $this->app['monolog']->addInfo('[ConfirmationLog Update] Add field `received_at` to table `kit2_confirmation_log`');
+        }
+    }
+
+    /**
+     * Update for Releas 0.19
+     */
+    protected function release_019()
+    {
+        if (!$this->tableExists(CMS_TABLE_PREFIX.'kit2_confirmation_documents')) {
+            // create the documents table
+            $Documents = new Documents($this->app);
+            $Documents->createTable();
         }
     }
 
@@ -65,6 +95,9 @@ class Update
 
         // Release 0.11
         $this->release_011();
+
+        // Release 0.19
+        $this->release_019();
 
         // Always update the droplet at SyncData installations
         if (defined('SYNCDATA_PATH')) {
@@ -86,6 +119,16 @@ class Update
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
                 );
             $Droplet->checkOldConfirmationLogDroplet();
+
+            // add the report droplet
+            $Droplet->setDropletInfo(
+                'syncdata_confirmation_report',
+                MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation_report.php',
+                'Enable to place the confirmation reports at the frontend',
+                'Please visit https://addons.phpmanufaktur.de/syncdata'
+            );
+            // install the droplet
+            $Droplet->install();
         }
 
         if (self::$version == '0.18') {

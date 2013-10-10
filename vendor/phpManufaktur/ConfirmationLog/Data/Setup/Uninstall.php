@@ -14,6 +14,7 @@ namespace phpManufaktur\ConfirmationLog\Data\Setup;
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
 use Silex\Application;
 use phpManufaktur\Basic\Control\CMS\UninstallAdminTool;
+use phpManufaktur\ConfirmationLog\Data\Documents;
 
 class Uninstall
 {
@@ -29,15 +30,18 @@ class Uninstall
         $Confirmation = new Confirmation($app);
         $Confirmation->dropTable();
 
+        // uninstall the documents table
+        $Documents = new Documents($app);
+        $Documents->dropTable();
+
         if (defined('SYNCDATA_PATH')) {
             // this is a SyncData installation remove droplet
             $Droplet = new Droplet($app);
-            $Droplet->setDropletInfo(
-                'syncdata_confirmation',
-                MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation.php',
-                'Get a confirmation from the user that he has read a page or article',
-                'Please visit https://addons.phpmanufaktur.de/syncdata'
-            );
+            $Droplet->setDropletInfo('syncdata_confirmation', '', '', '');
+            $Droplet->uninstall();
+            $Droplet->setDropletInfo('syncdata_confirmation_report', '', '', '');
+            $Droplet->uninstall();
+            $Droplet->setDropletInfo('confirmation_log', '', '', '');
             $Droplet->uninstall();
         }
         else {

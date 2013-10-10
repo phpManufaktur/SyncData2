@@ -14,6 +14,7 @@ namespace phpManufaktur\ConfirmationLog\Data\Setup;
 use phpManufaktur\ConfirmationLog\Data\Confirmation;
 use Silex\Application;
 use phpManufaktur\Basic\Control\CMS\InstallAdminTool;
+use phpManufaktur\ConfirmationLog\Data\Documents;
 
 class Setup
 {
@@ -28,6 +29,9 @@ class Setup
     {
         $Confirmation = new Confirmation($app);
         $Confirmation->createTable();
+
+        $Documents = new Documents($app);
+        $Documents->createTable();
 
         if (defined('SYNCDATA_PATH')) {
             // this is a SyncData installation and we need droplets
@@ -49,6 +53,16 @@ class Setup
                 'Please visit https://addons.phpmanufaktur.de/syncdata'
                 );
             $Droplet->checkOldConfirmationLogDroplet();
+
+            // add the report droplet
+            $Droplet->setDropletInfo(
+                'syncdata_confirmation_report',
+                MANUFAKTUR_PATH.'/ConfirmationLog/Data/Setup/Droplet/syncdata_confirmation_report.php',
+                'Enable to place the confirmation reports at the frontend',
+                'Please visit https://addons.phpmanufaktur.de/syncdata'
+            );
+            // install the droplet
+            $Droplet->install();
         }
         else {
             // this is the kitFramework installation

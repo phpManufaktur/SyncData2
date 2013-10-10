@@ -449,4 +449,41 @@ EOD;
         }
     }
 
+    /**
+     * Check if a user has already confirmed an article
+     *
+     * @param string $identifier_type 'USERNAME' or 'EMAIL'
+     * @param string $identifier_name username or email address
+     * @param string $page_type maybe 'PAGE', 'NEWS' or 'TOPICS'
+     * @param integer $page_id
+     * @param integer $second_id
+     * @param array reference $data
+     * @throws \Exception
+     * @return boolean
+     */
+    public function hasAlreadyConfirmed($identifier_type, $identifier_name, $page_type, $page_id, $second_id, &$data=array())
+    {
+        try {
+            $SQL = "SELECT * FROM `".self::$table_name."` WHERE `page_type`='$page_type' AND `page_id`='$page_id' AND `second_id`='$second_id'";
+            if ($identifier_type == 'USERNAME') {
+                $SQL .= " AND `user_name`='$identifier_name'";
+            }
+            else {
+                $SQL .= " AND `user_email`='$identifier_name'";
+            }
+            $result = $this->app['db']->fetchAssoc($SQL);
+            if (isset($result['id'])) {
+                $data = array();
+                foreach ($result as $key => $value) {
+                    $data[$key] = (is_string($value)) ? $this->app['utils']->unsanitizeText($value) : $value;
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (\Doctrine\DBAL\DBALException $e) {
+            throw new \Exception($e);
+        }
+    }
 }
