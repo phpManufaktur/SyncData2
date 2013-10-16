@@ -75,7 +75,7 @@ class SynchronizeClient
                             array('method' => __METHOD__, 'line' => __LINE__));
                     }
                     else {
-                        $this->app['monolog']->addError(sprintf("Table %s INSERT %s => %s successfull",
+                        $this->app['monolog']->addInfo(sprintf("Table %s INSERT %s => %s successfull",
                             $table['table_name'], $table['index_field'], $table['index_id']),
                             array('method' => __METHOD__, 'line' => __LINE__));
                     }
@@ -106,7 +106,7 @@ class SynchronizeClient
                             array('method' => __METHOD__, 'line' => __LINE__));
                     }
                     else {
-                        $this->app['monolog']->addError(sprintf("Table %s UPDATE %s => %s successfull",
+                        $this->app['monolog']->addInfo(sprintf("Table %s UPDATE %s => %s successfull",
                             $table['table_name'], $table['index_field'], $table['index_id']),
                             array('method' => __METHOD__, 'line' => __LINE__));
                     }
