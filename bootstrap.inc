@@ -55,7 +55,9 @@ elseif (!file_exists(SYNCDATA_PATH.'/logfile') && (true !== @mkdir(SYNCDATA_PATH
 
 // initialize the logger
 $app['monolog'] = $app->share(function($app) {
-    return new Logger('SyncData');
+    // if possible use the INSTALLATION_NAME additional to 'SyncData' as logger name
+    $LoggerName = (false !== ($inst_name = $app['utils']->parseFileForConstants(realpath(SYNCDATA_PATH.'/../config.php'), 'INSTALLATION_NAME'))) ? "SyncData.$inst_name" : 'SyncData';
+    return new Logger($LoggerName);
 });
 $app['monolog']->pushHandler(new StreamHandler($log_file, LOGGER_LEVEL));
 $app['monolog']->addInfo('Monolog initialized');
