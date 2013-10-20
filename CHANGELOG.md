@@ -9,7 +9,7 @@ MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 * fixed: using `addError()` instead of `addInfo()` in `SynchronizeClient.php`
 * updated to ConfirmationLog 0.20
 * added function `parseFileForConstants()` to `$app['utils']`
-* if a `INSTALLATION_NAME` exists, the logger will now use is for better identify
+* if a `INSTALLATION_NAME` exists, the logger will now use it for better identify
 
 **2.0.28** - 2013-10-10
 
