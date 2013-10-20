@@ -174,6 +174,78 @@ EOD;
     }
 
     /**
+     * Process the News POST records and insert or update document records
+     *
+     * @param array $posts
+     */
+    protected function processNewsPosts($posts)
+    {
+        foreach ($posts as $post) {
+            $document_id = -1;
+            $document_last_modified = '0000-00-00 00:00:00';
+            if (!$this->existsDocument('NEWS', $post['page_id'], $post['post_id'], $document_id, $document_last_modified)) {
+                // insert a new record
+                $data = array(
+                    'page_id' => $post['page_id'],
+                    'page_type' => 'NEWS',
+                    'second_id' => $post['post_id'],
+                    'page_title' => $this->app['utils']->unsanitizeText($post['title']),
+                    'modified_when' => date('Y-m-d H:i:s', $post['posted_when'])
+                );
+                $this->insert($data, $document_id);
+                $this->app['monolog']->addDebug("Add the NEWS ID {$post['post_id']} to ".self::$table_name,
+                array(__METHOD__, __LINE__));
+            }
+            elseif ($document_last_modified != date('Y-m-d H:i:s', $post['posted_when'])) {
+                // update an existing record
+                $data = array(
+                    'page_title' => $this->app['utils']->unsanitizeText($post['title']),
+                    'modified_when' => date('Y-m-d H:i:s', $post['posted_when'])
+                );
+                $this->update($document_id, $data);
+                $this->app['monolog']->addDebug("Updated the NEWS ID {$post['post_id']} at ".self::$table_name,
+                array(__METHOD__, __LINE__));
+            }
+        }
+    }
+
+    /**
+     * Process the TOPICS records and insert or update document records
+     *
+     * @param array $topics
+     */
+    protected function processTopicArticles($topics)
+    {
+        foreach ($topics as $topic) {
+            $document_id = -1;
+            $document_last_modified = '0000-00-00 00:00:00';
+            if (!$this->existsDocument('TOPICS', $topic['page_id'], $topic['topic_id'], $document_id, $document_last_modified)) {
+                // insert a new record
+                $data = array(
+                    'page_id' => $topic['page_id'],
+                    'page_type' => 'TOPICS',
+                    'second_id' => $topic['topic_id'],
+                    'page_title' => $this->app['utils']->unsanitizeText($topic['title']),
+                    'modified_when' => date('Y-m-d H:i:s', $topic['posted_modified'])
+                );
+                $this->insert($data, $document_id);
+                $this->app['monolog']->addDebug("Add the TOPICS ID {$topic['topic_id']} to ".self::$table_name,
+                array(__METHOD__, __LINE__));
+            }
+            elseif ($document_last_modified != date('Y-m-d H:i:s', $topic['posted_modified'])) {
+                // update an existing record
+                $data = array(
+                    'page_title' => $this->app['utils']->unsanitizeText($topic['title']),
+                    'modified_when' => date('Y-m-d H:i:s', $topic['posted_modified'])
+                );
+                $this->update($document_id, $data);
+                $this->app['monolog']->addDebug("Updated the TOPICS ID {$topic['topic_id']} at ".self::$table_name,
+                array(__METHOD__, __LINE__));
+            }
+        }
+    }
+
+    /**
      * Parse Pages, News and Topics for Confirmation Droplets / kitCommands and
      * add all hits to the table kit2_confirmation_article.
      * Also update the modified_when field of existing and changed articles.
@@ -226,77 +298,57 @@ EOD;
 
             // check the NEWS
             if ($this->tableExists(CMS_TABLE_PREFIX.'mod_news_posts')) {
+
+                // DEFAULT way: Droplet or kitCommand is placed in the POST
                 $SQL = "SELECT `page_id`, `post_id`, `posted_when`, `title` FROM `".CMS_TABLE_PREFIX."mod_news_posts` WHERE (".
                     "(`content_long` LIKE '%[[syncdata_confirmation]]%') OR (`content_long` LIKE '%[[syncdata_confirmation?%]]%') OR ".
                     "(`content_long` LIKE '%[[confirmation_log]]%') OR (`content_long` LIKE '%[[confirmation_log?%]]%') OR ".
-                    "(`content_long` LIKE '%~~ confirmation ~~%') OR (`content_long` LIKE '%~~ confirmation %~~%'))";
+                    "(`content_long` LIKE '%~~ confirmation ~~%') OR (`content_long` LIKE '%~~ confirmation %~~%')) ".
+                    "AND `active`='1'";
 
-                $results = $this->app['db']->fetchAll($SQL);
+                $posts = $this->app['db']->fetchAll($SQL);
+                // process the selected posts
+                $this->processNewsPosts($posts);
 
-                foreach ($results as $result) {
-                    $document_id = -1;
-                    $document_last_modified = '0000-00-00 00:00:00';
-                    if (!$this->existsDocument('NEWS', $result['page_id'], $result['post_id'], $document_id, $document_last_modified)) {
-                        // insert a new record
-                        $data = array(
-                            'page_id' => $result['page_id'],
-                            'page_type' => 'NEWS',
-                            'second_id' => $result['post_id'],
-                            'page_title' => $this->app['utils']->unsanitizeText($result['title']),
-                            'modified_when' => date('Y-m-d H:i:s', $result['posted_when'])
-                        );
-                        $this->insert($data, $document_id);
-                        $this->app['monolog']->addDebug("Add the NEWS ID {$result['post_id']} to ".self::$table_name,
-                            array(__METHOD__, __LINE__));
-                    }
-                    elseif ($document_last_modified != date('Y-m-d H:i:s', $result['posted_when'])) {
-                        // update an existing record
-                        $data = array(
-                            'page_title' => $this->app['utils']->unsanitizeText($result['title']),
-                            'modified_when' => date('Y-m-d H:i:s', $result['posted_when'])
-                        );
-                        $this->update($document_id, $data);
-                        $this->app['monolog']->addDebug("Updated the NEWS ID {$result['post_id']} at ".self::$table_name,
-                            array(__METHOD__, __LINE__));
-                    }
+                // ALTERNATE way: Droplet or kitCommand is placed in the POST FOOTER
+                $SQL = "SELECT `page_id` FROM `".CMS_TABLE_PREFIX."mod_news_settings` WHERE (".
+                    "(`post_footer` LIKE '%[[syncdata_confirmation]]%') OR (`post_footer` LIKE '%[[syncdata_confirmation?%]]%') OR ".
+                    "(`post_footer` LIKE '%[[confirmation_log]]%') OR (`post_footer` LIKE '%[[confirmation_log?%]]%') OR ".
+                    "(`post_footer` LIKE '%~~ confirmation ~~%') OR (`post_footer` LIKE '%~~ confirmation %~~%'))";
+                if (($page_id = $this->app['db']->fetchColumn($SQL)) > 0) {
+                    $SQL = "SELECT `page_id`, `post_id`, `posted_when`, `title` FROM `".CMS_TABLE_PREFIX."mod_news_posts` ".
+                        "WHERE `page_id`='$page_id' AND `active`='1'";
+                    $posts = $this->app['db']->fetchAll($SQL);
+                    // process the selected posts
+                    $this->processNewsPosts($posts);
                 }
             }
 
             // check the TOPICS
             if ($this->tableExists(CMS_TABLE_PREFIX.'mod_topics')) {
+
+                // DEFAULT way: Droplet or kitCommand is placed in the TOPIC article
                 $SQL = "SELECT `page_id`, `topic_id`, `posted_modified`, `title` FROM `".CMS_TABLE_PREFIX."mod_topics` WHERE (".
                     "(`content_long` LIKE '%[[syncdata_confirmation]]%') OR (`content_long` LIKE '%[[syncdata_confirmation?%]]%') OR ".
                     "(`content_long` LIKE '%[[confirmation_log]]%') OR (`content_long` LIKE '%[[confirmation_log?%]]%') OR ".
-                    "(`content_long` LIKE '%~~ confirmation ~~%') OR (`content_long` LIKE '%~~ confirmation %~~%'))";
+                    "(`content_long` LIKE '%~~ confirmation ~~%') OR (`content_long` LIKE '%~~ confirmation %~~%')) ".
+                    "AND `active` > '0'";
 
-                $results = $this->app['db']->fetchAll($SQL);
+                $topics = $this->app['db']->fetchAll($SQL);
+                // process the selected TOPICS
+                $this->processTopicArticles($topics);
 
-                foreach ($results as $result) {
-                    $document_id = -1;
-                    $document_last_modified = '0000-00-00 00:00:00';
-                    if (!$this->existsDocument('TOPICS', $result['page_id'], $result['topic_id'], $document_id, $document_last_modified)) {
-                        // insert a new record
-                        $data = array(
-                            'page_id' => $result['page_id'],
-                            'page_type' => 'TOPICS',
-                            'second_id' => $result['topic_id'],
-                            'page_title' => $this->app['utils']->unsanitizeText($result['title']),
-                            'modified_when' => date('Y-m-d H:i:s', $result['posted_modified'])
-                        );
-                        $this->insert($data, $document_id);
-                        $this->app['monolog']->addDebug("Add the TOPICS ID {$result['topic_id']} to ".self::$table_name,
-                            array(__METHOD__, __LINE__));
-                    }
-                    elseif ($document_last_modified != date('Y-m-d H:i:s', $result['posted_modified'])) {
-                        // update an existing record
-                        $data = array(
-                            'page_title' => $this->app['utils']->unsanitizeText($result['title']),
-                            'modified_when' => date('Y-m-d H:i:s', $result['posted_modified'])
-                        );
-                        $this->update($document_id, $data);
-                        $this->app['monolog']->addDebug("Updated the TOPICS ID {$result['topic_id']} at ".self::$table_name,
-                            array(__METHOD__, __LINE__));
-                    }
+                // ALTERNATE way: Droplet or kitCommand is placed in the TOPIC FOOTER
+                $SQL = "SELECT `page_id` FROM `".CMS_TABLE_PREFIX."mod_topics_settings` WHERE (".
+                    "(`topic_footer` LIKE '%[[syncdata_confirmation]]%') OR (`topic_footer` LIKE '%[[syncdata_confirmation?%]]%') OR ".
+                    "(`topic_footer` LIKE '%[[confirmation_log]]%') OR (`topic_footer` LIKE '%[[confirmation_log?%]]%') OR ".
+                    "(`topic_footer` LIKE '%~~ confirmation ~~%') OR (`topic_footer` LIKE '%~~ confirmation %~~%'))";
+                if (($page_id = $this->app['db']->fetchColumn($SQL)) > 0) {
+                    $SQL = "SELECT `page_id`, `topic_id`, `posted_modified`, `title` FROM `".CMS_TABLE_PREFIX."mod_topics` ".
+                        "WHERE `page_id`='$page_id' AND `active` > '0'";
+                    $topics = $this->app['db']->fetchAll($SQL);
+                    // process the selected TOPICS
+                    $this->processTopicArticles($topics);
                 }
             }
             $this->app['monolog']->addDebug('Finished parsing pages, news and topics for confirmation Droplets or kitCommands',
@@ -317,12 +369,7 @@ EOD;
         try {
             $SQL = "SELECT MAX(`modified_when`) FROM `".self::$table_name."`";
             $date = $this->app['db']->fetchColumn($SQL);
-            if (is_null($date)) {
-                // table is probably empty ...
-                $this->app['monolog']->addDebug("$SQL return NULL, nothing to do!", array(__METHOD__, __LINE__));
-                return true;
-            }
-            $modified_when = strtotime($date);
+            $modified_when = intval(strtotime($date));
 
             // check the pages
             $SQL = "SELECT MAX(`modified_when`) FROM `".CMS_TABLE_PREFIX."pages`";

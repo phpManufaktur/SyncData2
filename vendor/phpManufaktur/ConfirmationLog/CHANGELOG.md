@@ -3,6 +3,11 @@
 (c) 2012, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**0.20** - 2013-10-20
+
+* function `parseFileForConstants()`  is moved to `$app['utils']` and therefore removed from `Confirmation.php`
+* Reports search now also for Droplets and kitCommands placed in NEWS Footer or in TOPICS Footer
+
 **0.19** - 2013-10-10
 
 * Changed reports, get titles to confirm directly from server, use `username` and `useremail` to verify user
