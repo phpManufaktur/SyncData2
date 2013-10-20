@@ -594,4 +594,83 @@ class Utils
         return $JSONFormat->format($chunk, $already_json);
     }
 
+    /**
+     * Parse a PHP file for defined constants.
+     * If $constant = null return a array with all constants or false if none exists.
+     * If $constant is a named return the defined value or false, if the constant does
+     * not exists.
+     *
+     * @param string $php_file
+     * @param string $constant
+     * @throws \Exception
+     * @return boolean|array
+     * @link http://stackoverflow.com/a/645914/2243419
+     */
+    public function parseFileForConstants($php_file, $constant=null)
+    {
+        function is_constant($token) {
+            return $token == T_CONSTANT_ENCAPSED_STRING || $token == T_STRING ||
+            $token == T_LNUMBER || $token == T_DNUMBER;
+        }
+
+        function strip($value) {
+            return preg_replace('!^([\'"])(.*)\1$!', '$2', $value);
+        }
+
+        $defines = array();
+        $state = 0;
+        $key = '';
+        $value = '';
+
+        if (false === ($file = file_get_contents($php_file))) {
+            throw new \Exception("Can not read the content of the file $php_file!");
+        }
+
+        $tokens = token_get_all($file);
+        $token = reset($tokens);
+
+        while ($token) {
+            if (is_array($token)) {
+                if ($token[0] == T_WHITESPACE || $token[0] == T_COMMENT || $token[0] == T_DOC_COMMENT) {
+                    // do nothing
+                }
+                elseif ($token[0] == T_STRING && strtolower($token[1]) == 'define') {
+                    $state = 1;
+                }
+                elseif ($state == 2 && is_constant($token[0])) {
+                    $key = $token[1];
+                    $state = 3;
+                }
+                elseif ($state == 4 && is_constant($token[0])) {
+                    $value = $token[1];
+                    $state = 5;
+                }
+            } else {
+                $symbol = trim($token);
+                if ($symbol == '(' && $state == 1) {
+                    $state = 2;
+                }
+                elseif ($symbol == ',' && $state == 3) {
+                    $state = 4;
+                }
+                elseif ($symbol == ')' && $state == 5) {
+                    $defines[strip($key)] = strip($value);
+                    $state = 0;
+                }
+            }
+            $token = next($tokens);
+        }
+
+        if (is_null($constant)) {
+            return !empty($defines) ? $defines : false;
+        }
+        else {
+            foreach ($defines as $key => $value) {
+                if (strtolower($key) == strtolower($constant)) {
+                    return $value;
+                }
+            }
+            return false;
+        }
+    }
 }
