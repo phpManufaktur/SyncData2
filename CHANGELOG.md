@@ -3,6 +3,14 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.29** - 2013-10-20
+
+* changed definition for `CMS_ADMIN_PATH` and `CMS_ADMIN_URL` (could fail)
+* fixed: using `addError()` instead of `addInfo()` in `SynchronizeClient.php`
+* updated to ConfirmationLog 0.20
+* added function `parseFileForConstants()` to `$app['utils']`
+* if a `INSTALLATION_NAME` exists, the logger will now use is for better identify
+
 **2.0.28** - 2013-10-10
 
 * added missing INSTALLATION_NAME definition
