@@ -33,6 +33,7 @@ class SystemCheck
      */
     public function __construct()
     {
+        date_default_timezone_set('Europe/Berlin');
         self::setCMSpath();
     }
 
@@ -131,6 +132,11 @@ class SystemCheck
                             }
                             if ($row['name'] == 'lepton_version') {
                                 self::$CMS_TYPE = 'LEPTON';
+                                self::$CMS_VERSION = $row['value'];
+                                break;
+                            }
+                            if ($row['name'] == 'cat_version') {
+                                self::$CMS_TYPE = 'BlackCat CMS';
                                 self::$CMS_VERSION = $row['value'];
                                 break;
                             }
