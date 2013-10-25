@@ -3,6 +3,12 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.30** - 2013-10-25
+
+* SystemCheck: set always a default time zone (Europe/Berlin)
+* SystemCheck: add missing support for BlackCat CMS
+* disable checksum check for restored tables (seems sometimes to differ out of reason) 
+
 **2.0.29** - 2013-10-20
 
 * changed definition for `CMS_ADMIN_PATH` and `CMS_ADMIN_URL` (could fail)
