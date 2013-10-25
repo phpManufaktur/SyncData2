@@ -142,7 +142,7 @@ class Restore
                         throw $e->getMessage();
                     }
 
-
+                    /*
                     if (file_exists("$source_path/$table.md5")) {
                         if (false === ($md5 = @file_get_contents("$source_path/$table.md5"))) {
                             throw new \Exception("Can't read the MD5 checksum for table $table");
@@ -154,6 +154,7 @@ class Restore
                         $this->app['monolog']->addInfo("MD5 checksum comparison for table $table was successfull",
                             array('method' => __METHOD__, 'line' => __LINE__));
                     }
+                    */
                 }
             }
         } catch (\Exception $e) {
