@@ -330,6 +330,7 @@ class General {
             }
             // close the connection
             mysql_close($link);
+            $this->app['monolog']->addDebug("Compatibility INSERT for $table");
         }
         catch (\Exception $e) {
             throw new \Exception($e);
@@ -347,21 +348,39 @@ class General {
     public function insert($table, $data, $replace_cms_url=true)
     {
         try {
-            if ($table === CMS_TABLE_PREFIX.'pages') {
+            $table_name = substr($table, strlen(CMS_TABLE_PREFIX));
+
+            if (isset($this->app['config']['restore']['tables']['utf-8']['compatibility']['table'][$table_name]) &&
+                ($this->app['config']['restore']['tables']['utf-8']['compatibility'][$table_name]['enabled'])) {
+                // force the compatibility mode for this table
                 return $this->compatibilityInsert($table, $data, $replace_cms_url);
             }
             if ($replace_cms_url) {
+                // replace the shematic URL
                 $content = array();
                 foreach ($data as $key => $value) {
-                    if ($replace_cms_url) {
-                        $content[$this->app['db']->quoteIdentifier($key)] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                    $value = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
+                    $content[$key] = $value;
+                }
+                $data = $content;
+            }
+
+            if (isset($this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name])) {
+                $content = array();
+                foreach ($data as $key => $value) {
+                    if ($this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name]['enabled'] &&
+                        (in_array($key, $this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name]['field']))) {
+                        // force utf-8 encoding
+                        $content[$key] = utf8_encode($value);
+                        $this->app['monolog']->addDebug("Forced UTF-8 for $table => $key");
                     }
                     else {
-                        $content[$this->app['db']->quoteIdentifier($key)] = $value;
+                        $content[$key] = $value;
                     }
                 }
                 $data = $content;
             }
+
             $this->app['db']->insert($table, $data);
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;

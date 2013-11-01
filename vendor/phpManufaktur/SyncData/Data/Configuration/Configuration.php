@@ -194,6 +194,58 @@ class Configuration
                             'kit2_',
                             'syncdata_'
                             )
+                    ),
+                    'utf-8' => array(
+                        'compatibility' => array(
+                            'table' => array(
+                                'mod_wysiwyg' => array(
+                                    'enabled' => false
+                                ),
+                                'mod_news_posts' => array(
+                                    'enabled' => false
+                                ),
+                                'mod_droplets' => array(
+                                    'enabled' => false
+                                ),
+                                'pages' => array(
+                                    'enabled' => false
+                                )
+                            )
+                        ),
+                        'force' => array(
+                            'table' => array(
+                                'mod_wysiwyg' => array(
+                                    'enabled' => true,
+                                    'field' => array(
+                                        'content'
+                                    )
+                                ),
+                                'mod_news_posts' => array(
+                                    'enabled' => true,
+                                    'field' => array(
+                                        'content_short',
+                                        'content_long',
+                                        'title'
+                                    )
+                                ),
+                                'pages' => array(
+                                    'enabled' => true,
+                                    'field' => array(
+                                        'page_title',
+                                        'menu_title',
+                                        'description',
+                                        'keywords'
+                                    )
+                                ),
+                                'mod_droplets' => array(
+                                    'enabled' => true,
+                                    'field' => array(
+                                        'code',
+                                        'description'
+                                    )
+                                )
+                            )
+                        )
                     )
                 )
             )

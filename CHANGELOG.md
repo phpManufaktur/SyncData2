@@ -3,6 +3,10 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
+**2.0.31** - 2013-11-01
+
+* added UTF-8 compatibility and force settings to the `syncdata.json`
+
 **2.0.30** - 2013-10-25
 
 * SystemCheck: set always a default time zone (Europe/Berlin)
