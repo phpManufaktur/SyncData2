@@ -54,27 +54,42 @@ class Setup
         try {
             // Backup Master table
             $BackupMaster = new BackupMaster($this->app);
+            $BackupMaster->dropTable();
             $BackupMaster->createTable();
+
             // Backup Tables
             $BackupTables = new BackupTables($this->app);
+            $BackupTables->dropTable();
             $BackupTables->createTable();
+
             // Synchronize Tables
             $SynchronizeTables = new SynchronizeTables($this->app);
+            $SynchronizeTables->dropTable();
             $SynchronizeTables->createTable();
+
             // Backup files
             $BackupFiles = new BackupFiles($this->app);
+            $BackupFiles->dropTable();
             $BackupFiles->createTable();
+
             // Synchronize Master
             $SynchronizeMaster = new SynchronizeMaster($this->app);
+            $SynchronizeMaster->dropTable();
             $SynchronizeMaster->createTable();
+
             // Synchronize Files
             $SynchronizeFiles = new SynchronizeFiles($this->app);
+            $SynchronizeFiles->dropTable();
             $SynchronizeFiles->createTable();
+
             // Synchronize Archives
             $SynchronizeArchives = new SynchronizeArchives($this->app);
+            $SynchronizeArchives->dropTable();
             $SynchronizeArchives->createTable();
+
             // Synchronize Client
             $SynchronizeClient = new SynchronizeClient($this->app);
+            $SynchronizeClient->dropTable();
             $SynchronizeClient->createTable();
 
             $this->app['monolog']->addInfo('Setup is complete',

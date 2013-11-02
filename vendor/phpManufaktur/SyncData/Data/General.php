@@ -351,7 +351,7 @@ class General {
             $table_name = substr($table, strlen(CMS_TABLE_PREFIX));
 
             if (isset($this->app['config']['restore']['tables']['utf-8']['compatibility']['table'][$table_name]) &&
-                ($this->app['config']['restore']['tables']['utf-8']['compatibility'][$table_name]['enabled'])) {
+                ($this->app['config']['restore']['tables']['utf-8']['compatibility']['table'][$table_name]['enabled'])) {
                 // force the compatibility mode for this table
                 return $this->compatibilityInsert($table, $data, $replace_cms_url);
             }

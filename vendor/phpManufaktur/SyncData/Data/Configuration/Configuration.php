@@ -209,6 +209,9 @@ class Configuration
                                 ),
                                 'pages' => array(
                                     'enabled' => false
+                                ),
+                                'mod_massmail' => array(
+                                    'enabled' => true
                                 )
                             )
                         ),
