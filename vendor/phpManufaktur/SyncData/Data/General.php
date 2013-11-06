@@ -359,28 +359,10 @@ class General {
                 // replace the shematic URL
                 $content = array();
                 foreach ($data as $key => $value) {
-                    $value = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
-                    $content[$key] = $value;
+                    $content[$key] = is_string($value) ? str_replace('{{ SyncData:CMS_URL }}', CMS_URL, $value) : $value;
                 }
                 $data = $content;
             }
-
-            if (isset($this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name])) {
-                $content = array();
-                foreach ($data as $key => $value) {
-                    if ($this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name]['enabled'] &&
-                        (in_array($key, $this->app['config']['restore']['tables']['utf-8']['force']['table'][$table_name]['field']))) {
-                        // force utf-8 encoding
-                        $content[$key] = utf8_encode($value);
-                        $this->app['monolog']->addDebug("Forced UTF-8 for $table => $key");
-                    }
-                    else {
-                        $content[$key] = $value;
-                    }
-                }
-                $data = $content;
-            }
-
             $this->app['db']->insert($table, $data);
         } catch (\Doctrine\DBAL\DBALException $e) {
             throw $e;

@@ -27,6 +27,7 @@ use phpManufaktur\ConfirmationLog\Data\Setup\Uninstall as confirmationUninstall;
 use phpManufaktur\ConfirmationLog\Data\Setup\SetupTool;
 use phpManufaktur\ConfirmationLog\Data\Import\ImportOldLog;
 use phpManufaktur\SyncData\Control\Confirmations;
+use phpManufaktur\SyncData\Data\Setup\Uninstall;
 
 // set the error handling
 ini_set('display_errors', 1);
@@ -119,6 +120,8 @@ try {
             }
             $ConfirmationUninstall = new confirmationUninstall();
             $app_result = $ConfirmationUninstall->exec($app);
+            $Uninstall = new Uninstall($app);
+            $app_result = $Uninstall->exec();
             break;
         case '/import_log':
             if (!$CheckKey->check()) {

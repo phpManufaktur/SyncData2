@@ -214,40 +214,6 @@ class Configuration
                                     'enabled' => true
                                 )
                             )
-                        ),
-                        'force' => array(
-                            'table' => array(
-                                'mod_wysiwyg' => array(
-                                    'enabled' => true,
-                                    'field' => array(
-                                        'content'
-                                    )
-                                ),
-                                'mod_news_posts' => array(
-                                    'enabled' => true,
-                                    'field' => array(
-                                        'content_short',
-                                        'content_long',
-                                        'title'
-                                    )
-                                ),
-                                'pages' => array(
-                                    'enabled' => true,
-                                    'field' => array(
-                                        'page_title',
-                                        'menu_title',
-                                        'description',
-                                        'keywords'
-                                    )
-                                ),
-                                'mod_droplets' => array(
-                                    'enabled' => true,
-                                    'field' => array(
-                                        'code',
-                                        'description'
-                                    )
-                                )
-                            )
                         )
                     )
                 )

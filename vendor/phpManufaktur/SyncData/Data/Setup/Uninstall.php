@@ -27,7 +27,7 @@ use phpManufaktur\SyncData\Data\SynchronizeClient;
  * @author ralf.hertsch@phpmanufaktur.de
  *
  */
-class Setup
+class Uninstall
 {
 
     protected $app = null;
@@ -43,50 +43,50 @@ class Setup
     }
 
     /**
-     * Action handler for the setup routines
+     * Action handler for the uninstall routines
      *
      * @throws Exception
      * @return string
      */
     public function exec()
     {
-        // create the needed tables
+        // delete the tables
         try {
             // Backup Master table
             $BackupMaster = new BackupMaster($this->app);
-            $BackupMaster->createTable();
+            $BackupMaster->dropTable();
 
             // Backup Tables
             $BackupTables = new BackupTables($this->app);
-            $BackupTables->createTable();
+            $BackupTables->dropTable();
 
             // Synchronize Tables
             $SynchronizeTables = new SynchronizeTables($this->app);
-            $SynchronizeTables->createTable();
+            $SynchronizeTables->dropTable();
 
             // Backup files
             $BackupFiles = new BackupFiles($this->app);
-            $BackupFiles->createTable();
+            $BackupFiles->dropTable();
 
             // Synchronize Master
             $SynchronizeMaster = new SynchronizeMaster($this->app);
-            $SynchronizeMaster->createTable();
+            $SynchronizeMaster->dropTable();
 
             // Synchronize Files
             $SynchronizeFiles = new SynchronizeFiles($this->app);
-            $SynchronizeFiles->createTable();
+            $SynchronizeFiles->dropTable();
 
             // Synchronize Archives
             $SynchronizeArchives = new SynchronizeArchives($this->app);
-            $SynchronizeArchives->createTable();
+            $SynchronizeArchives->dropTable();
 
             // Synchronize Client
             $SynchronizeClient = new SynchronizeClient($this->app);
-            $SynchronizeClient->createTable();
+            $SynchronizeClient->dropTable();
 
-            $this->app['monolog']->addInfo('Setup is complete',
+            $this->app['monolog']->addInfo('All tables removed',
                 array('method' => __METHOD__, 'line' => __LINE__));
-            return 'Setup is complete';
+            return 'All tables removed';
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
