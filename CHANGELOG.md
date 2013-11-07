@@ -3,7 +3,7 @@
 (c) 2011, 2013 phpManufaktur by Ralf Hertsch<br/>
 MIT License (MIT) - <http://www.opensource.org/licenses/MIT>
 
-**2.0.32** - 2013-11-06
+**2.0.33** - 2013-11-06
 
 * removed UTF-8 force settings (wrong way)
 * added Uninstall routine for the SyncData tables
