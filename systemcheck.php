@@ -28,6 +28,9 @@ class SystemCheck
 
     protected static $cms_config_path = null;
 
+    protected static $innoDB_available = null;
+    protected static $required_innoDB = null;
+
     /**
      * Constructor
      */
@@ -69,6 +72,16 @@ class SystemCheck
     public function setRequiredMySQLVersion($mysql_version)
     {
         self::$required_MYSQL_VERSION = $mysql_version;
+    }
+
+    /**
+     * Determine wether InnoDB is needed or not
+     *
+     * @param boolean $required
+     */
+    public function setRequiredInnoDB($required)
+    {
+        self::$required_innoDB = (bool) $required;
     }
 
     /**
@@ -149,12 +162,42 @@ class SystemCheck
                             );
                         }
                     }
+                    // get information about InnoDB
+                    $SQL = "SELECT SUPPORT FROM INFORMATION_SCHEMA.ENGINES WHERE ENGINE = 'InnoDB'";
+                    if (false !== ($query = @mysql_query($SQL))) {
+                        if (false !== ($row = mysql_fetch_assoc($query))) {
+                            if (isset($row['SUPPORT']) && ($row['SUPPORT'] != 'NO')) {
+                                self::$innoDB_available = true;
+                            }
+                            else {
+                                self::$innoDB_available = false;
+                            }
+                        }
+                    }
                     // close the db handle
                     @mysql_close($db_handle);
                 }
             }
         }
         return $result;
+    }
+
+    protected function getInnoDBinformation()
+    {
+        if (is_null(self::$innoDB_available)) {
+            return array(
+                'required' => self::$required_innoDB ? 'Yes' : 'No',
+                'available' => '- no information available -',
+                'css' => 'fail'
+            );
+        }
+        else {
+            return array(
+                'required' => self::$required_innoDB ? 'Yes' : 'No',
+                'available' => self::$innoDB_available ? 'Yes' : 'No',
+                'css' => (self::$required_innoDB && !self::$innoDB_available) ? 'fail' : 'checked'
+            );
+        }
     }
 
     /**
@@ -251,6 +294,11 @@ class SystemCheck
         );
     }
 
+    /**
+     * Get information about SyncData
+     *
+     * @return multitype:string
+     */
     protected function getSyncDataInformation()
     {
         // get SyncData path
@@ -401,6 +449,13 @@ class SystemCheck
             <div class="value {$result['MySQL']['css']}">{$result['MySQL']['installed']}</div>
         </fieldset>
         <fieldset>
+            <legend>MySQL InnoDB Engine</legend>
+            <div class="label">Required</div>
+            <div class="value">{$result['InnoDB']['required']}</div>
+            <div class="label">Available</div>
+            <div class="value {$result['InnoDB']['css']}">{$result['InnoDB']['available']}</div>
+        </fieldset>
+        <fieldset>
             <legend>cURL</legend>
             <div class="label">Required</div>
             <div class="value">{$curl_required}</div>
@@ -432,6 +487,7 @@ EOD;
             'OPERATING_SYSTEM' => $this->getOperatingSystem(),
             'PHP_VERSION' => $this->getPHPinformation(),
             'MySQL' => $this->getMySQLinformation(),
+            'InnoDB' => $this->getInnoDBinformation(),
             'cURL' => $this->isCURLinstalled(),
             'ZIPArchive' => $this->isZIParchiveInstalled(),
             'SyncData' => $this->getSyncDataInformation()
@@ -454,4 +510,5 @@ $info->setRequriredPHPVersion('5.3.2');
 $info->setRequiredMySQLVersion('5.0.0');
 $info->setRequiredCURL(false);
 $info->setRequriredZIPArchive(true);
+$info->setRequiredInnoDB(true);
 $info->exec();
