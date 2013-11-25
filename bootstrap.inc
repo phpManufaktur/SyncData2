@@ -88,6 +88,13 @@ foreach ($check_directories as $directory) {
 $initDoctrine = new Doctrine($app);
 $initDoctrine->initDoctrine();
 
+// check for InnoDB
+$SQL = "SELECT SUPPORT FROM INFORMATION_SCHEMA.ENGINES WHERE ENGINE = 'InnoDB'";
+$result = $app['db']->fetchColumn($SQL);
+if ($result == 'NO') {
+    throw new \Exception("SyncData is missing the MySQL InnoDB support, please check your server configuration!");
+}
+
 // initialize the SyncData configuration
 $initConfig = new Configuration($app, $config_array);
 $initConfig->initConfiguration();
